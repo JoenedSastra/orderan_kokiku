@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Http\Controllers\Kitchen;
+
+use App\Http\Controllers\Controller;
+use App\Models\Item;
+use App\Models\StockIn;
+use App\Models\StockOut;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+
+class StockOutController extends Controller
+{
+    public function index(): View
+    {
+        $stockOuts = StockOut::with('item')
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->paginate(15);
+        return view('kitchen.stock_out.index', compact('stockOuts'));
+    }
+
+    public function create(): View
+    {
+        $items = Item::orderBy('name')->get();
+        return view('kitchen.stock_out.create', compact('items'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'item_id'    => 'required|exists:items,id',
+            'quantity'   => 'required|integer|min:1',
+            'keterangan' => 'nullable|string|max:255',
+            'tanggal'    => 'required|date',
+        ]);
+
+        $userId = Auth::id();
+        $item   = Item::findOrFail($request->item_id);
+        $masuk  = StockIn::where('item_id', $item->id)->where('user_id', $userId)->sum('quantity');
+        $keluar = StockOut::where('item_id', $item->id)->where('user_id', $userId)->sum('quantity');
+        $stok   = $masuk - $keluar;
+
+        if ($request->quantity > $stok) {
+            return back()->withErrors(['quantity' => 'Stok tidak mencukupi. Stok tersedia: ' . $stok . ' ' . $item->unit])->withInput();
+        }
+
+        StockOut::create([
+            'item_id'    => $request->item_id,
+            'user_id'    => $userId,
+            'quantity'   => $request->quantity,
+            'keterangan' => $request->keterangan,
+            'tanggal'    => $request->tanggal,
+        ]);
+
+        return redirect()->route('kitchen.stock_out.index')->with('success', 'Stock keluar berhasil dicatat.');
+    }
+}

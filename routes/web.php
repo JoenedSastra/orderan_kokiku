@@ -1,7 +1,19 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ItemController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Kasir\OrderController as KasirOrderController;
+use App\Http\Controllers\Kasir\StockInController as KasirStockInController;
+use App\Http\Controllers\Kasir\StockOutController as KasirStockOutController;
+use App\Http\Controllers\Kitchen\OrderController as KitchenOrderController;
+use App\Http\Controllers\Kitchen\StockInController as KitchenStockInController;
+use App\Http\Controllers\Kitchen\StockOutController as KitchenStockOutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,24 +38,52 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
-        // Menu berikut akan diisi bertahap pada fase-fase berikutnya:
-        // Master Barang, Kategori, Supplier, Stock Barang, Permintaan Barang,
-        // Riwayat, Laporan, User, Role
+        // Master Data
+        Route::resource('categories', CategoryController::class);
+        Route::resource('suppliers',  SupplierController::class);
+        Route::resource('items',      ItemController::class);
+
+        // Stock & Permintaan
+        Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::post('/orders/{order}/approve', [AdminOrderController::class, 'approve'])->name('orders.approve');
+        Route::post('/orders/{order}/reject',  [AdminOrderController::class, 'reject'])->name('orders.reject');
+
+        // Users
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
     });
 
     // ---- Kasir (Front) ----
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
 
-        // Menu berikut akan diisi bertahap pada fase-fase berikutnya:
-        // Stock Barang Masuk, Stock Barang Keluar, Order Barang, Riwayat, Profil
+        Route::get('/stock-masuk',        [KasirStockInController::class,  'index'])->name('stock_in.index');
+        Route::get('/stock-masuk/tambah', [KasirStockInController::class,  'create'])->name('stock_in.create');
+        Route::post('/stock-masuk',       [KasirStockInController::class,  'store'])->name('stock_in.store');
+
+        Route::get('/stock-keluar',        [KasirStockOutController::class, 'index'])->name('stock_out.index');
+        Route::get('/stock-keluar/tambah', [KasirStockOutController::class, 'create'])->name('stock_out.create');
+        Route::post('/stock-keluar',       [KasirStockOutController::class, 'store'])->name('stock_out.store');
+
+        Route::get('/orders',        [KasirOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/tambah', [KasirOrderController::class, 'create'])->name('orders.create');
+        Route::post('/orders',       [KasirOrderController::class, 'store'])->name('orders.store');
     });
 
     // ---- Kitchen (Dapur) ----
     Route::middleware('role:kitchen')->prefix('kitchen')->name('kitchen.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kitchen'])->name('dashboard');
 
-        // Menu berikut akan diisi bertahap pada fase-fase berikutnya:
-        // Stock Barang Masuk, Stock Barang Keluar, Order Barang, Riwayat, Profil
+        Route::get('/stock-masuk',        [KitchenStockInController::class,  'index'])->name('stock_in.index');
+        Route::get('/stock-masuk/tambah', [KitchenStockInController::class,  'create'])->name('stock_in.create');
+        Route::post('/stock-masuk',       [KitchenStockInController::class,  'store'])->name('stock_in.store');
+
+        Route::get('/stock-keluar',        [KitchenStockOutController::class, 'index'])->name('stock_out.index');
+        Route::get('/stock-keluar/tambah', [KitchenStockOutController::class, 'create'])->name('stock_out.create');
+        Route::post('/stock-keluar',       [KitchenStockOutController::class, 'store'])->name('stock_out.store');
+
+        Route::get('/orders',        [KitchenOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/tambah', [KitchenOrderController::class, 'create'])->name('orders.create');
+        Route::post('/orders',       [KitchenOrderController::class, 'store'])->name('orders.store');
     });
 });

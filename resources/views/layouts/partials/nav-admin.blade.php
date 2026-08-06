@@ -3,18 +3,29 @@
 </a>
 
 <div class="kk-sidebar-section-label">Master Data</div>
-<a href="#" class="nav-link disabled"><i class="bi bi-box-seam"></i> Master Barang</a>
-<a href="#" class="nav-link disabled"><i class="bi bi-tags"></i> Kategori</a>
-<a href="#" class="nav-link disabled"><i class="bi bi-truck"></i> Supplier</a>
+<a href="{{ route('admin.items.index') }}" class="nav-link {{ request()->routeIs('admin.items.*') ? 'active' : '' }}">
+    <i class="bi bi-box-seam"></i> Master Barang
+</a>
+<a href="{{ route('admin.categories.index') }}" class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
+    <i class="bi bi-tags"></i> Kategori
+</a>
+<a href="{{ route('admin.suppliers.index') }}" class="nav-link {{ request()->routeIs('admin.suppliers.*') ? 'active' : '' }}">
+    <i class="bi bi-truck"></i> Supplier
+</a>
 
 <div class="kk-sidebar-section-label">Stok & Permintaan</div>
-<a href="#" class="nav-link disabled"><i class="bi bi-layers"></i> Stock Barang</a>
-<a href="#" class="nav-link disabled"><i class="bi bi-clipboard-check"></i> Permintaan Barang</a>
-
-<div class="kk-sidebar-section-label">Laporan</div>
-<a href="#" class="nav-link disabled"><i class="bi bi-clock-history"></i> Riwayat</a>
-<a href="#" class="nav-link disabled"><i class="bi bi-bar-chart"></i> Laporan</a>
+<a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}">
+    <i class="bi bi-layers"></i> Stock Barang
+</a>
+<a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+    <i class="bi bi-clipboard-check"></i> Permintaan Barang
+    @php $pending = \App\Models\Order::where('status','menunggu')->count(); @endphp
+    @if($pending > 0)
+        <span class="badge bg-danger ms-auto rounded-pill">{{ $pending }}</span>
+    @endif
+</a>
 
 <div class="kk-sidebar-section-label">Pengaturan</div>
-<a href="#" class="nav-link disabled"><i class="bi bi-people"></i> User</a>
-<a href="#" class="nav-link disabled"><i class="bi bi-shield-lock"></i> Role</a>
+<a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+    <i class="bi bi-people"></i> User
+</a>
