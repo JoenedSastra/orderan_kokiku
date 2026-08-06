@@ -1,12 +1,181 @@
-@import 'tailwindcss';
+/* ==========================================================================
+   Kokiku Stock — custom styles on top of Bootstrap 5
+   Palette: dark slate sidebar + deep teal accent (dipilih agar berbeda dari
+   tema navy/cyan yang sudah dipakai di project lain, dan terasa "kitchen/
+   food-service" tanpa jadi generik).
+   ========================================================================== */
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source "../**/*.blade.php";
-@source "../**/*.js";
-@source "../**/*.vue";
+:root {
+    --kk-sidebar-bg: #1c2430;
+    --kk-sidebar-bg-active: #262f3d;
+    --kk-sidebar-text: #a9b4c4;
+    --kk-sidebar-text-active: #ffffff;
+    --kk-accent: #0f766e;
+    --kk-accent-soft: #ccfbf1;
+    --kk-bg: #f5f6f8;
+    --kk-border: #e2e5ea;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+body {
+    background-color: var(--kk-bg);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ---------- Layout shell ---------- */
+.kk-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.kk-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background-color: var(--kk-sidebar-bg);
+    color: var(--kk-sidebar-text);
+    display: flex;
+    flex-direction: column;
+}
+
+.kk-sidebar-brand {
+    padding: 1.25rem 1.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    letter-spacing: 0.02em;
+}
+
+.kk-sidebar-brand small {
+    display: block;
+    font-weight: 400;
+    font-size: 0.72rem;
+    color: var(--kk-sidebar-text);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.kk-sidebar-nav {
+    padding: 0.75rem 0.75rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.kk-sidebar-nav .nav-link {
+    color: var(--kk-sidebar-text);
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.5rem;
+    font-size: 0.92rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.15rem;
+}
+
+.kk-sidebar-nav .nav-link:hover {
+    background-color: var(--kk-sidebar-bg-active);
+    color: var(--kk-sidebar-text-active);
+}
+
+.kk-sidebar-nav .nav-link.active {
+    background-color: var(--kk-accent);
+    color: #fff;
+    font-weight: 600;
+}
+
+.kk-sidebar-nav .nav-link.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.kk-sidebar-section-label {
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: #6b7686;
+    padding: 0.9rem 0.85rem 0.3rem;
+}
+
+.kk-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.kk-topbar {
+    background-color: #fff;
+    border-bottom: 1px solid var(--kk-border);
+    padding: 0.85rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.kk-content {
+    padding: 1.75rem;
+    flex: 1;
+}
+
+/* ---------- Badges status ---------- */
+.kk-badge-menunggu { background-color: #fef3c7; color: #92400e; }
+.kk-badge-disetujui { background-color: #d1fae5; color: #065f46; }
+.kk-badge-ditolak { background-color: #fee2e2; color: #991b1b; }
+
+.kk-badge-menunggu, .kk-badge-disetujui, .kk-badge-ditolak {
+    font-weight: 600;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    display: inline-block;
+}
+
+/* ---------- Cards ringkas dashboard ---------- */
+.kk-stat-card {
+    border: 1px solid var(--kk-border);
+    border-radius: 0.75rem;
+    background: #fff;
+    padding: 1.25rem;
+}
+
+.kk-stat-card .kk-stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.kk-stat-card .kk-stat-label {
+    font-size: 0.82rem;
+    color: #6b7280;
+}
+
+.kk-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 0.6rem;
+    background-color: var(--kk-accent-soft);
+    color: var(--kk-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+/* ---------- Auth ---------- */
+.kk-auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--kk-sidebar-bg);
+    background-image: radial-gradient(circle at 20% 20%, rgba(15, 118, 110, 0.35), transparent 45%);
+}
+
+.kk-auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 1rem;
+    padding: 2.25rem 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
