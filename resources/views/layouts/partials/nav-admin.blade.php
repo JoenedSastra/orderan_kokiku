@@ -20,6 +20,11 @@
 <a href="{{ route('admin.stock_in.index') }}" class="nav-link {{ request()->routeIs('admin.stock_in.*') ? 'active' : '' }}">
     <i class="bi bi-truck-flatbed"></i> Barang Masuk Gudang
 </a>
+
+<a href="{{ route('admin.stock_kitchen.index') }}" class="nav-link {{ request()->routeIs('admin.stock_kitchen.*') ? 'active' : '' }}">
+    <i class="bi bi-calendar3"></i> Stock Kitchen Harian
+</a>
+
 <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
     <i class="bi bi-clipboard-check"></i> Permintaan Barang
     @php $pending = \App\Models\Order::where('status','menunggu')->count(); @endphp

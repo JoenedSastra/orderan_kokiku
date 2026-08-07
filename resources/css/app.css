@@ -394,3 +394,26 @@ body {
         font-size: 1.25rem;
     }
 }
+
+/* ---------- Notifikasi ---------- */
+.kk-notif-dropdown .dropdown-menu {
+    width: 320px;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.kk-notif-dropdown form {
+    margin: 0;
+}
+
+.kk-notif-dropdown .dropdown-item {
+    width: 100%;
+    text-align: left;
+    white-space: normal;
+    border: none;
+    background: none;
+}
+
+.kk-notif-unread {
+    background-color: #f0fdfa;
+}

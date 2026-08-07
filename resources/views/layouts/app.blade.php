@@ -61,6 +61,8 @@
 
             <div class="kk-topbar-actions">
                 @auth
+                    @include('layouts.partials.notifications-dropdown')
+
                     <div class="text-end kk-user-name">
                         <div class="fw-semibold" style="font-size: 0.88rem; line-height:1.2">{{ auth()->user()->name }}</div>
                         <div class="text-muted" style="font-size: 0.74rem;">{{ auth()->user()->role?->name }}</div>

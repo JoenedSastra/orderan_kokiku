@@ -5,15 +5,18 @@ use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\StockInController as AdminStockInController;
+use App\Http\Controllers\Admin\StockKitchenReportController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Kasir\OrderController as KasirOrderController;
 use App\Http\Controllers\Kasir\StockInController as KasirStockInController;
 use App\Http\Controllers\Kasir\StockOutController as KasirStockOutController;
 use App\Http\Controllers\Kitchen\OrderController as KitchenOrderController;
 use App\Http\Controllers\Kitchen\StockInController as KitchenStockInController;
+use App\Http\Controllers\Kitchen\StockHarianController;
 use App\Http\Controllers\Kitchen\StockOutController as KitchenStockOutController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +37,8 @@ Route::middleware('guest')->group(function () {
 // ==============================
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
     // ---- Admin ----
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
@@ -47,6 +52,7 @@ Route::middleware('auth')->group(function () {
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::get('/stock-kitchen', [StockKitchenReportController::class, 'index'])->name('stock_kitchen.index');
 
         // Barang Masuk Gudang (admin)
         Route::get('/stock-masuk',        [AdminStockInController::class, 'index'])->name('stock_in.index');
@@ -81,6 +87,7 @@ Route::middleware('auth')->group(function () {
     // ---- Kitchen (Dapur) ----
     Route::middleware('role:kitchen')->prefix('kitchen')->name('kitchen.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kitchen'])->name('dashboard');
+        Route::get('/stock-harian', [StockHarianController::class, 'index'])->name('stock_harian.index');
 
         Route::get('/stock-masuk',        [KitchenStockInController::class,  'index'])->name('stock_in.index');
         Route::get('/stock-masuk/tambah', [KitchenStockInController::class,  'create'])->name('stock_in.create');

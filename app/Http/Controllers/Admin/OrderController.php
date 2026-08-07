@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\StockIn;
 use App\Models\StockOut;
+use App\Notifications\OrderApprovedNotification;
+use App\Notifications\OrderRejectedNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +73,10 @@ class OrderController extends Controller
             ]);
         });
 
+        $order->user->notify(new OrderApprovedNotification($order));
+
+        $order->user->notify(new OrderApprovedNotification($order));
+
         return back()->with('success', 'Permintaan #' . $order->id . ' disetujui. Barang dipindah dari Gudang ke Restoran.');
     }
 
@@ -88,6 +94,8 @@ class OrderController extends Controller
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
+
+        $order->user->notify(new OrderRejectedNotification($order));
 
         return back()->with('success', 'Permintaan #' . $order->id . ' ditolak.');
     }

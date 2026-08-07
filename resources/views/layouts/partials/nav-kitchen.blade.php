@@ -10,6 +10,10 @@
     <i class="bi bi-box-arrow-up"></i> Stock Barang Keluar
 </a>
 
+<a href="{{ route('kitchen.stock_harian.index') }}" class="nav-link {{ request()->routeIs('kitchen.stock_harian.*') ? 'active' : '' }}">
+    <i class="bi bi-calendar3"></i> Stock Harian
+</a>
+
 <div class="kk-sidebar-section-label">Permintaan</div>
 <a href="{{ route('kitchen.orders.index') }}" class="nav-link {{ request()->routeIs('kitchen.orders.*') ? 'active' : '' }}">
     <i class="bi bi-clipboard-plus"></i> Order Barang

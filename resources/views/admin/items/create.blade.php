@@ -24,7 +24,7 @@
             <div class="col-3">
                 <label class="form-label">Satuan <span class="text-danger">*</span></label>
                 <select name="unit" class="form-select @error('unit') is-invalid @enderror">
-                    @foreach(['Pcs','Kg','Liter','Box','Pack','Lusin','Ikat','Botol','Karton','Gram'] as $u)
+                    @foreach(['Pcs','Buah','Botol','Kaleng','Pack','Bungkus','Gram','Kg','Ons','Ml','Liter','Box','Lusin','Ikat','Karton'] as $u)
                     <option value="{{ $u }}" {{ old('unit','Pcs') == $u ? 'selected' : '' }}>{{ $u }}</option>
                     @endforeach
                 </select>

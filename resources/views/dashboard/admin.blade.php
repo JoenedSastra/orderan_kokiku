@@ -118,7 +118,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="fw-semibold">Grafik Bulanan</div>
     <select id="chartYear" class="form-select form-select-sm" style="width:auto;">
-        @for ($y = now()->year; $y >= now()->year - 3; $y--)
+        @for ($y = now()->year; $y >= 2026; $y--)
             <option value="{{ $y }}" {{ $y === now()->year ? 'selected' : '' }}>{{ $y }}</option>
         @endfor
     </select>

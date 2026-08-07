@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Kasir;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Order;
+use App\Models\Role;
+use App\Models\User;
+use App\Notifications\NewOrderNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 class OrderController extends Controller
@@ -35,13 +39,16 @@ class OrderController extends Controller
             'keterangan' => 'nullable|string|max:255',
         ]);
 
-        Order::create([
+        $order = Order::create([
             'item_id'    => $request->item_id,
             'user_id'    => Auth::id(),
             'quantity'   => $request->quantity,
             'keterangan' => $request->keterangan,
             'status'     => Order::STATUS_MENUNGGU,
         ]);
+
+        $admins = User::whereHas('role', fn ($q) => $q->where('slug', Role::ADMIN))->get();
+        Notification::send($admins, new NewOrderNotification($order));
 
         return redirect()->route('kasir.orders.index')->with('success', 'Permintaan barang berhasil dikirim ke Admin.');
     }
