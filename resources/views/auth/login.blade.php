@@ -1,49 +1,134 @@
 @extends('layouts.guest')
-
-@section('title', 'Login')
+@section('title', 'Masuk')
 
 @section('content')
 <div class="kk-auth-wrapper">
-    <div class="kk-auth-card">
-        <div class="text-center mb-4">
-            <div class="fw-bold fs-4">Orderan Kokiku</div>
-            <div class="text-muted" style="font-size: 0.85rem;">Sistem Order Barang Internal</div>
+
+    {{-- LEFT PANEL --}}
+    <div class="kk-auth-left">
+        {{-- Brand --}}
+        <div class="kk-auth-brand">
+            <div class="kk-auth-brand-icon">
+                <i class="bi bi-fire"></i>
+            </div>
+            <div>
+                <div class="kk-auth-brand-name">Orderan Kokiku</div>
+                <div class="kk-auth-brand-sub">Inventory System</div>
+            </div>
         </div>
 
-        @if ($errors->any())
-            <div class="alert alert-danger py-2" style="font-size: 0.88rem;">
-                @foreach ($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
+        {{-- Headline --}}
+        <h1 class="kk-auth-headline">
+            Kelola Stok<br>
+            <span>Dapur Anda</span><br>
+            dengan Mudah
+        </h1>
+
+        <p class="kk-auth-sub">
+            Platform manajemen inventaris khusus untuk operasional dapur dan restoran
+            — real-time, cepat, dan andal.
+        </p>
+
+        {{-- Feature List --}}
+        <div class="kk-auth-features">
+            <div class="kk-auth-feature">
+                <div class="kk-auth-feature-icon"><i class="bi bi-layers"></i></div>
+                Manajemen stok barang multi-lokasi
             </div>
-        @endif
-
-        <form method="POST" action="{{ route('login') }}">
-            @csrf
-
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" name="email" value="{{ old('email') }}"
-                       class="form-control @error('email') is-invalid @enderror"
-                       required autofocus>
+            <div class="kk-auth-feature">
+                <div class="kk-auth-feature-icon"><i class="bi bi-clipboard-check"></i></div>
+                Sistem permintaan & persetujuan barang
             </div>
-
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password"
-                       class="form-control @error('password') is-invalid @enderror"
-                       required>
+            <div class="kk-auth-feature">
+                <div class="kk-auth-feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                Laporan & grafik aktivitas bulanan
             </div>
-
-            <div class="mb-3 form-check">
-                <input type="checkbox" name="remember" id="remember" class="form-check-input">
-                <label for="remember" class="form-check-label" style="font-size: 0.88rem;">Ingat saya</label>
+            <div class="kk-auth-feature">
+                <div class="kk-auth-feature-icon"><i class="bi bi-bell"></i></div>
+                Notifikasi real-time antar divisi
             </div>
+        </div>
+    </div>
 
-            <button type="submit" class="btn w-100 text-white" style="background-color: var(--kk-accent);">
-                Masuk
-            </button>
-        </form>
+    {{-- RIGHT PANEL (Form) --}}
+    <div class="kk-auth-right">
+        <div class="kk-auth-form-wrap">
+
+            <div class="kk-auth-form-title">Selamat Datang 👋</div>
+            <div class="kk-auth-form-sub">Masuk ke akun Anda untuk melanjutkan</div>
+
+            @if ($errors->any())
+                <div class="alert alert-danger py-2 mb-4" style="font-size:0.85rem;">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    @foreach ($errors->all() as $error)
+                        <div>{{ $error }}</div>
+                    @endforeach
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('login') }}">
+                @csrf
+
+                <div class="kk-form-group">
+                    <label for="email">Alamat Email</label>
+                    <input type="email" id="email" name="email"
+                           value="{{ old('email') }}"
+                           class="form-control @error('email') is-invalid @enderror"
+                           placeholder="nama@email.com"
+                           required autofocus>
+                </div>
+
+                <div class="kk-form-group">
+                    <label for="password">Password</label>
+                    <div class="kk-pw-wrap">
+                        <input type="password" id="password" name="password"
+                               class="form-control @error('password') is-invalid @enderror"
+                               placeholder="••••••••"
+                               required>
+                        <button type="button" class="kk-pw-toggle" id="pwToggle" aria-label="Tampilkan password">
+                            <i class="bi bi-eye" id="pwToggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-4" style="font-size:0.84rem;">
+                    <div class="form-check mb-0">
+                        <input type="checkbox" name="remember" id="remember" class="form-check-input">
+                        <label for="remember" class="form-check-label text-muted">Ingat saya</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="kk-btn-login" id="loginBtn">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Masuk Sekarang
+                </button>
+            </form>
+
+            <div class="text-center mt-4" style="font-size:0.78rem; color:var(--kk-text-light);">
+                &copy; {{ date('Y') }} Orderan Kokiku &mdash; Sistem Inventory Internal
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+// Password toggle
+document.getElementById('pwToggle').addEventListener('click', function () {
+    const pw   = document.getElementById('password');
+    const icon = document.getElementById('pwToggleIcon');
+    if (pw.type === 'password') {
+        pw.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        pw.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+});
+
+// Loading state on submit
+document.querySelector('form').addEventListener('submit', function () {
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+    btn.disabled = true;
+});
+</script>
 @endsection
