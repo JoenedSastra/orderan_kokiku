@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
     // ---- Admin ----
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+        Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->name('dashboard.chart-data');
 
         // Master Data
         Route::resource('categories', CategoryController::class);

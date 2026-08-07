@@ -9,12 +9,42 @@
     <div class="col-6 col-lg-3">
         <div class="kk-stat-card d-flex align-items-start justify-content-between">
             <div>
+                <div class="kk-stat-value">{{ $totalBarang }}</div>
+                <div class="kk-stat-label">Total Barang</div>
+            </div>
+            <div class="kk-stat-icon"><i class="bi bi-box-seam"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kk-stat-card d-flex align-items-start justify-content-between">
+            <div>
+                <div class="kk-stat-value text-success">{{ $masukHariIni }}</div>
+                <div class="kk-stat-label">Barang Masuk Hari Ini</div>
+            </div>
+            <div class="kk-stat-icon"><i class="bi bi-box-arrow-in-down"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kk-stat-card d-flex align-items-start justify-content-between">
+            <div>
+                <div class="kk-stat-value text-danger">{{ $keluarHariIni }}</div>
+                <div class="kk-stat-label">Barang Keluar Hari Ini</div>
+            </div>
+            <div class="kk-stat-icon"><i class="bi bi-box-arrow-up"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kk-stat-card d-flex align-items-start justify-content-between">
+            <div>
                 <div class="kk-stat-value text-warning">{{ $permintaanMenunggu }}</div>
                 <div class="kk-stat-label">Permintaan Menunggu</div>
             </div>
             <div class="kk-stat-icon"><i class="bi bi-hourglass-split"></i></div>
         </div>
     </div>
+</div>
+
+<div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
         <div class="kk-stat-card d-flex align-items-start justify-content-between">
             <div>
@@ -27,24 +57,33 @@
     <div class="col-6 col-lg-3">
         <div class="kk-stat-card d-flex align-items-start justify-content-between">
             <div>
-                <div class="kk-stat-value">{{ $totalBarang }}</div>
-                <div class="kk-stat-label">Total Master Barang</div>
+                <div class="kk-stat-value text-success">{{ $permintaanDisetujui }}</div>
+                <div class="kk-stat-label">Permintaan Disetujui</div>
             </div>
-            <div class="kk-stat-icon"><i class="bi bi-box-seam"></i></div>
+            <div class="kk-stat-icon"><i class="bi bi-check-circle"></i></div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
         <div class="kk-stat-card d-flex align-items-start justify-content-between">
             <div>
-                <div class="kk-stat-value">{{ $totalUser }}</div>
-                <div class="kk-stat-label">Total User Aktif</div>
+                <div class="kk-stat-value text-danger">{{ $permintaanDitolak }}</div>
+                <div class="kk-stat-label">Permintaan Ditolak</div>
             </div>
-            <div class="kk-stat-icon"><i class="bi bi-people"></i></div>
+            <div class="kk-stat-icon"><i class="bi bi-x-circle"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="kk-stat-card d-flex align-items-start justify-content-between">
+            <div>
+                <div class="kk-stat-value">{{ $totalSupplier }}</div>
+                <div class="kk-stat-label">Total Supplier</div>
+            </div>
+            <div class="kk-stat-icon"><i class="bi bi-truck"></i></div>
         </div>
     </div>
 </div>
 
-<div class="kk-stat-card">
+<div class="kk-stat-card mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="fw-semibold">Permintaan Barang Terbaru</div>
         <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary">Lihat Semua</a>
@@ -76,48 +115,85 @@
     @endif
 </div>
 
-<div class="kk-stat-card mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="fw-semibold">Grafik Barang Masuk &amp; Keluar</div>
-        <span class="text-muted" style="font-size:0.8rem;">7 hari terakhir</span>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="fw-semibold">Grafik Bulanan</div>
+    <select id="chartYear" class="form-select form-select-sm" style="width:auto;">
+        @for ($y = now()->year; $y >= now()->year - 3; $y--)
+            <option value="{{ $y }}" {{ $y === now()->year ? 'selected' : '' }}>{{ $y }}</option>
+        @endfor
+    </select>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="kk-stat-card">
+            <div class="fw-semibold mb-3" style="font-size:0.88rem;">Barang Masuk (per bulan)</div>
+            <canvas id="chartMasukBulanan" height="200"></canvas>
+        </div>
     </div>
-    <canvas id="chartStokMasukKeluar" height="90"></canvas>
+    <div class="col-lg-4">
+        <div class="kk-stat-card">
+            <div class="fw-semibold mb-3" style="font-size:0.88rem;">Barang Keluar (per bulan)</div>
+            <canvas id="chartKeluarBulanan" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="kk-stat-card">
+            <div class="fw-semibold mb-3" style="font-size:0.88rem;">Permintaan (per bulan)</div>
+            <canvas id="chartPermintaanBulanan" height="200"></canvas>
+        </div>
+    </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('chartStokMasukKeluar');
+        const endpointUrl = '{{ route('admin.dashboard.chart-data') }}';
+        const yearSelect  = document.getElementById('chartYear');
 
-        new window.Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: @json($chartLabels),
-                datasets: [
-                    {
-                        label: 'Barang Masuk',
-                        data: @json($chartMasuk),
-                        backgroundColor: '#0f766e',
-                        borderRadius: 6,
-                        maxBarThickness: 32,
-                    },
-                    {
-                        label: 'Barang Keluar',
-                        data: @json($chartKeluar),
-                        backgroundColor: '#dc2626',
-                        borderRadius: 6,
-                        maxBarThickness: 32,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' },
+        let chartMasuk, chartKeluar, chartPermintaan;
+
+        function buildChart(canvasId, label, data, labels, color) {
+            const ctx = document.getElementById(canvasId);
+            return new window.Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: color,
+                        borderRadius: 5,
+                        maxBarThickness: 26,
+                    }],
                 },
-                scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
                 },
-            },
+            });
+        }
+
+        function loadChartData(year) {
+            fetch(endpointUrl + '?year=' + year)
+                .then(res => res.json())
+                .then(json => {
+                    if (chartMasuk) chartMasuk.destroy();
+                    if (chartKeluar) chartKeluar.destroy();
+                    if (chartPermintaan) chartPermintaan.destroy();
+
+                    chartMasuk      = buildChart('chartMasukBulanan', 'Barang Masuk', json.masuk, json.labels, '#0f766e');
+                    chartKeluar     = buildChart('chartKeluarBulanan', 'Barang Keluar', json.keluar, json.labels, '#dc2626');
+                    chartPermintaan = buildChart('chartPermintaanBulanan', 'Permintaan', json.permintaan, json.labels, '#d97706');
+                })
+                .catch(() => {
+                    console.error('Gagal memuat data grafik.');
+                });
+        }
+
+        loadChartData(yearSelect.value);
+        yearSelect.addEventListener('change', function () {
+            loadChartData(this.value);
         });
     });
 </script>
