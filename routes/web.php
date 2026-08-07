@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\StockInController as AdminStockInController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -45,6 +46,12 @@ Route::middleware('auth')->group(function () {
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+
+        // Barang Masuk Gudang (admin)
+        Route::get('/stock-masuk',        [AdminStockInController::class, 'index'])->name('stock_in.index');
+        Route::get('/stock-masuk/tambah', [AdminStockInController::class, 'create'])->name('stock_in.create');
+        Route::post('/stock-masuk',       [AdminStockInController::class, 'store'])->name('stock_in.store');
+
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{order}/approve', [AdminOrderController::class, 'approve'])->name('orders.approve');
         Route::post('/orders/{order}/reject',  [AdminOrderController::class, 'reject'])->name('orders.reject');

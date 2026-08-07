@@ -10,7 +10,13 @@ class StockOut extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['item_id', 'user_id', 'quantity', 'keterangan', 'tanggal'];
+    public const LOCATION_GUDANG   = 'gudang';
+    public const LOCATION_RESTORAN = 'restoran';
+
+    protected $fillable = [
+        'item_id', 'user_id',
+        'quantity', 'keterangan', 'tanggal', 'location',
+    ];
 
     protected $casts = [
         'tanggal' => 'date',

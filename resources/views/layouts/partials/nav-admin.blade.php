@@ -17,6 +17,9 @@
 <a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}">
     <i class="bi bi-layers"></i> Stock Barang
 </a>
+<a href="{{ route('admin.stock_in.index') }}" class="nav-link {{ request()->routeIs('admin.stock_in.*') ? 'active' : '' }}">
+    <i class="bi bi-truck-flatbed"></i> Barang Masuk Gudang
+</a>
 <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
     <i class="bi bi-clipboard-check"></i> Permintaan Barang
     @php $pending = \App\Models\Order::where('status','menunggu')->count(); @endphp

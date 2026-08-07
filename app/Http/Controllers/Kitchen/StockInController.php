@@ -40,6 +40,7 @@ class StockInController extends Controller
             'item_id'    => $request->item_id,
             'user_id'    => Auth::id(),
             'quantity'   => $request->quantity,
+            'location'   => StockIn::LOCATION_RESTORAN,
             'keterangan' => $request->keterangan,
             'tanggal'    => $request->tanggal,
         ]);

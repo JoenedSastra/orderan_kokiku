@@ -34,19 +34,36 @@ class Item extends Model
     }
 
     /**
+     * Stok Gudang = masuk lokasi gudang - keluar lokasi gudang.
+     */
+    public function stokGudang(): int
+    {
+        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_GUDANG)->sum('quantity');
+        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_GUDANG)->sum('quantity');
+        return max(0, $masuk - $keluar);
+    }
+
+    /**
+     * Stok Restoran = masuk lokasi restoran - keluar lokasi restoran.
+     */
+    public function stokRestoran(): int
+    {
+        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_RESTORAN)->sum('quantity');
+        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_RESTORAN)->sum('quantity');
+        return max(0, $masuk - $keluar);
+    }
+
+    /**
      * Hitung stok saat ini untuk user tertentu (berdasarkan role/lokasi).
-     * Stok = total masuk - total keluar dari user dengan role yang sama.
      */
     public function currentStockForRole(string $roleSlug): int
     {
-        $masuk = $this->stockIns()
-            ->whereHas('user.role', fn ($q) => $q->where('slug', $roleSlug))
-            ->sum('quantity');
+        $location = ($roleSlug === Role::ADMIN)
+            ? StockIn::LOCATION_GUDANG
+            : StockIn::LOCATION_RESTORAN;
 
-        $keluar = $this->stockOuts()
-            ->whereHas('user.role', fn ($q) => $q->where('slug', $roleSlug))
-            ->sum('quantity');
-
+        $masuk  = $this->stockIns()->where('location', $location)->sum('quantity');
+        $keluar = $this->stockOuts()->where('location', $location)->sum('quantity');
         return max(0, $masuk - $keluar);
     }
 }

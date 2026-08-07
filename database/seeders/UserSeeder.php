@@ -12,26 +12,31 @@ class UserSeeder extends Seeder
     /**
      * Run the database seeds.
      *
-     * Membuat 1 user default untuk masing-masing role supaya bisa langsung
-     * dipakai untuk testing login. Password default: "password".
+     * Password per role:
+     *   admin   → kokiku12
+     *   kasir   → kokiku08
+     *   kitchen → kokiku05
      */
     public function run(): void
     {
         $users = [
             [
-                'name' => 'Administrator',
-                'email' => 'admin@kokiku.test',
+                'name'      => 'Administrator',
+                'email'     => 'admin@kokiku.test',
                 'role_slug' => Role::ADMIN,
+                'password'  => 'kokiku12',
             ],
             [
-                'name' => 'Kasir Depan',
-                'email' => 'kasir@kokiku.test',
+                'name'      => 'Kasir Depan',
+                'email'     => 'kasir@kokiku.test',
                 'role_slug' => Role::KASIR,
+                'password'  => 'kokiku08',
             ],
             [
-                'name' => 'Staff Dapur',
-                'email' => 'kitchen@kokiku.test',
+                'name'      => 'Staff Dapur',
+                'email'     => 'kitchen@kokiku.test',
                 'role_slug' => Role::KITCHEN,
+                'password'  => 'kokiku05',
             ],
         ];
 
@@ -41,9 +46,9 @@ class UserSeeder extends Seeder
             User::updateOrCreate(
                 ['email' => $data['email']],
                 [
-                    'name' => $data['name'],
-                    'password' => Hash::make('password'),
-                    'role_id' => $role?->id,
+                    'name'              => $data['name'],
+                    'password'          => Hash::make($data['password']),
+                    'role_id'           => $role?->id,
                     'email_verified_at' => now(),
                 ]
             );

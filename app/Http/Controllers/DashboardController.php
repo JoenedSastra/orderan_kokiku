@@ -31,8 +31,22 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Data grafik: total barang masuk & keluar per hari, 7 hari terakhir
+        $chartLabels = [];
+        $chartMasuk  = [];
+        $chartKeluar = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+
+            $chartLabels[] = now()->subDays($i)->translatedFormat('d M');
+            $chartMasuk[]  = (int) StockIn::whereDate('tanggal', $date)->sum('quantity');
+            $chartKeluar[] = (int) StockOut::whereDate('tanggal', $date)->sum('quantity');
+        }
+
         return view('dashboard.admin', compact(
-            'user', 'permintaanMenunggu', 'totalBarang', 'totalUser', 'stokRendah', 'ordersRecent'
+            'user', 'permintaanMenunggu', 'totalBarang', 'totalUser', 'stokRendah', 'ordersRecent',
+            'chartLabels', 'chartMasuk', 'chartKeluar'
         ));
     }
 

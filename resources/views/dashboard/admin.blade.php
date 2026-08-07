@@ -75,4 +75,50 @@
         </div>
     @endif
 </div>
+
+<div class="kk-stat-card mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="fw-semibold">Grafik Barang Masuk &amp; Keluar</div>
+        <span class="text-muted" style="font-size:0.8rem;">7 hari terakhir</span>
+    </div>
+    <canvas id="chartStokMasukKeluar" height="90"></canvas>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('chartStokMasukKeluar');
+
+        new window.Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: @json($chartLabels),
+                datasets: [
+                    {
+                        label: 'Barang Masuk',
+                        data: @json($chartMasuk),
+                        backgroundColor: '#0f766e',
+                        borderRadius: 6,
+                        maxBarThickness: 32,
+                    },
+                    {
+                        label: 'Barang Keluar',
+                        data: @json($chartKeluar),
+                        backgroundColor: '#dc2626',
+                        borderRadius: 6,
+                        maxBarThickness: 32,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } },
+                },
+            },
+        });
+    });
+</script>
 @endsection
