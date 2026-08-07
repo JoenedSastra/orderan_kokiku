@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\StockInController as AdminStockInController;
 use App\Http\Controllers\Admin\StockKitchenReportController;
@@ -65,6 +66,10 @@ Route::middleware('auth')->group(function () {
 
         // Users
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        // Laporan
+        Route::get('/laporan', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/laporan/pdf', [ReportController::class, 'exportPdf'])->name('reports.pdf');
+        Route::get('/laporan/excel', [ReportController::class, 'exportExcel'])->name('reports.excel');
     });
 
     // ---- Kasir (Front) ----

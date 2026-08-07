@@ -37,3 +37,7 @@
 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
     <i class="bi bi-people"></i> User
 </a>
+
+<a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+    <i class="bi bi-file-earmark-bar-graph"></i> Laporan
+</a>
