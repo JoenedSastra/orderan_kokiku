@@ -11,7 +11,16 @@ class Item extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category_id', 'unit', 'min_stock', 'description'];
+    public const MASTER_GUDANG_UTAMA = 'gudang_utama';
+    public const MASTER_GUDANG_RESTO = 'gudang_resto';
+    public const MASTER_KASIR        = 'kasir';
+    public const MASTER_KITCHEN      = 'kitchen';
+
+    protected $fillable = ['name', 'category_id', 'master_location', 'unit', 'min_stock', 'description'];
+
+    protected $casts = [
+        'min_stock' => 'integer',
+    ];
 
     public function category(): BelongsTo
     {
@@ -54,38 +63,23 @@ class Item extends Model
     }
 
     /**
-     * Stok Kasir = stok Restoran, hanya dihitung jika kategori barang ini
-     * "milik" Kasir atau Umum (dipakai bersama).
+     * Stok Kasir = stok Restoran, hanya jika master_location barang ini = Kasir.
      */
     public function stokKasir(): int
     {
-        $usedBy = $this->category?->used_by;
-
-        if ($usedBy === Category::USED_BY_KASIR || $usedBy === Category::USED_BY_UMUM) {
-            return $this->stokRestoran();
-        }
-
-        return 0;
+        return $this->master_location === self::MASTER_KASIR ? $this->stokRestoran() : 0;
     }
 
     /**
-     * Stok Kitchen = stok Restoran, hanya dihitung jika kategori barang ini
-     * "milik" Kitchen atau Umum (dipakai bersama).
+     * Stok Kitchen = stok Restoran, hanya jika master_location barang ini = Kitchen.
      */
     public function stokKitchen(): int
     {
-        $usedBy = $this->category?->used_by;
-
-        if ($usedBy === Category::USED_BY_KITCHEN || $usedBy === Category::USED_BY_UMUM) {
-            return $this->stokRestoran();
-        }
-
-        return 0;
+        return $this->master_location === self::MASTER_KITCHEN ? $this->stokRestoran() : 0;
     }
 
     /**
      * Ambil nilai stok sesuai kunci lokasi ('gudang', 'resto', 'kasir', 'kitchen').
-     * Dipakai supaya tampilan Stock Barang bisa generik per-tab lokasi.
      */
     public function stokByLocation(string $locationKey): int
     {
@@ -95,6 +89,29 @@ class Item extends Model
             'kasir'   => $this->stokKasir(),
             'kitchen' => $this->stokKitchen(),
             default   => 0,
+        };
+    }
+
+    /**
+     * Total Stock yang relevan untuk master_location barang ini:
+     * - Gudang Utama -> stok Gudang
+     * - Gudang Resto / Kasir / Kitchen -> stok Restoran
+     */
+    public function totalStock(): int
+    {
+        return $this->master_location === self::MASTER_GUDANG_UTAMA
+            ? $this->stokGudang()
+            : $this->stokRestoran();
+    }
+
+    public function masterLocationLabel(): string
+    {
+        return match ($this->master_location) {
+            self::MASTER_GUDANG_UTAMA => 'Gudang Utama',
+            self::MASTER_GUDANG_RESTO => 'Gudang Resto',
+            self::MASTER_KASIR        => 'Kasir',
+            self::MASTER_KITCHEN      => 'Kitchen',
+            default                   => '-',
         };
     }
 

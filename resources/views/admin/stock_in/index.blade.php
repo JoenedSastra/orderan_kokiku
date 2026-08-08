@@ -11,7 +11,7 @@
     <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead class="table-light">
-                <tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Supplier</th><th>Keterangan</th><th>Dicatat Oleh</th></tr>
+                <tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Supplier</th><th>Master Barang</th><th>Keterangan</th><th>Dicatat Oleh</th></tr>
             </thead>
             <tbody>
                 @forelse($stockIns as $s)
@@ -20,11 +20,18 @@
                     <td>{{ $s->item->name }}</td>
                     <td>{{ $s->quantity }} {{ $s->item->unit }}</td>
                     <td>{{ $s->supplier->name ?? '-' }}</td>
-                    <td>{{ $s->keterangan ?? '-' }}</td>
+                    <td><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
+                    <td>
+                        @if($s->is_completed)
+                            <i class="bi bi-check-circle-fill text-success" title="Selesai"></i>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </td>
                     <td>{{ $s->user->name }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="6" class="text-center text-muted py-3">Belum ada catatan barang masuk gudang.</td></tr>
+                <tr><td colspan="7" class="text-center text-muted py-3">Belum ada catatan barang masuk gudang.</td></tr>
                 @endforelse
             </tbody>
         </table>

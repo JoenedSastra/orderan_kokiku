@@ -44,12 +44,18 @@ class ItemSeeder extends Seeder
         foreach ($items as $data) {
             $category = Category::where('name', $data['category'])->first();
 
+            $masterLocation = match ($data['category']) {
+                'Perlengkapan' => Item::MASTER_KASIR,
+                default        => Item::MASTER_KITCHEN,
+            };
+
             Item::updateOrCreate(
                 ['name' => $data['name']],
                 [
-                    'category_id' => $category?->id,
-                    'unit'        => $data['unit'],
-                    'min_stock'   => $data['min_stock'],
+                    'category_id'     => $category?->id,
+                    'master_location' => $masterLocation,
+                    'unit'            => $data['unit'],
+                    'min_stock'       => $data['min_stock'],
                 ]
             );
         }

@@ -3,61 +3,36 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Master Barang — sekarang read-only + hapus saja. Barang baru masuk
+ * otomatis lewat form "Barang Masuk Gudang" (Admin\StockInController),
+ * dikelompokkan ke salah satu dari 4 Master Barang berdasarkan pilihan
+ * Admin saat itu: Gudang Utama, Gudang Resto, Kasir, atau Kitchen.
+ */
 class ItemController extends Controller
 {
     public function index(): View
     {
-        $items = Item::with('category')->latest()->paginate(15);
-        return view('admin.items.index', compact('items'));
-    }
+        $items = Item::orderBy('name')->get();
 
-    public function create(): View
-    {
-        $categories = Category::orderBy('name')->get();
-        return view('admin.items.create', compact('categories'));
-    }
+        $grouped = [
+            'gudang_utama' => $items->where('master_location', Item::MASTER_GUDANG_UTAMA)->values(),
+            'gudang_resto' => $items->where('master_location', Item::MASTER_GUDANG_RESTO)->values(),
+            'kasir'        => $items->where('master_location', Item::MASTER_KASIR)->values(),
+            'kitchen'      => $items->where('master_location', Item::MASTER_KITCHEN)->values(),
+        ];
 
-    public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'name'        => 'required|string|max:150',
-            'category_id' => 'nullable|exists:categories,id',
-            'unit'        => 'required|string|max:30',
-            'min_stock'   => 'required|integer|min:0',
-            'description' => 'nullable|string|max:500',
-        ]);
-        Item::create($request->only('name', 'category_id', 'unit', 'min_stock', 'description'));
-        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil ditambahkan.');
-    }
-
-    public function edit(Item $item): View
-    {
-        $categories = Category::orderBy('name')->get();
-        return view('admin.items.edit', compact('item', 'categories'));
-    }
-
-    public function update(Request $request, Item $item): RedirectResponse
-    {
-        $request->validate([
-            'name'        => 'required|string|max:150',
-            'category_id' => 'nullable|exists:categories,id',
-            'unit'        => 'required|string|max:30',
-            'min_stock'   => 'required|integer|min:0',
-            'description' => 'nullable|string|max:500',
-        ]);
-        $item->update($request->only('name', 'category_id', 'unit', 'min_stock', 'description'));
-        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil diperbarui.');
+        return view('admin.items.index', compact('grouped'));
     }
 
     public function destroy(Item $item): RedirectResponse
     {
         $item->delete();
+
         return redirect()->route('admin.items.index')->with('success', 'Barang berhasil dihapus.');
     }
 }

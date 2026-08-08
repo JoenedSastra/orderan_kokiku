@@ -15,11 +15,12 @@ class StockIn extends Model
 
     protected $fillable = [
         'item_id', 'user_id', 'supplier_id',
-        'quantity', 'keterangan', 'tanggal', 'location',
+        'quantity', 'keterangan', 'is_completed', 'tanggal', 'location',
     ];
 
     protected $casts = [
-        'tanggal' => 'date',
+        'tanggal'      => 'date',
+        'is_completed' => 'boolean',
     ];
 
     public function item(): BelongsTo

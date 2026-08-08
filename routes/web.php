@@ -49,7 +49,8 @@ Route::middleware('auth')->group(function () {
         // Master Data
         Route::resource('categories', CategoryController::class);
         Route::resource('suppliers',  SupplierController::class);
-        Route::resource('items',      ItemController::class);
+        Route::get('/items', [ItemController::class, 'index'])->name('items.index');
+        Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
