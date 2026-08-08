@@ -6,13 +6,13 @@
 
     <ul class="nav nav-pills mb-3">
         <li class="nav-item">
-            <a class="nav-link active" data-bs-toggle="tab" href="#lokasi-gudang">
+            <a class="nav-link active" data-bs-toggle="tab" href="#lokasi-gudang-utama">
                 <i class="bi bi-building"></i> Gudang Utama
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#lokasi-resto">
-                <i class="bi bi-shop"></i> Resto
+            <a class="nav-link" data-bs-toggle="tab" href="#lokasi-gudang-resto">
+                <i class="bi bi-shop"></i> Gudang Resto
             </a>
         </li>
         <li class="nav-item">
@@ -28,41 +28,38 @@
     </ul>
 
     <div class="tab-content">
-        {{-- ==== GUDANG UTAMA (semua kategori) ==== --}}
-        <div class="tab-pane fade show active" id="lokasi-gudang">
-            @include('admin.stock.partials.ringkasan-tabel', [
-                'categories'   => $categories,
-                'locationKey'  => 'gudang',
-                'prefix'       => 'gudang',
-            ])
+        @foreach($grouped as $key => $groupItems)
+        <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="lokasi-{{ str_replace('_', '-', $key) }}">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Barang</th>
+                            <th>Satuan</th>
+                            <th class="text-end">Total Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($groupItems as $item)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td class="fw-semibold">{{ $item->name }}</td>
+                            <td>{{ $item->unit }}</td>
+                            <td class="text-end">
+                                <span class="badge {{ $item->totalStock() <= $item->min_stock ? 'bg-danger' : 'bg-primary' }}">
+                                    {{ $item->totalStock() }}
+                                </span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="4" class="text-center text-muted py-3">Belum ada barang di bagian ini.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        {{-- ==== RESTO / TOTAL (semua kategori) ==== --}}
-        <div class="tab-pane fade" id="lokasi-resto">
-            @include('admin.stock.partials.ringkasan-tabel', [
-                'categories'   => $categories,
-                'locationKey'  => 'resto',
-                'prefix'       => 'resto',
-            ])
-        </div>
-
-        {{-- ==== KASIR (hanya kategori milik Kasir / Umum) ==== --}}
-        <div class="tab-pane fade" id="lokasi-kasir">
-            @include('admin.stock.partials.ringkasan-tabel', [
-                'categories'   => $categories->filter(fn ($c) => $c->used_by !== 'kitchen')->values(),
-                'locationKey'  => 'kasir',
-                'prefix'       => 'kasir',
-            ])
-        </div>
-
-        {{-- ==== KITCHEN (hanya kategori milik Kitchen / Umum) ==== --}}
-        <div class="tab-pane fade" id="lokasi-kitchen">
-            @include('admin.stock.partials.ringkasan-tabel', [
-                'categories'   => $categories->filter(fn ($c) => $c->used_by !== 'kasir')->values(),
-                'locationKey'  => 'kitchen',
-                'prefix'       => 'kitchen',
-            ])
-        </div>
+        @endforeach
     </div>
 </div>
 

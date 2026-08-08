@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Item;
+use App\Models\Role;
 use App\Models\StockIn;
 use App\Models\Supplier;
 use Illuminate\Http\RedirectResponse;
@@ -21,8 +22,13 @@ class StockInController extends Controller
 {
     public function index(): View
     {
+        // Tampilkan semua barang masuk yang dicatat Admin lewat form ini,
+        // apapun Master Barang tujuannya (Gudang Utama/Resto/Kasir/Kitchen
+        // sama-sama tercatat di sini). Kasir & Kitchen punya pencatatan
+        // stok masuk sendiri (menulis ke lokasi "restoran" juga), jadi
+        // di-filter berdasarkan role pencatatnya supaya tidak ikut tercampur.
         $stockIns = StockIn::with(['item', 'supplier', 'user'])
-            ->where('location', StockIn::LOCATION_GUDANG)
+            ->whereHas('user.role', fn ($q) => $q->where('slug', Role::ADMIN))
             ->latest()
             ->paginate(15);
 
@@ -58,12 +64,20 @@ class StockInController extends Controller
             ]
         );
 
+        // Gudang Utama disimpan di ledger lokasi "gudang". Gudang Resto, Kasir,
+        // dan Kitchen sama-sama berbagi ledger lokasi "restoran" (sesuai alur
+        // Supplier -> Gudang -> Restoran -> Kasir/Kitchen), supaya stokRestoran()
+        // ikut bertambah dan otomatis muncul di Stock Keseluruhan Barang.
+        $ledgerLocation = $item->master_location === Item::MASTER_GUDANG_UTAMA
+            ? StockIn::LOCATION_GUDANG
+            : StockIn::LOCATION_RESTORAN;
+
         StockIn::create([
             'item_id'      => $item->id,
             'supplier_id'  => $request->supplier_id,
             'user_id'      => Auth::id(),
             'quantity'     => $request->quantity,
-            'location'     => StockIn::LOCATION_GUDANG,
+            'location'     => $ledgerLocation,
             'tanggal'      => $request->tanggal,
             'is_completed' => $request->boolean('is_completed'),
         ]);
