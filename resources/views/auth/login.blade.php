@@ -99,7 +99,7 @@
                 </div>
 
                 <button type="submit" class="kk-btn-login" id="loginBtn">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Masuk Sekarang
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Masuk
                 </button>
             </form>
 

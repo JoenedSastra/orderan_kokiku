@@ -10,7 +10,11 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    public const USED_BY_KASIR   = 'kasir';
+    public const USED_BY_KITCHEN = 'kitchen';
+    public const USED_BY_UMUM    = 'umum';
+
+    protected $fillable = ['name', 'used_by'];
 
     public function items(): HasMany
     {

@@ -12,13 +12,22 @@
     <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead class="table-light">
-                <tr><th>#</th><th>Nama Kategori</th><th>Jumlah Barang</th><th>Aksi</th></tr>
+                <tr><th>#</th><th>Nama Kategori</th><th>Digunakan Oleh</th><th>Jumlah Barang</th><th>Aksi</th></tr>
             </thead>
             <tbody>
                 @forelse($categories as $cat)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $cat->name }}</td>
+                    <td>
+                        @if($cat->used_by === 'kasir')
+                            <span class="badge bg-info text-dark">Kasir</span>
+                        @elseif($cat->used_by === 'kitchen')
+                            <span class="badge bg-warning text-dark">Kitchen</span>
+                        @else
+                            <span class="badge bg-secondary">Umum</span>
+                        @endif
+                    </td>
                     <td>{{ $cat->items_count }}</td>
                     <td>
                         <a href="{{ route('admin.categories.edit', $cat) }}" class="btn btn-xs btn-outline-secondary btn-sm">Edit</a>
@@ -29,7 +38,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="4" class="text-center text-muted py-3">Belum ada kategori.</td></tr>
+                <tr><td colspan="5" class="text-center text-muted py-3">Belum ada kategori.</td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -54,6 +54,36 @@ class Item extends Model
     }
 
     /**
+     * Stok Kasir = stok Restoran, hanya dihitung jika kategori barang ini
+     * "milik" Kasir atau Umum (dipakai bersama).
+     */
+    public function stokKasir(): int
+    {
+        $usedBy = $this->category?->used_by;
+
+        if ($usedBy === Category::USED_BY_KASIR || $usedBy === Category::USED_BY_UMUM) {
+            return $this->stokRestoran();
+        }
+
+        return 0;
+    }
+
+    /**
+     * Stok Kitchen = stok Restoran, hanya dihitung jika kategori barang ini
+     * "milik" Kitchen atau Umum (dipakai bersama).
+     */
+    public function stokKitchen(): int
+    {
+        $usedBy = $this->category?->used_by;
+
+        if ($usedBy === Category::USED_BY_KITCHEN || $usedBy === Category::USED_BY_UMUM) {
+            return $this->stokRestoran();
+        }
+
+        return 0;
+    }
+
+    /**
      * Hitung stok saat ini untuk user tertentu (berdasarkan role/lokasi).
      */
     public function currentStockForRole(string $roleSlug): int

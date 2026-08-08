@@ -15,10 +15,15 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $categories = ['Sayur', 'Daging', 'Saos', 'Perlengkapan'];
+        $categories = [
+            'Sayur'        => Category::USED_BY_KITCHEN,
+            'Daging'       => Category::USED_BY_KITCHEN,
+            'Saos'         => Category::USED_BY_KITCHEN,
+            'Perlengkapan' => Category::USED_BY_KASIR,
+        ];
 
-        foreach ($categories as $name) {
-            Category::updateOrCreate(['name' => $name]);
+        foreach ($categories as $name => $usedBy) {
+            Category::updateOrCreate(['name' => $name], ['used_by' => $usedBy]);
         }
     }
 }

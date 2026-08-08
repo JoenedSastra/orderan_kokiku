@@ -11,6 +11,16 @@
             <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $category->name) }}" required autofocus>
             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
+        <div class="mb-3">
+            <label class="form-label">Digunakan Oleh</label>
+            <select name="used_by" class="form-select @error('used_by') is-invalid @enderror" required>
+                <option value="kitchen" {{ old('used_by', $category->used_by) == 'kitchen' ? 'selected' : '' }}>Kitchen</option>
+                <option value="kasir" {{ old('used_by', $category->used_by) == 'kasir' ? 'selected' : '' }}>Kasir</option>
+                <option value="umum" {{ old('used_by', $category->used_by) == 'umum' ? 'selected' : '' }}>Umum (Kasir & Kitchen)</option>
+            </select>
+            @error('used_by')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <div class="form-text">Menentukan barang di kategori ini dihitung ke Stok Kasir atau Stok Kitchen.</div>
+        </div>
         <button type="submit" class="btn text-white w-100" style="background:var(--kk-accent)">Perbarui</button>
     </form>
 </div>
