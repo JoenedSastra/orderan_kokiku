@@ -84,6 +84,21 @@ class Item extends Model
     }
 
     /**
+     * Ambil nilai stok sesuai kunci lokasi ('gudang', 'resto', 'kasir', 'kitchen').
+     * Dipakai supaya tampilan Stock Barang bisa generik per-tab lokasi.
+     */
+    public function stokByLocation(string $locationKey): int
+    {
+        return match ($locationKey) {
+            'gudang'  => $this->stokGudang(),
+            'resto'   => $this->stokRestoran(),
+            'kasir'   => $this->stokKasir(),
+            'kitchen' => $this->stokKitchen(),
+            default   => 0,
+        };
+    }
+
+    /**
      * Hitung stok saat ini untuk user tertentu (berdasarkan role/lokasi).
      */
     public function currentStockForRole(string $roleSlug): int
