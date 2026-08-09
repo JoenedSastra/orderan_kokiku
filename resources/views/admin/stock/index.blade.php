@@ -6,6 +6,21 @@
     <h2 class="h5 mb-0">Stok Barang — {{ $title }}</h2>
 </div>
 
+<div class="btn-group mb-3" role="group">
+    <a href="{{ request()->fullUrlWithQuery(['filter' => null]) }}"
+       class="btn btn-sm {{ !$filter ? 'text-white' : 'btn-outline-secondary' }}"
+       @if(!$filter) style="background:var(--kk-accent)" @endif>
+        Semua
+    </a>
+    @foreach($filterOptions as $key => $label)
+    <a href="{{ request()->fullUrlWithQuery(['filter' => $key]) }}"
+       class="btn btn-sm {{ $filter === $key ? 'text-white' : 'btn-outline-secondary' }}"
+       @if($filter === $key) style="background:var(--kk-accent)" @endif>
+        {{ $label }}
+    </a>
+    @endforeach
+</div>
+
 <ul class="nav nav-tabs mb-3" id="stockTab">
     <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#masuk">Barang Masuk</a></li>
     <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#keluar">Barang Keluar</a></li>

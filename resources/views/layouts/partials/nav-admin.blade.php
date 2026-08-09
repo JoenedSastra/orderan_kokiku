@@ -18,10 +18,6 @@
     <i class="bi bi-layers-fill"></i> Stock Kasir & Kitchen
 </a>
 
-<a href="{{ route('admin.stock_kitchen.index') }}" class="nav-link {{ request()->routeIs('admin.stock_kitchen.*') ? 'active' : '' }}">
-    <i class="bi bi-calendar-check-fill"></i> Stock Kitchen Harian
-</a>
-
 <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
     <i class="bi bi-clipboard2-check-fill"></i> Orderan Kasir & Kitchen
     @php $pending = \App\Models\Order::where('status','menunggu')->count(); @endphp
@@ -32,14 +28,6 @@
 
 <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
     <i class="bi bi-bar-chart-fill"></i> Laporan
-</a>
-
-<a href="{{ route('admin.categories.index') }}" class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
-    <i class="bi bi-tags-fill"></i> Kategori
-</a>
-
-<a href="{{ route('admin.suppliers.index') }}" class="nav-link {{ request()->routeIs('admin.suppliers.*') ? 'active' : '' }}">
-    <i class="bi bi-truck-front-fill"></i> Supplalier
 </a>
 
 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
