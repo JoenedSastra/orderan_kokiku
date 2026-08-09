@@ -1,32 +1,21 @@
 @extends('layouts.app')
-@section('title', 'Catat Barang Masuk Gudang')
+@section('title', 'Catat Barang Masuk Hari Ini')
 @section('content')
-<div class="mb-3"><a href="{{ route('admin.stock_in.index') }}" class="text-muted text-decoration-none"><i class="bi bi-arrow-left"></i> Kembali</a></div>
 <div class="kk-stat-card" style="max-width:560px">
-    <h5 class="mb-3">Barang Datang dari Supplier</h5>
+    <h5 class="mb-3">Catat Barang Masuk Hari Ini</h5>
     <form action="{{ route('admin.stock_in.store') }}" method="POST">
         @csrf
-        <div class="mb-3">
-            <label class="form-label">Supplier</label>
-            <select name="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror">
-                <option value="">— Tanpa Supplier —</option>
-                @foreach($suppliers as $supplier)
-                <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
-                @endforeach
-            </select>
-            @error('supplier_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-        </div>
 
         <div class="mb-3">
             <label class="form-label">Nama Barang <span class="text-danger">*</span></label>
             <input type="text" name="item_name" class="form-control @error('item_name') is-invalid @enderror"
                    value="{{ old('item_name') }}" placeholder="Ketik nama barang" required autofocus>
             @error('item_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            <div class="form-text">Barang dengan nama & Master Barang yang sama (persis) akan memakai data yang sudah ada (stok tidak dobel). Nama yang sama tapi Master Barang berbeda akan dianggap barang terpisah.</div>
+            <div class="form-text">Barang dengan nama, Master Barang, & satuan yang sama (persis) akan memakai data yang sudah ada (stok tidak dobel). Kalau nama sama tapi Master Barang atau satuannya beda, akan dianggap barang terpisah — nanti saat dicari namanya akan muncul semua sesuai satuannya masing-masing.</div>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Masuk ke Master Barang <span class="text-danger">*</span></label>
+            <label class="form-label">Pilih Master Barang <span class="text-danger">*</span></label>
             <select name="master_location" class="form-select @error('master_location') is-invalid @enderror" required>
                 <option value="">— Pilih Master Barang —</option>
                 <option value="gudang_utama" {{ old('master_location') == 'gudang_utama' ? 'selected' : '' }}>Gudang Utama</option>
@@ -35,7 +24,6 @@
                 <option value="kitchen" {{ old('master_location') == 'kitchen' ? 'selected' : '' }}>Kitchen</option>
             </select>
             @error('master_location')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            <div class="form-text">Menentukan barang ini masuk ke stok Master Barang yang mana.</div>
         </div>
 
         <div class="row g-2 mb-3">
@@ -51,6 +39,7 @@
                 <datalist id="unitOptions">
                     <option value="Pcs"><option value="Buah"><option value="Botol"><option value="Kaleng">
                     <option value="Pack"><option value="Bungkus"><option value="Karton"><option value="Box">
+                    <option value="Saset"><option value="Renteng"><option value="Jeriken">
                     <option value="Gram"><option value="Kg"><option value="Ons">
                     <option value="Ml"><option value="Liter">
                 </datalist>
@@ -58,10 +47,9 @@
             </div>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Tanggal <span class="text-danger">*</span></label>
-            <input type="date" name="tanggal" class="form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', date('Y-m-d')) }}" required>
-            @error('tanggal')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        <div class="mb-3 small text-muted">
+            <i class="bi bi-clock-history"></i>
+            Tanggal &amp; jam otomatis diisi sesuai waktu saat ini: <strong id="liveDateTime">{{ now()->format('d-m-Y, H:i') }}</strong>
         </div>
 
         <div class="mb-3">
@@ -71,12 +59,30 @@
             @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
 
-        <div class="form-check mb-3">
-            <input type="checkbox" name="is_completed" id="is_completed" class="form-check-input" value="1" {{ old('is_completed', true) ? 'checked' : '' }}>
-            <label for="is_completed" class="form-check-label">Tandai selesai (data sudah lengkap &amp; benar)</label>
-        </div>
-
-        <button type="submit" class="btn text-white w-100" style="background:var(--kk-accent)">Simpan — Stok Gudang Bertambah</button>
+        <button type="submit" class="btn text-white w-100" style="background:var(--kk-accent)">Simpan</button>
     </form>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    const el = document.getElementById('liveDateTime');
+    if (!el) return;
+
+    function pad(n) {
+        return String(n).padStart(2, '0');
+    }
+
+    function render() {
+        const d = new Date();
+        const tanggal = pad(d.getDate()) + '-' + pad(d.getMonth() + 1) + '-' + d.getFullYear();
+        const jam = pad(d.getHours()) + ':' + pad(d.getMinutes());
+        el.textContent = tanggal + ', ' + jam;
+    }
+
+    render();
+    setInterval(render, 1000);
+})();
+</script>
+@endpush
 @endsection
