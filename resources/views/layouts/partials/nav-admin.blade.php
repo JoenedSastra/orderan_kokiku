@@ -11,7 +11,11 @@
 </a>
 
 <a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}">
-    <i class="bi bi-layers-fill"></i> Stock Keseluruhan Barang
+    <i class="bi bi-layers-fill"></i> Stock Gudang & Resto
+</a>
+
+<a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}">
+    <i class="bi bi-layers-fill"></i> Stock Kasir & Kitchen
 </a>
 
 <a href="{{ route('admin.stock_kitchen.index') }}" class="nav-link {{ request()->routeIs('admin.stock_kitchen.*') ? 'active' : '' }}">
