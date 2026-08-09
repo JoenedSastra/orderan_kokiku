@@ -7,16 +7,19 @@ use App\Models\Item;
 use App\Models\Role;
 use App\Models\StockIn;
 use App\Models\Supplier;
+use App\Models\User;
+use App\Notifications\StockInNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
 /**
  * Barang Masuk Gudang — Admin mencatat penerimaan barang dari Supplier.
- * Nama barang diketik bebas: kalau belum ada di Master Barang, otomatis
- * dibuat baru dan langsung digolongkan ke salah satu dari 4 Master Barang
- * (Gudang Utama, Gudang Resto, Kasir, Kitchen) sesuai pilihan Admin.
+ * Nama barang diketik bebas: kalau kombinasi (nama + Master Barang) belum
+ * pernah ada, otomatis dibuat baru. Barang dengan nama sama tapi Master
+ * Barang berbeda dianggap barang terpisah (stok tidak tercampur).
  */
 class StockInController extends Controller
 {
@@ -50,17 +53,18 @@ class StockInController extends Controller
             'unit'            => 'required|string|max:30',
             'master_location' => 'required|in:gudang_utama,gudang_resto,kasir,kitchen',
             'quantity'        => 'required|integer|min:1',
+            'keterangan'      => 'nullable|string|max:255',
             'tanggal'         => 'required|date',
         ]);
 
-        // Kalau nama barang sudah ada, pakai data yang sama (tidak dobel).
-        // Kalau belum ada, buat baru langsung dengan satuan & master barang pilihan Admin.
+        // Kunci pencocokan barang = nama + Master Barang. Jadi "Bakso Sapi" di
+        // Kitchen dan "Bakso Sapi" di Gudang Utama tetap 2 barang yang
+        // terpisah, walaupun namanya sama persis — stoknya tidak tercampur.
         $item = Item::firstOrCreate(
-            ['name' => trim($request->item_name)],
+            ['name' => trim($request->item_name), 'master_location' => $request->master_location],
             [
-                'unit'            => $request->unit,
-                'master_location' => $request->master_location,
-                'min_stock'       => 0,
+                'unit'      => $request->unit,
+                'min_stock' => 0,
             ]
         );
 
@@ -72,17 +76,41 @@ class StockInController extends Controller
             ? StockIn::LOCATION_GUDANG
             : StockIn::LOCATION_RESTORAN;
 
-        StockIn::create([
+        $stockIn = StockIn::create([
             'item_id'      => $item->id,
             'supplier_id'  => $request->supplier_id,
             'user_id'      => Auth::id(),
             'quantity'     => $request->quantity,
             'location'     => $ledgerLocation,
+            'keterangan'   => $request->keterangan,
             'tanggal'      => $request->tanggal,
             'is_completed' => $request->boolean('is_completed'),
         ]);
 
+        $this->notifyStockIn($item, $stockIn);
+
         return redirect()->route('admin.stock_in.index')
             ->with('success', 'Barang masuk gudang berhasil dicatat & otomatis masuk ke Master Barang ' . $item->masterLocationLabel() . '.');
+    }
+
+    /**
+     * Beritahu Kasir/Kitchen kalau ada barang baru masuk ke bagian mereka.
+     * Gudang Utama & Gudang Resto tidak dikirimi notifikasi lintas role
+     * karena keduanya memang murni dikelola Admin sendiri.
+     */
+    private function notifyStockIn(Item $item, StockIn $stockIn): void
+    {
+        $roleSlug = match ($item->master_location) {
+            Item::MASTER_KASIR   => Role::KASIR,
+            Item::MASTER_KITCHEN => Role::KITCHEN,
+            default              => null,
+        };
+
+        if ($roleSlug === null) {
+            return;
+        }
+
+        $recipients = User::whereHas('role', fn ($q) => $q->where('slug', $roleSlug))->get();
+        Notification::send($recipients, new StockInNotification($stockIn));
     }
 }

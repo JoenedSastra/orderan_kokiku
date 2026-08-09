@@ -22,7 +22,7 @@
             <input type="text" name="item_name" class="form-control @error('item_name') is-invalid @enderror"
                    value="{{ old('item_name') }}" placeholder="Ketik nama barang" required autofocus>
             @error('item_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            <div class="form-text">Kalau nama ini sudah pernah diinput sebelumnya, sistem otomatis memakai data barang yang sama (tidak dobel).</div>
+            <div class="form-text">Barang dengan nama & Master Barang yang sama (persis) akan memakai data yang sudah ada (stok tidak dobel). Nama yang sama tapi Master Barang berbeda akan dianggap barang terpisah.</div>
         </div>
 
         <div class="mb-3">
@@ -35,7 +35,7 @@
                 <option value="kitchen" {{ old('master_location') == 'kitchen' ? 'selected' : '' }}>Kitchen</option>
             </select>
             @error('master_location')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            <div class="form-text">Kalau barangnya sudah pernah diinput sebelumnya, pilihan ini diabaikan (dipakai master barang yang sudah tersimpan).</div>
+            <div class="form-text">Menentukan barang ini masuk ke stok Master Barang yang mana.</div>
         </div>
 
         <div class="row g-2 mb-3">
@@ -62,6 +62,13 @@
             <label class="form-label">Tanggal <span class="text-danger">*</span></label>
             <input type="date" name="tanggal" class="form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', date('Y-m-d')) }}" required>
             @error('tanggal')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Keterangan</label>
+            <input type="text" name="keterangan" class="form-control @error('keterangan') is-invalid @enderror"
+                   value="{{ old('keterangan') }}" placeholder="Catatan tentang barang ini (opsional)">
+            @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
 
         <div class="form-check mb-3">

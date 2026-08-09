@@ -22,10 +22,9 @@
                     <td>{{ $s->supplier->name ?? '-' }}</td>
                     <td><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
                     <td>
+                        {{ $s->keterangan ?? '-' }}
                         @if($s->is_completed)
-                            <i class="bi bi-check-circle-fill text-success" title="Selesai"></i>
-                        @else
-                            <span class="text-muted">-</span>
+                            <i class="bi bi-check-circle-fill text-success ms-1" title="Selesai"></i>
                         @endif
                     </td>
                     <td>{{ $s->user->name }}</td>
