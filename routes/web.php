@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('suppliers',  SupplierController::class);
         Route::get('/items', [ItemController::class, 'index'])->name('items.index');
         Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
+        Route::post('/items/kirim-barang', [ItemController::class, 'send'])->name('items.send');
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');

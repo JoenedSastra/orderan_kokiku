@@ -3,9 +3,15 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
     <h2 class="h5 mb-0">Master Barang</h2>
-    <div class="input-group" style="max-width:280px;">
-        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-        <input type="text" id="masterBarangSearch" class="form-control" placeholder="Cari barang...">
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" id="btnKirimBarang" class="btn btn-sm text-white text-nowrap" style="background:var(--kk-accent); display:none;"
+                data-bs-toggle="modal" data-bs-target="#modalKirimBarang">
+            <i class="bi bi-send"></i> Kirim Barang
+        </button>
+        <div class="input-group input-group-sm" style="max-width:220px;">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="text" id="masterBarangSearch" class="form-control" placeholder="Cari barang...">
+        </div>
     </div>
 </div>
 
@@ -77,6 +83,62 @@
     </div>
 </div>
 
+{{-- Modal: Kirim Barang dari Gudang Utama --}}
+<div class="modal fade" id="modalKirimBarang" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('admin.items.send') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Kirim Barang dari Gudang Utama</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Pilih Barang <span class="text-danger">*</span></label>
+                        <select name="item_id" id="kirimItemSelect" class="form-select @error('item_id') is-invalid @enderror" required>
+                            <option value="">— Pilih Barang —</option>
+                            @foreach($grouped['gudang_utama'] as $item)
+                            <option value="{{ $item->id }}" data-stok="{{ $item->stokGudang() }}" data-unit="{{ $item->unit }}">
+                                {{ $item->name }} (Stok: {{ $item->stokGudang() }} {{ $item->unit }})
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('item_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Kirim ke <span class="text-danger">*</span></label>
+                        <select name="destination" class="form-select @error('destination') is-invalid @enderror" required>
+                            <option value="">— Pilih Tujuan —</option>
+                            <option value="gudang_resto">Gudang Resto</option>
+                            <option value="kasir">Kasir</option>
+                            <option value="kitchen">Kitchen</option>
+                        </select>
+                        @error('destination')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="row g-2 mb-1">
+                        <div class="col-6">
+                            <label class="form-label">Jumlah <span class="text-danger">*</span></label>
+                            <input type="number" name="quantity" id="kirimQuantity" class="form-control @error('quantity') is-invalid @enderror" min="1" value="1" required>
+                            @error('quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Tanggal <span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn text-white" style="background:var(--kk-accent)">Kirim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('masterBarangSearch');
@@ -86,6 +148,31 @@
             document.querySelectorAll('.kk-mb-row').forEach(function (row) {
                 row.style.display = row.dataset.name.includes(term) ? '' : 'none';
             });
+        });
+
+        // Tombol "Kirim Barang" cuma tampil kalau tab "Gudang Utama" yang aktif.
+        const btnKirim = document.getElementById('btnKirimBarang');
+        const gudangUtamaPane = document.getElementById('mb-gudang-utama');
+
+        function toggleKirimButton() {
+            btnKirim.style.display = gudangUtamaPane.classList.contains('active') ? 'inline-block' : 'none';
+        }
+
+        toggleKirimButton();
+
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabEl) {
+            tabEl.addEventListener('shown.bs.tab', toggleKirimButton);
+        });
+
+        // Batasi jumlah maksimal sesuai stok Gudang Utama barang yang dipilih.
+        const kirimItemSelect = document.getElementById('kirimItemSelect');
+        const kirimQuantity = document.getElementById('kirimQuantity');
+
+        kirimItemSelect.addEventListener('change', function () {
+            const opt = this.options[this.selectedIndex];
+            if (opt && opt.value) {
+                kirimQuantity.max = opt.getAttribute('data-stok');
+            }
         });
     });
 </script>
