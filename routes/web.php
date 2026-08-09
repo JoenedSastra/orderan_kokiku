@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\StockInController as AdminStockInController;
+use App\Http\Controllers\Admin\StockKasirKitchenController;
 use App\Http\Controllers\Admin\StockKitchenReportController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
@@ -54,6 +55,7 @@ Route::middleware('auth')->group(function () {
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::get('/stock-kasir-kitchen', [StockController::class, 'kasirKitchen'])->name('stock_kasir_kitchen.index');
         Route::get('/stock-kitchen', [StockKitchenReportController::class, 'index'])->name('stock_kitchen.index');
 
         // Barang Masuk Gudang (admin)

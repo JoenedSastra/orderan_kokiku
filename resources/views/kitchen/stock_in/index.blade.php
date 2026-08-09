@@ -11,7 +11,7 @@
     <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead class="table-light">
-                <tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Keterangan</th></tr>
+                <tr><th>Tanggal</th><th>Barang</th><th>Jumlah</th><th>Keterangan</th><th>Dicatat Oleh</th></tr>
             </thead>
             <tbody>
                 @forelse($stockIns as $s)
@@ -20,9 +20,13 @@
                     <td>{{ $s->item->name }}</td>
                     <td>{{ $s->quantity }} {{ $s->item->unit }}</td>
                     <td>{{ $s->keterangan ?? '-' }}</td>
+                    <td>
+                        <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
+                        {{ $s->user->name }}
+                    </td>
                 </tr>
                 @empty
-                <tr><td colspan="4" class="text-center text-muted py-3">Belum ada catatan masuk.</td></tr>
+                <tr><td colspan="5" class="text-center text-muted py-3">Belum ada catatan masuk.</td></tr>
                 @endforelse
             </tbody>
         </table>

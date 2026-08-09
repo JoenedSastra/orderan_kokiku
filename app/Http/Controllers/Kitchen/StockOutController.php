@@ -24,7 +24,7 @@ class StockOutController extends Controller
 
     public function create(): View
     {
-        $items = Item::orderBy('name')->get();
+        $items = Item::where('master_location', Item::MASTER_KITCHEN)->orderBy('name')->get();
         return view('kitchen.stock_out.create', compact('items'));
     }
 

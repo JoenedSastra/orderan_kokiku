@@ -14,8 +14,11 @@ class StockInController extends Controller
 {
     public function index(): View
     {
-        $stockIns = StockIn::with('item')
-            ->where('user_id', Auth::id())
+        // Tampilkan SEMUA barang masuk untuk Master Barang Kasir — baik yang
+        // dicatat sendiri oleh Kasir, maupun yang diinput Admin lewat
+        // "Barang Masuk Gudang" dan diklasifikasikan ke Kasir.
+        $stockIns = StockIn::with(['item', 'user.role'])
+            ->whereHas('item', fn ($q) => $q->where('master_location', Item::MASTER_KASIR))
             ->latest()
             ->paginate(15);
         return view('kasir.stock_in.index', compact('stockIns'));

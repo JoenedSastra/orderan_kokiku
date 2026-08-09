@@ -10,11 +10,11 @@
     <i class="bi bi-box-seam-fill"></i> Master Barang
 </a>
 
-<a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}">
+<a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.index') ? 'active' : '' }}">
     <i class="bi bi-layers-fill"></i> Stock Gudang & Resto
 </a>
 
-<a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.*') ? 'active' : '' }}">
+<a href="{{ route('admin.stock_kasir_kitchen.index') }}" class="nav-link {{ request()->routeIs('admin.stock_kasir_kitchen.*') ? 'active' : '' }}">
     <i class="bi bi-layers-fill"></i> Stock Kasir & Kitchen
 </a>
 

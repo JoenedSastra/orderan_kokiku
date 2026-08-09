@@ -10,16 +10,47 @@ use Illuminate\View\View;
 
 class StockController extends Controller
 {
+    /**
+     * Stock Gudang & Resto — khusus Master Barang Gudang Utama + Gudang Resto.
+     */
     public function index(): View
     {
-        // Sisa Barang, Barang Masuk, dan Barang Keluar semuanya terhubung ke
-        // Master Barang lewat relasi item (Master Barang menentukan
-        // master_location-nya, sisa stok dihitung dari ledger stock_ins/stock_outs).
-        $items = Item::orderBy('name')->get();
+        return $this->render(
+            [Item::MASTER_GUDANG_UTAMA, Item::MASTER_GUDANG_RESTO],
+            'Gudang & Resto'
+        );
+    }
 
-        $stockIns  = StockIn::with(['item', 'user.role'])->latest()->paginate(10, ['*'], 'masuk');
-        $stockOuts = StockOut::with(['item', 'user.role'])->latest()->paginate(10, ['*'], 'keluar');
+    /**
+     * Stock Kasir & Kitchen — khusus Master Barang Kasir + Kitchen.
+     */
+    public function kasirKitchen(): View
+    {
+        return $this->render(
+            [Item::MASTER_KASIR, Item::MASTER_KITCHEN],
+            'Kasir & Kitchen'
+        );
+    }
 
-        return view('admin.stock.index', compact('items', 'stockIns', 'stockOuts'));
+    private function render(array $masterLocations, string $title): View
+    {
+        // Sisa Barang, Barang Masuk, dan Barang Keluar semuanya disaring dari
+        // relasi item->master_location yang sama, supaya kedua halaman ini
+        // otomatis tetap sinkron dengan Master Barang tanpa data terduplikasi.
+        $items = Item::whereIn('master_location', $masterLocations)
+            ->orderBy('name')
+            ->get();
+
+        $stockIns = StockIn::with(['item', 'user.role'])
+            ->whereHas('item', fn ($q) => $q->whereIn('master_location', $masterLocations))
+            ->latest()
+            ->paginate(10, ['*'], 'masuk');
+
+        $stockOuts = StockOut::with(['item', 'user.role'])
+            ->whereHas('item', fn ($q) => $q->whereIn('master_location', $masterLocations))
+            ->latest()
+            ->paginate(10, ['*'], 'keluar');
+
+        return view('admin.stock.index', compact('items', 'stockIns', 'stockOuts', 'title'));
     }
 }

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Stok Barang - ' . $title)
+@section('title', 'Stok Barang - Kasir & Kitchen')
 @section('content')
 
 <div class="mb-3 kk-page-header">
