@@ -42,12 +42,6 @@
         </a>
     </div>
     <div class="col-6 col-md-3 col-lg-2">
-        <a href="{{ route('admin.items.index') }}" class="kk-quick-action">
-            <i class="bi bi-box-seam-fill" style="color:var(--kk-warning);"></i>
-            <span>Master Barang</span>
-        </a>
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
         <a href="{{ route('admin.reports.index') }}" class="kk-quick-action">
             <i class="bi bi-bar-chart-fill" style="color:var(--kk-danger);"></i>
             <span>Laporan</span>

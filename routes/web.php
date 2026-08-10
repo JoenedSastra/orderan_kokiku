@@ -1,12 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\ItemController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\StockInController as AdminStockInController;
-use App\Http\Controllers\Admin\StockKasirKitchenController;
 use App\Http\Controllers\Admin\StockKitchenReportController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
@@ -50,10 +48,6 @@ Route::middleware('auth')->group(function () {
         // Master Data
         Route::resource('categories', CategoryController::class);
         Route::resource('suppliers',  SupplierController::class);
-        Route::get('/items', [ItemController::class, 'index'])->name('items.index');
-        Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
-        Route::post('/items/kirim-barang', [ItemController::class, 'send'])->name('items.send');
-        Route::delete('/items/keterangan/{catatanTemplate}', [ItemController::class, 'destroyKeteranganSuggestion'])->name('items.keterangan.destroy');
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');

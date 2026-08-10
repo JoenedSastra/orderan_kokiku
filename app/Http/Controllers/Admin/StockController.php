@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\StockIn;
-use App\Models\StockOut;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class StockController extends Controller
 {
     /**
-     * Stock Gudang & Resto — khusus Master Barang Gudang Utama + Gudang Resto.
+     * Stock Gudang Utama / Stock Gudang Resto — dipilih lewat query string
+     * ?filter=gudang_utama atau ?filter=gudang_resto dari sidebar.
      */
     public function index(Request $request): View
     {
@@ -28,7 +28,8 @@ class StockController extends Controller
     }
 
     /**
-     * Stock Kasir & Kitchen — khusus Master Barang Kasir + Kitchen.
+     * Stock Kasir / Stock Kitchen — dipilih lewat query string
+     * ?filter=kasir atau ?filter=kitchen dari sidebar.
      */
     public function kasirKitchen(Request $request): View
     {
@@ -52,25 +53,18 @@ class StockController extends Controller
             ? [$filter]
             : $masterLocations;
 
-        // Sisa Barang, Barang Masuk, dan Barang Keluar semuanya disaring dari
-        // relasi item->master_location yang sama, supaya kedua halaman ini
-        // otomatis tetap sinkron dengan Master Barang tanpa data terduplikasi.
-        $items = Item::whereIn('master_location', $activeLocations)
-            ->orderBy('name')
-            ->get();
+        // Judul halaman mengikuti divisi yang sedang aktif dari sidebar,
+        // bukan judul gabungan, supaya jelas sedang melihat stok divisi apa.
+        $title = ($filter && isset($filterOptions[$filter])) ? $filterOptions[$filter] : $title;
 
+        // Satu-satunya tabel yang ditampilkan sekarang adalah ledger Barang
+        // Masuk — otomatis sinkron dengan hasil input di "Barang Masuk Harian".
         $stockIns = StockIn::with(['item', 'user.role'])
             ->whereHas('item', fn ($q) => $q->whereIn('master_location', $activeLocations))
             ->latest()
-            ->paginate(10, ['*'], 'masuk')
+            ->paginate(15)
             ->withQueryString();
 
-        $stockOuts = StockOut::with(['item', 'user.role'])
-            ->whereHas('item', fn ($q) => $q->whereIn('master_location', $activeLocations))
-            ->latest()
-            ->paginate(10, ['*'], 'keluar')
-            ->withQueryString();
-
-        return view('admin.stock.index', compact('items', 'stockIns', 'stockOuts', 'title', 'filter', 'filterOptions'));
+        return view('admin.stock.index', compact('stockIns', 'title'));
     }
 }

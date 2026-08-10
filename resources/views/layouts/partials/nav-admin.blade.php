@@ -6,10 +6,6 @@
     <i class="bi bi-box-arrow-in-down-right"></i> Barang Masuk Harian
 </a>
 
-<a href="{{ route('admin.items.index') }}" class="nav-link {{ request()->routeIs('admin.items.*') ? 'active' : '' }}">
-    <i class="bi bi-box-seam-fill"></i> Master Barang
-</a>
-
 <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="nav-link {{ request()->routeIs('admin.stock.index') && request('filter') === 'gudang_utama' ? 'active' : '' }}">
     <i class="bi bi-building"></i> Stock Gudang Utama
 </a>

@@ -45,9 +45,10 @@ class StockInController extends Controller
     {
         $today = today();
 
-        $rekapHariIni = StockIn::query()
-            ->join('items', 'items.id', '=', 'stock_ins.item_id')
-            ->whereDate('stock_ins.tanggal', $today->toDateString())
+        // Hitung jumlah item yang dicatat hari ini per lokasi (oleh admin)
+        $totalsPerLokasi = StockIn::whereDate('tanggal', $today)
+            ->whereHas('user.role', fn ($q) => $q->where('slug', Role::ADMIN))
+            ->join('items', 'stock_ins.item_id', '=', 'items.id')
             ->selectRaw('items.master_location, COUNT(*) as total')
             ->groupBy('items.master_location')
             ->pluck('total', 'items.master_location');
@@ -59,7 +60,7 @@ class StockInController extends Controller
                 'label'    => $label,
                 'icon'     => self::LOKASI_ICONS[$key],
                 'gradient' => self::LOKASI_GRADIENTS[$key],
-                'total'    => (int) ($rekapHariIni[$key] ?? 0),
+                'total'    => $totalsPerLokasi[$key] ?? 0,
             ];
         }
 
@@ -171,7 +172,7 @@ class StockInController extends Controller
 
         return redirect()
             ->to($this->stockPageUrl($lokasi))
-            ->with('success', $savedCount . ' barang berhasil dicatat & otomatis masuk ke Master Barang ' . $lokasiLabel . '.');
+            ->with('success', $savedCount . ' barang berhasil dicatat & otomatis masuk ke Stok ' . $lokasiLabel . '.');
     }
 
     private function stockPageUrl(string $lokasi): string
