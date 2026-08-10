@@ -50,7 +50,7 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
                     <thead class="table-light">
                         <tr>
                             <th>No</th>
-                            <th>Nama Barang</th>
+                            <th>Barang</th>
                             <th>Hari, Tanggal &amp; Jam</th>
                             <th>Satuan</th>
                             <th>Keterangan</th>

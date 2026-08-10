@@ -33,7 +33,7 @@ class ItemController extends Controller
         ];
 
         // Murni catatan yang PERNAH diketik manual oleh admin — tidak ada teks
-        // otomatis/sistem ("Kirim barang ke ...", dst) yang ikut jadi saran.
+        // otomatis/sistem ("Kirim dari Gudang Utama ke ...", dst) yang ikut jadi saran.
         $keteranganSuggestions = CatatanTemplate::orderBy('teks')->get(['id', 'teks']);
 
         return view('admin.items.index', compact('grouped', 'keteranganSuggestions'));
@@ -107,11 +107,11 @@ class ItemController extends Controller
 
             // Keterangan di sisi Gudang Utama (ledger "gudang") — berdiri sendiri,
             // tidak dipakai ulang di sisi tujuan.
-            $keteranganGudang = 'Kirim barang ke ' . $destinationLabels[$request->destination] . $catatan;
+            $keteranganGudang = 'Kirim dari Gudang Utama ke ' . $destinationLabels[$request->destination] . $catatan;
 
             // Keterangan di sisi tujuan (ledger "restoran") — teksnya sendiri juga,
             // supaya kedua Master Barang tidak saling terhubung.
-            $keteranganTujuan = 'Diterima dari Gudang Utama' . $catatan;
+            $keteranganTujuan = 'Diterima' . $catatan;
 
             // Kurangi stok Gudang Utama pada barang sumber.
             StockOut::create([

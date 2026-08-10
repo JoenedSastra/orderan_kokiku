@@ -120,9 +120,9 @@ class Item extends Model
      * ini sendiri (Gudang Utama -> ledger "gudang", Gudang Resto/Kasir/Kitchen
      * -> ledger "restoran"). Dipakai untuk kolom Hari/Tanggal/Jam & Keterangan
      * di Master Barang. Sengaja HANYA melihat ledger lokasi barang itu sendiri,
-     * supaya keterangan Gudang Utama (mis. "Kirim barang ke Kasir") dan
-     * keterangan barang tujuan (mis. "Diterima dari Gudang Utama") tetap
-     * berdiri sendiri-sendiri dan tidak saling menimpa.
+     * supaya keterangan Gudang Utama (mis. "Kirim dari Gudang Utama ke Kasir")
+     * dan keterangan barang tujuan (mis. "Diterima") tetap berdiri
+     * sendiri-sendiri dan tidak saling menimpa.
      */
     public function latestActivity(): StockIn|StockOut|null
     {
