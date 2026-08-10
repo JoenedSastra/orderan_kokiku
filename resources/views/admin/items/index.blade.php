@@ -1,6 +1,9 @@
 @extends('layouts.app')
 @section('title', 'Master Barang')
 @section('content')
+@php
+$hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'];
+@endphp
 <div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
     <h2 class="h5 mb-0">Master Barang</h2>
     <div class="d-flex align-items-center gap-2">
@@ -48,23 +51,34 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Barang</th>
+                            <th>Hari, Tanggal &amp; Jam</th>
                             <th>Satuan</th>
-                            <th class="text-end">Total Stock</th>
-                            <th>Aksi</th>
+                            <th>Keterangan</th>
+                            <th class="text-end">Stock</th>
+                            <th style="width:1%;white-space:nowrap;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($groupItems as $item)
+                        @php $activity = $item->latestActivity(); @endphp
                         <tr class="kk-mb-row" data-name="{{ strtolower($item->name) }}">
                             <td>{{ $loop->iteration }}</td>
                             <td class="fw-semibold">{{ $item->name }}</td>
+                            <td>
+                                @if($activity)
+                                    {{ $hariIndo[$activity->tanggal->format('l')] }}, {{ $activity->tanggal->format('d-m-Y') }} {{ $activity->created_at->format('H:i') }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>{{ $item->unit }}</td>
+                            <td>{{ $activity->keterangan ?? '-' }}</td>
                             <td class="text-end">
                                 <span class="badge {{ $item->totalStock() <= $item->min_stock ? 'bg-danger' : 'bg-primary' }}">
                                     {{ $item->totalStock() }}
                                 </span>
                             </td>
-                            <td>
+                            <td style="width:1%;white-space:nowrap;">
                                 <form action="{{ route('admin.items.destroy', $item) }}" method="POST"
                                       onsubmit="return confirm('Hapus barang ini? Riwayat stok terkait juga ikut terhapus.')">
                                     @csrf @method('DELETE')
@@ -73,7 +87,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="5" class="text-center text-muted py-3">Belum ada barang di bagian ini.</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted py-3">Belum ada barang di bagian ini.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -120,7 +134,12 @@
 
                     <div class="mb-3">
                         <label class="form-label">Keterangan</label>
-                        <input type="text" name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" placeholder="Catatan tentang pengiriman ini (opsional)" value="{{ old('keterangan') }}">
+                        <input type="text" name="keterangan" list="keteranganList" class="form-control @error('keterangan') is-invalid @enderror" placeholder="Pilih catatan lama atau ketik catatan baru (opsional)" value="{{ old('keterangan') }}" autocomplete="off">
+                        <datalist id="keteranganList">
+                            @foreach($keteranganSuggestions as $saran)
+                            <option value="{{ $saran }}"></option>
+                            @endforeach
+                        </datalist>
                         @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
@@ -165,8 +184,20 @@
         }
 
         toggleKirimButton();
-        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabLink) {
-            tabLink.addEventListener('shown.bs.tab', toggleKirimButton);
+
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabEl) {
+            tabEl.addEventListener('shown.bs.tab', toggleKirimButton);
+        });
+
+        // Batasi jumlah maksimal sesuai stok Gudang Utama barang yang dipilih.
+        const kirimItemSelect = document.getElementById('kirimItemSelect');
+        const kirimQuantity = document.getElementById('kirimQuantity');
+
+        kirimItemSelect.addEventListener('change', function () {
+            const opt = this.options[this.selectedIndex];
+            if (opt && opt.value) {
+                kirimQuantity.max = opt.getAttribute('data-stok');
+            }
         });
     });
 </script>

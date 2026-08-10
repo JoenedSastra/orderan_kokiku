@@ -31,7 +31,13 @@ class ItemController extends Controller
             'kitchen'      => $items->where('master_location', Item::MASTER_KITCHEN)->values(),
         ];
 
-        return view('admin.items.index', compact('grouped'));
+        $keteranganSuggestions = StockOut::whereNotNull('keterangan')
+            ->where('keterangan', '!=', '')
+            ->orderBy('keterangan')
+            ->distinct()
+            ->pluck('keterangan');
+
+        return view('admin.items.index', compact('grouped', 'keteranganSuggestions'));
     }
 
     public function destroy(Item $item): RedirectResponse
@@ -77,12 +83,16 @@ class ItemController extends Controller
         ];
 
         DB::transaction(function () use ($request, $sourceItem, $destinationLabels) {
-            $userId     = Auth::id();
-            $keterangan = 'Kirim dari Gudang Utama ke ' . $destinationLabels[$request->destination];
+            $userId  = Auth::id();
+            $catatan = $request->filled('keterangan') ? ' — ' . trim($request->keterangan) : '';
 
-            if ($request->filled('keterangan')) {
-                $keterangan .= ' — ' . trim($request->keterangan);
-            }
+            // Keterangan di sisi Gudang Utama (ledger "gudang") — berdiri sendiri,
+            // tidak dipakai ulang di sisi tujuan.
+            $keteranganGudang = 'Kirim barang ke ' . $destinationLabels[$request->destination] . $catatan;
+
+            // Keterangan di sisi tujuan (ledger "restoran") — teksnya sendiri juga,
+            // supaya kedua Master Barang tidak saling terhubung.
+            $keteranganTujuan = 'Diterima dari Gudang Utama' . $catatan;
 
             // Kurangi stok Gudang Utama pada barang sumber.
             StockOut::create([
@@ -90,7 +100,7 @@ class ItemController extends Controller
                 'user_id'    => $userId,
                 'quantity'   => $request->quantity,
                 'location'   => StockOut::LOCATION_GUDANG,
-                'keterangan' => $keterangan,
+                'keterangan' => $keteranganGudang,
                 'tanggal'    => $request->tanggal,
             ]);
 
@@ -105,7 +115,7 @@ class ItemController extends Controller
                 'user_id'      => $userId,
                 'quantity'     => $request->quantity,
                 'location'     => StockIn::LOCATION_RESTORAN,
-                'keterangan'   => $keterangan,
+                'keterangan'   => $keteranganTujuan,
                 'tanggal'      => $request->tanggal,
                 'is_completed' => true,
             ]);

@@ -116,6 +116,30 @@ class Item extends Model
     }
 
     /**
+     * Aktivitas stok TERAKHIR untuk barang ini, di ledger lokasi milik barang
+     * ini sendiri (Gudang Utama -> ledger "gudang", Gudang Resto/Kasir/Kitchen
+     * -> ledger "restoran"). Dipakai untuk kolom Hari/Tanggal/Jam & Keterangan
+     * di Master Barang. Sengaja HANYA melihat ledger lokasi barang itu sendiri,
+     * supaya keterangan Gudang Utama (mis. "Kirim barang ke Kasir") dan
+     * keterangan barang tujuan (mis. "Diterima dari Gudang Utama") tetap
+     * berdiri sendiri-sendiri dan tidak saling menimpa.
+     */
+    public function latestActivity(): StockIn|StockOut|null
+    {
+        $location = $this->master_location === self::MASTER_GUDANG_UTAMA
+            ? StockIn::LOCATION_GUDANG
+            : StockIn::LOCATION_RESTORAN;
+
+        $masuk  = $this->stockIns()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
+        $keluar = $this->stockOuts()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
+
+        return collect([$masuk, $keluar])
+            ->filter()
+            ->sortByDesc(fn ($event) => $event->created_at)
+            ->first();
+    }
+
+    /**
      * Hitung stok saat ini untuk user tertentu (berdasarkan role/lokasi).
      */
     public function currentStockForRole(string $roleSlug): int
