@@ -10,12 +10,20 @@
     <i class="bi bi-box-seam-fill"></i> Master Barang
 </a>
 
-<a href="{{ route('admin.stock.index') }}" class="nav-link {{ request()->routeIs('admin.stock.index') ? 'active' : '' }}">
-    <i class="bi bi-layers-fill"></i> Stock Gudang & Resto
+<a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="nav-link {{ request()->routeIs('admin.stock.index') && request('filter') === 'gudang_utama' ? 'active' : '' }}">
+    <i class="bi bi-building"></i> Stock Gudang Utama
 </a>
 
-<a href="{{ route('admin.stock_kasir_kitchen.index') }}" class="nav-link {{ request()->routeIs('admin.stock_kasir_kitchen.*') ? 'active' : '' }}">
-    <i class="bi bi-layers-fill"></i> Stock Kasir & Kitchen
+<a href="{{ route('admin.stock.index', ['filter' => 'gudang_resto']) }}" class="nav-link {{ request()->routeIs('admin.stock.index') && request('filter') === 'gudang_resto' ? 'active' : '' }}">
+    <i class="bi bi-shop"></i> Stock Gudang Resto
+</a>
+
+<a href="{{ route('admin.stock_kasir_kitchen.index', ['filter' => 'kasir']) }}" class="nav-link {{ request()->routeIs('admin.stock_kasir_kitchen.*') && request('filter') === 'kasir' ? 'active' : '' }}">
+    <i class="bi bi-cash-coin"></i> Stock Kasir
+</a>
+
+<a href="{{ route('admin.stock_kasir_kitchen.index', ['filter' => 'kitchen']) }}" class="nav-link {{ request()->routeIs('admin.stock_kasir_kitchen.*') && request('filter') === 'kitchen' ? 'active' : '' }}">
+    <i class="bi bi-egg-fried"></i> Stock Kitchen
 </a>
 
 <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">

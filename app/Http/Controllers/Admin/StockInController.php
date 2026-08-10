@@ -12,23 +12,62 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
 
-/**
- * Barang Masuk Hari Ini — Admin mencatat penerimaan barang dari Supplier.
- * Nama barang diketik bebas: kalau kombinasi (nama + Master Barang + satuan)
- * belum pernah ada, otomatis dibuat baru. Barang dengan nama sama tapi Master
- * Barang ATAU satuan berbeda dianggap barang terpisah (stok tidak tercampur).
- * Tanggal & jam selalu otomatis mengikuti waktu saat data dicatat.
- */
 class StockInController extends Controller
 {
-    public function index(Request $request): View
+    public const LOKASI_LABELS = [
+        Item::MASTER_GUDANG_UTAMA => 'Gudang Utama',
+        Item::MASTER_GUDANG_RESTO => 'Gudang Resto',
+        Item::MASTER_KASIR        => 'Kasir',
+        Item::MASTER_KITCHEN      => 'Kitchen',
+    ];
+
+    private const LOKASI_ICONS = [
+        Item::MASTER_GUDANG_UTAMA => 'bi-building',
+        Item::MASTER_GUDANG_RESTO => 'bi-shop',
+        Item::MASTER_KASIR        => 'bi-cash-coin',
+        Item::MASTER_KITCHEN      => 'bi-egg-fried',
+    ];
+
+    private const LOKASI_GRADIENTS = [
+        Item::MASTER_GUDANG_UTAMA => 'gradient-orange',
+        Item::MASTER_GUDANG_RESTO => 'gradient-green',
+        Item::MASTER_KASIR        => 'gradient-red',
+        Item::MASTER_KITCHEN      => 'gradient-amber',
+    ];
+
+    private const JUMLAH_BARIS = 25;
+
+    public function index(): View
     {
-        // Default tampilkan hari ini saja ("Barang Masuk Hari Ini"). Admin
-        // bisa pilih tanggal lain lewat filter tanggal untuk menengok histori,
-        // lalu tombol Reset akan mengembalikan ke hari ini.
+        $today = today();
+
+        $rekapHariIni = StockIn::query()
+            ->join('items', 'items.id', '=', 'stock_ins.item_id')
+            ->whereDate('stock_ins.tanggal', $today->toDateString())
+            ->selectRaw('items.master_location, COUNT(*) as total')
+            ->groupBy('items.master_location')
+            ->pluck('total', 'items.master_location');
+
+        $lokasiList = [];
+        foreach (self::LOKASI_LABELS as $key => $label) {
+            $lokasiList[] = [
+                'key'      => $key,
+                'label'    => $label,
+                'icon'     => self::LOKASI_ICONS[$key],
+                'gradient' => self::LOKASI_GRADIENTS[$key],
+                'total'    => (int) ($rekapHariIni[$key] ?? 0),
+            ];
+        }
+
+        return view('admin.stock_in.index', compact('lokasiList', 'today'));
+    }
+
+    public function riwayat(Request $request): View
+    {
         $tanggal = $request->filled('tanggal')
             ? Carbon::parse($request->input('tanggal'))
             : today();
@@ -40,76 +79,111 @@ class StockInController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.stock_in.index', compact('stockIns', 'tanggal'));
+        return view('admin.stock_in.riwayat', compact('stockIns', 'tanggal'));
     }
 
-    public function create(): View
+    public function create(string $lokasi): View
     {
-        return view('admin.stock_in.create');
+        $lokasiLabel = self::LOKASI_LABELS[$lokasi];
+        $jumlahBaris = self::JUMLAH_BARIS;
+
+        $namaBarangSuggestions = Item::where('master_location', $lokasi)
+            ->orderBy('name')
+            ->pluck('name');
+
+        $satuanSuggestions = Item::where('master_location', $lokasi)
+            ->distinct()
+            ->orderBy('unit')
+            ->pluck('unit');
+
+        return view('admin.stock_in.create', compact('lokasi', 'lokasiLabel', 'jumlahBaris', 'namaBarangSuggestions', 'satuanSuggestions'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, string $lokasi): RedirectResponse
     {
+        $lokasiLabel = self::LOKASI_LABELS[$lokasi];
+
         $request->validate([
-            'item_name'       => 'required|string|max:150',
-            'unit'            => 'required|string|max:30',
-            'master_location' => 'required|in:gudang_utama,gudang_resto,kasir,kitchen',
-            'quantity'        => 'required|integer|min:1',
-            'keterangan'      => 'nullable|string|max:255',
+            'rows'                => 'required|array',
+            'rows.*.item_name'    => 'nullable|string|max:150',
+            'rows.*.quantity'     => 'nullable|integer|min:1',
+            'rows.*.unit'         => 'nullable|string|max:30',
+            'rows.*.keterangan'   => 'nullable|string|max:255',
         ]);
 
-        // Kunci pencocokan barang = nama + Master Barang + satuan. Jadi
-        // "Milo" satuan Renteng dan "Milo" satuan Pack tetap 2 barang yang
-        // terpisah walaupun nama & Master Barang-nya sama — stoknya baru
-        // digabung kalau nama, Master Barang, DAN satuannya sama persis.
-        $item = Item::firstOrCreate(
-            [
-                'name'            => trim($request->item_name),
-                'master_location' => $request->master_location,
-                'unit'            => $request->unit,
-            ],
-            [
-                'min_stock' => 0,
-            ]
-        );
+        $rowsToSave = collect($request->input('rows', []))
+            ->filter(fn ($row) => filled($row['item_name'] ?? null));
 
-        // Gudang Utama disimpan di ledger lokasi "gudang". Gudang Resto, Kasir,
-        // dan Kitchen sama-sama berbagi ledger lokasi "restoran" (sesuai alur
-        // Supplier -> Gudang -> Restoran -> Kasir/Kitchen), supaya stokRestoran()
-        // ikut bertambah dan otomatis muncul di Stock Keseluruhan Barang.
-        $ledgerLocation = $item->master_location === Item::MASTER_GUDANG_UTAMA
-            ? StockIn::LOCATION_GUDANG
-            : StockIn::LOCATION_RESTORAN;
+        if ($rowsToSave->isEmpty()) {
+            return back()->withErrors(['rows' => 'Isi minimal 1 baris sebelum kirim.'])->withInput();
+        }
 
-        // Keterangan: pakai persis apa yang diketik admin. Kalau admin tidak
-        // mengisi apa-apa, baru pakai default "Diterima" — supaya tidak pernah
-        // dobel kalau admin sendiri kebetulan mengetik "Diterima".
-        $keteranganFinal = $request->filled('keterangan')
-            ? trim($request->keterangan)
-            : 'Diterima';
+        foreach ($rowsToSave as $index => $row) {
+            if (blank($row['quantity'] ?? null) || blank($row['unit'] ?? null)) {
+                return back()
+                    ->withErrors(['rows' => 'Baris ' . ((int) $index + 1) . ' ("' . $row['item_name'] . '") — Jumlah dan Satuan wajib diisi.'])
+                    ->withInput();
+            }
+        }
 
-        $stockIn = StockIn::create([
-            'item_id'      => $item->id,
-            'supplier_id'  => null,
-            'user_id'      => Auth::id(),
-            'quantity'     => $request->quantity,
-            'location'     => $ledgerLocation,
-            'keterangan'   => $keteranganFinal,
-            'tanggal'      => today(),
-            'is_completed' => true,
-        ]);
+        $userId      = Auth::id();
+        $savedCount  = 0;
+        $notifyBatch = collect();
 
-        $this->notifyStockIn($item, $stockIn);
+        DB::transaction(function () use ($rowsToSave, $lokasi, $userId, &$savedCount, &$notifyBatch) {
+            foreach ($rowsToSave as $row) {
+                $item = Item::firstOrCreate(
+                    [
+                        'name'            => trim($row['item_name']),
+                        'master_location' => $lokasi,
+                        'unit'            => trim($row['unit']),
+                    ],
+                    ['min_stock' => 0]
+                );
 
-        return redirect()->route('admin.stock_in.index')
-            ->with('success', 'Barang masuk hari ini berhasil dicatat & otomatis masuk ke Master Barang ' . $item->masterLocationLabel() . '.');
+                $ledgerLocation = $item->master_location === Item::MASTER_GUDANG_UTAMA
+                    ? StockIn::LOCATION_GUDANG
+                    : StockIn::LOCATION_RESTORAN;
+
+                $keteranganFinal = filled($row['keterangan'] ?? null)
+                    ? trim($row['keterangan'])
+                    : 'Diterima';
+
+                $stockIn = StockIn::create([
+                    'item_id'      => $item->id,
+                    'supplier_id'  => null,
+                    'user_id'      => $userId,
+                    'quantity'     => $row['quantity'],
+                    'location'     => $ledgerLocation,
+                    'keterangan'   => $keteranganFinal,
+                    'tanggal'      => today(),
+                    'is_completed' => true,
+                ]);
+
+                $savedCount++;
+                $notifyBatch->push([$item, $stockIn]);
+            }
+        });
+
+        foreach ($notifyBatch as [$item, $stockIn]) {
+            $this->notifyStockIn($item, $stockIn);
+        }
+
+        return redirect()
+            ->to($this->stockPageUrl($lokasi))
+            ->with('success', $savedCount . ' barang berhasil dicatat & otomatis masuk ke Master Barang ' . $lokasiLabel . '.');
     }
 
-    /**
-     * Beritahu Kasir/Kitchen kalau ada barang baru masuk ke bagian mereka.
-     * Gudang Utama & Gudang Resto tidak dikirimi notifikasi lintas role
-     * karena keduanya memang murni dikelola Admin sendiri.
-     */
+    private function stockPageUrl(string $lokasi): string
+    {
+        return match ($lokasi) {
+            Item::MASTER_GUDANG_UTAMA, Item::MASTER_GUDANG_RESTO
+                => route('admin.stock.index', ['filter' => $lokasi]),
+            Item::MASTER_KASIR, Item::MASTER_KITCHEN
+                => route('admin.stock_kasir_kitchen.index', ['filter' => $lokasi]),
+        };
+    }
+
     private function notifyStockIn(Item $item, StockIn $stockIn): void
     {
         $roleSlug = match ($item->master_location) {

@@ -60,10 +60,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/stock-kasir-kitchen', [StockController::class, 'kasirKitchen'])->name('stock_kasir_kitchen.index');
         Route::get('/stock-kitchen', [StockKitchenReportController::class, 'index'])->name('stock_kitchen.index');
 
-        // Barang Masuk Gudang (admin)
-        Route::get('/stock-masuk',        [AdminStockInController::class, 'index'])->name('stock_in.index');
-        Route::get('/stock-masuk/tambah', [AdminStockInController::class, 'create'])->name('stock_in.create');
-        Route::post('/stock-masuk',       [AdminStockInController::class, 'store'])->name('stock_in.store');
+        // Barang Masuk Harian (admin) — pilih divisi dulu, baru isi tabel massal
+        Route::get('/stock-masuk',                 [AdminStockInController::class, 'index'])->name('stock_in.index');
+        Route::get('/stock-masuk/riwayat',          [AdminStockInController::class, 'riwayat'])->name('stock_in.riwayat');
+        Route::get('/stock-masuk/tambah/{lokasi}',  [AdminStockInController::class, 'create'])->name('stock_in.create')
+            ->whereIn('lokasi', ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen']);
+        Route::post('/stock-masuk/{lokasi}',        [AdminStockInController::class, 'store'])->name('stock_in.store')
+            ->whereIn('lokasi', ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen']);
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{order}/approve', [AdminOrderController::class, 'approve'])->name('orders.approve');

@@ -24,7 +24,7 @@
 {{-- Quick Actions --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3 col-lg-2">
-        <a href="{{ route('admin.stock_in.create') }}" class="kk-quick-action">
+        <a href="{{ route('admin.stock_in.index') }}" class="kk-quick-action">
             <i class="bi bi-box-arrow-in-down-right" style="color:var(--kk-success);"></i>
             <span>Barang Masuk</span>
         </a>
