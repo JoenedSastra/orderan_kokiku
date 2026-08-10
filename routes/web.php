@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/items', [ItemController::class, 'index'])->name('items.index');
         Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
         Route::post('/items/kirim-barang', [ItemController::class, 'send'])->name('items.send');
+        Route::delete('/items/keterangan/{catatanTemplate}', [ItemController::class, 'destroyKeteranganSuggestion'])->name('items.keterangan.destroy');
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');

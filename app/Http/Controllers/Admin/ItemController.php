@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CatatanTemplate;
 use App\Models\Item;
 use App\Models\StockIn;
 use App\Models\StockOut;
@@ -31,13 +32,24 @@ class ItemController extends Controller
             'kitchen'      => $items->where('master_location', Item::MASTER_KITCHEN)->values(),
         ];
 
-        $keteranganSuggestions = StockOut::whereNotNull('keterangan')
-            ->where('keterangan', '!=', '')
-            ->orderBy('keterangan')
-            ->distinct()
-            ->pluck('keterangan');
+        // Murni catatan yang PERNAH diketik manual oleh admin — tidak ada teks
+        // otomatis/sistem ("Kirim barang ke ...", dst) yang ikut jadi saran.
+        $keteranganSuggestions = CatatanTemplate::orderBy('teks')->get(['id', 'teks']);
 
         return view('admin.items.index', compact('grouped', 'keteranganSuggestions'));
+    }
+
+    /**
+     * Hapus satu catatan dari daftar saran Keterangan. Dipanggil lewat AJAX
+     * dari tombol "x" di dropdown saran — tidak memengaruhi keterangan yang
+     * sudah tersimpan di riwayat StockIn/StockOut manapun, cuma menghapus
+     * saran-nya saja dari daftar pilihan berikutnya.
+     */
+    public function destroyKeteranganSuggestion(CatatanTemplate $catatanTemplate): \Illuminate\Http\JsonResponse
+    {
+        $catatanTemplate->delete();
+
+        return response()->json(['success' => true]);
     }
 
     public function destroy(Item $item): RedirectResponse
@@ -83,8 +95,15 @@ class ItemController extends Controller
         ];
 
         DB::transaction(function () use ($request, $sourceItem, $destinationLabels) {
-            $userId  = Auth::id();
-            $catatan = $request->filled('keterangan') ? ' — ' . trim($request->keterangan) : '';
+            $userId      = Auth::id();
+            $catatanBaku = $request->filled('keterangan') ? trim($request->keterangan) : null;
+            $catatan     = $catatanBaku ? ' — ' . $catatanBaku : '';
+
+            // Simpan catatan mentah (bukan teks otomatis) ke daftar saran,
+            // supaya bisa dipilih lagi lain kali tanpa perlu ketik ulang.
+            if ($catatanBaku) {
+                CatatanTemplate::firstOrCreate(['teks' => $catatanBaku]);
+            }
 
             // Keterangan di sisi Gudang Utama (ledger "gudang") — berdiri sendiri,
             // tidak dipakai ulang di sisi tujuan.

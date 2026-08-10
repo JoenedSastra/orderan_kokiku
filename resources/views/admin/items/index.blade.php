@@ -132,15 +132,11 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
                         @error('destination')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3 position-relative">
                         <label class="form-label">Keterangan</label>
-                        <input type="text" name="keterangan" list="keteranganList" class="form-control @error('keterangan') is-invalid @enderror" placeholder="Pilih catatan lama atau ketik catatan baru (opsional)" value="{{ old('keterangan') }}" autocomplete="off">
-                        <datalist id="keteranganList">
-                            @foreach($keteranganSuggestions as $saran)
-                            <option value="{{ $saran }}"></option>
-                            @endforeach
-                        </datalist>
-                        @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <input type="text" name="keterangan" id="keteranganInput" class="form-control @error('keterangan') is-invalid @enderror" placeholder="Pilih catatan lama atau ketik catatan baru (opsional)" value="{{ old('keterangan') }}" autocomplete="off">
+                        <div id="keteranganDropdown" class="list-group position-absolute w-100 shadow-sm" style="z-index:1060; max-height:220px; overflow-y:auto; display:none; top:100%;"></div>
+                        @error('keterangan')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="row g-2 mb-1">
@@ -197,6 +193,80 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
             const opt = this.options[this.selectedIndex];
             if (opt && opt.value) {
                 kirimQuantity.max = opt.getAttribute('data-stok');
+            }
+        });
+
+        // Dropdown saran Keterangan: pilih catatan lama, ketik manual, atau
+        // hapus catatan lama lewat tombol "x".
+        let catatanList = @json($keteranganSuggestions);
+        const keteranganInput = document.getElementById('keteranganInput');
+        const keteranganDropdown = document.getElementById('keteranganDropdown');
+
+        function renderKeteranganDropdown(filterText) {
+            const term = (filterText || '').toLowerCase();
+            const items = catatanList.filter(function (c) {
+                return c.teks.toLowerCase().includes(term);
+            });
+
+            if (items.length === 0) {
+                keteranganDropdown.style.display = 'none';
+                keteranganDropdown.innerHTML = '';
+                return;
+            }
+
+            keteranganDropdown.innerHTML = items.map(function (c) {
+                return '<div class="list-group-item d-flex justify-content-between align-items-center py-2" style="cursor:pointer;">' +
+                    '<span class="kk-catatan-pick flex-grow-1" data-teks="' + c.teks.replace(/"/g, '&quot;') + '">' + c.teks + '</span>' +
+                    '<button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2 kk-catatan-hapus" data-id="' + c.id + '" title="Hapus catatan ini dari daftar saran">' +
+                    '<i class="bi bi-x-lg"></i></button>' +
+                    '</div>';
+            }).join('');
+            keteranganDropdown.style.display = 'block';
+        }
+
+        keteranganInput.addEventListener('focus', function () {
+            renderKeteranganDropdown(this.value);
+        });
+        keteranganInput.addEventListener('input', function () {
+            renderKeteranganDropdown(this.value);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.kk-catatan-pick')) {
+                const span = e.target.closest('.kk-catatan-pick');
+                keteranganInput.value = span.getAttribute('data-teks');
+                keteranganDropdown.style.display = 'none';
+                return;
+            }
+
+            const tombolHapus = e.target.closest('.kk-catatan-hapus');
+            if (tombolHapus) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!confirm('Hapus catatan ini dari daftar saran? Riwayat pengiriman yang sudah tercatat tidak akan berubah.')) {
+                    return;
+                }
+
+                const id = tombolHapus.getAttribute('data-id');
+
+                fetch('{{ url("admin/items/keterangan") }}/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                }).then(function (res) {
+                    if (res.ok) {
+                        catatanList = catatanList.filter(function (c) { return String(c.id) !== String(id); });
+                        renderKeteranganDropdown(keteranganInput.value);
+                    }
+                });
+                return;
+            }
+
+            if (!keteranganDropdown.contains(e.target) && e.target !== keteranganInput) {
+                keteranganDropdown.style.display = 'none';
             }
         });
     });
