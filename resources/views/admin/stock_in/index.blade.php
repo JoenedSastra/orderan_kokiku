@@ -35,12 +35,11 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
         <table class="table table-hover mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Hari</th>
-                    <th>Tanggal</th>
-                    <th>Jam</th>
-                    <th>Barang</th>
+                    <th>No</th>
+                    <th>Nama Barang</th>
                     <th>Jumlah</th>
-                    <th>Master Barang</th>
+                    <th>Satuan</th>
+                    <th>Master</th>
                     <th>Keterangan</th>
                     <th>Dicatat Oleh</th>
                 </tr>
@@ -48,11 +47,10 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
             <tbody>
                 @forelse($stockIns as $s)
                 <tr>
-                    <td>{{ $hariIndo[$s->tanggal->format('l')] }}</td>
-                    <td>{{ $s->tanggal->format('d-m-Y') }}</td>
-                    <td>{{ $s->created_at->format('H:i') }}</td>
+                    <td>{{ $loop->iteration }}</td>
                     <td>{{ $s->item->name }}</td>
-                    <td>{{ $s->quantity }} {{ $s->item->unit }}</td>
+                    <td>{{ $s->quantity }}</td>
+                    <td>{{ $s->item->unit }}</td>
                     <td><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
                     <td>
                         {{ $s->keterangan ?? '-' }}
@@ -63,7 +61,7 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
                     <td>{{ $s->user->name }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center text-muted py-3">Belum ada barang masuk pada tanggal ini.</td></tr>
+                <tr><td colspan="7" class="text-center text-muted py-3">Belum ada barang masuk pada tanggal ini.</td></tr>
                 @endforelse
             </tbody>
         </table>

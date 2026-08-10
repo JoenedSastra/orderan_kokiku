@@ -53,6 +53,7 @@ class ItemController extends Controller
             'destination' => 'required|in:gudang_resto,kasir,kitchen',
             'quantity'    => 'required|integer|min:1',
             'tanggal'     => 'required|date',
+            'keterangan'  => 'nullable|string|max:255',
         ]);
 
         $sourceItem = Item::findOrFail($request->item_id);
@@ -78,6 +79,10 @@ class ItemController extends Controller
         DB::transaction(function () use ($request, $sourceItem, $destinationLabels) {
             $userId     = Auth::id();
             $keterangan = 'Kirim dari Gudang Utama ke ' . $destinationLabels[$request->destination];
+
+            if ($request->filled('keterangan')) {
+                $keterangan .= ' — ' . trim($request->keterangan);
+            }
 
             // Kurangi stok Gudang Utama pada barang sumber.
             StockOut::create([

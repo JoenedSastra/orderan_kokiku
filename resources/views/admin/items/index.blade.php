@@ -118,6 +118,12 @@
                         @error('destination')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">Keterangan</label>
+                        <input type="text" name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" placeholder="Catatan tentang pengiriman ini (opsional)" value="{{ old('keterangan') }}">
+                        @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
                     <div class="row g-2 mb-1">
                         <div class="col-6">
                             <label class="form-label">Jumlah <span class="text-danger">*</span></label>
@@ -159,20 +165,8 @@
         }
 
         toggleKirimButton();
-
-        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabEl) {
-            tabEl.addEventListener('shown.bs.tab', toggleKirimButton);
-        });
-
-        // Batasi jumlah maksimal sesuai stok Gudang Utama barang yang dipilih.
-        const kirimItemSelect = document.getElementById('kirimItemSelect');
-        const kirimQuantity = document.getElementById('kirimQuantity');
-
-        kirimItemSelect.addEventListener('change', function () {
-            const opt = this.options[this.selectedIndex];
-            if (opt && opt.value) {
-                kirimQuantity.max = opt.getAttribute('data-stok');
-            }
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabLink) {
+            tabLink.addEventListener('shown.bs.tab', toggleKirimButton);
         });
     });
 </script>
