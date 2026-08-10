@@ -123,18 +123,19 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
 
                     <div class="mb-3">
                         <label class="form-label">Kirim ke <span class="text-danger">*</span></label>
-                        <select name="destination" class="form-select @error('destination') is-invalid @enderror" required>
+                        <select name="destination" id="kirimDestinationSelect" class="form-select @error('destination') is-invalid @enderror" required>
                             <option value="">— Pilih Tujuan —</option>
                             <option value="gudang_resto">Gudang Resto</option>
                             <option value="kasir">Kasir</option>
                             <option value="kitchen">Kitchen</option>
                         </select>
                         @error('destination')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div id="keteranganPreview" class="form-text"></div>
                     </div>
 
                     <div class="mb-3 position-relative">
-                        <label class="form-label">Keterangan</label>
-                        <input type="text" name="keterangan" id="keteranganInput" class="form-control @error('keterangan') is-invalid @enderror" placeholder="Pilih catatan lama atau ketik catatan baru (opsional)" value="{{ old('keterangan') }}" autocomplete="off">
+                        <label class="form-label">Catatan Tambahan</label>
+                        <input type="text" name="keterangan" id="keteranganInput" class="form-control @error('keterangan') is-invalid @enderror" placeholder="Opsional — ditambahkan di belakang keterangan otomatis di atas" value="{{ old('keterangan') }}" autocomplete="off">
                         <div id="keteranganDropdown" class="list-group position-absolute w-100 shadow-sm" style="z-index:1060; max-height:220px; overflow-y:auto; display:none; top:100%;"></div>
                         @error('keterangan')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
@@ -195,6 +196,27 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
                 kirimQuantity.max = opt.getAttribute('data-stok');
             }
         });
+
+        // Pratinjau keterangan otomatis, mengikuti tujuan yang dipilih.
+        // Ini bukan input yang dikirim — cuma info supaya admin tahu teks apa
+        // yang bakal otomatis tersimpan, jadi tidak perlu ketik ulang manual.
+        const destinationSelect = document.getElementById('kirimDestinationSelect');
+        const keteranganPreview = document.getElementById('keteranganPreview');
+        const destinationLabels = {
+            gudang_resto: 'Gudang Resto',
+            kasir: 'Kasir',
+            kitchen: 'Kitchen',
+        };
+
+        function updateKeteranganPreview() {
+            const label = destinationLabels[destinationSelect.value];
+            keteranganPreview.textContent = label
+                ? 'Otomatis tersimpan: "Kirim dari Gudang Utama ke ' + label + '" di Gudang Utama, dan "Diterima" di ' + label + '.'
+                : '';
+        }
+
+        destinationSelect.addEventListener('change', updateKeteranganPreview);
+        updateKeteranganPreview();
 
         // Dropdown saran Keterangan: pilih catatan lama, ketik manual, atau
         // hapus catatan lama lewat tombol "x".

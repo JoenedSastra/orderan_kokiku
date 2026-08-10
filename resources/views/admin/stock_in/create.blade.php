@@ -53,9 +53,10 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Keterangan</label>
+            <label class="form-label">Catatan Tambahan</label>
             <input type="text" name="keterangan" class="form-control @error('keterangan') is-invalid @enderror"
-                   value="{{ old('keterangan') }}" placeholder="Catatan tentang barang ini (opsional)">
+                   value="{{ old('keterangan') }}" placeholder="Opsional — akan tersimpan sebagai: Diterima — catatan ini">
+            <div class="form-text">Keterangan otomatis tersimpan sebagai "Diterima". Isi kolom ini kalau mau menambahkan catatan tambahan di belakangnya.</div>
             @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
 
