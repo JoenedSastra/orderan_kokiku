@@ -97,7 +97,6 @@ class ItemController extends Controller
         DB::transaction(function () use ($request, $sourceItem, $destinationLabels) {
             $userId      = Auth::id();
             $catatanBaku = $request->filled('keterangan') ? trim($request->keterangan) : null;
-            $catatan     = $catatanBaku ? ' — ' . $catatanBaku : '';
 
             // Simpan catatan mentah (bukan teks otomatis) ke daftar saran,
             // supaya bisa dipilih lagi lain kali tanpa perlu ketik ulang.
@@ -105,13 +104,12 @@ class ItemController extends Controller
                 CatatanTemplate::firstOrCreate(['teks' => $catatanBaku]);
             }
 
-            // Keterangan di sisi Gudang Utama (ledger "gudang") — berdiri sendiri,
-            // tidak dipakai ulang di sisi tujuan.
-            $keteranganGudang = 'Kirim dari Gudang Utama ke ' . $destinationLabels[$request->destination] . $catatan;
-
-            // Keterangan di sisi tujuan (ledger "restoran") — teksnya sendiri juga,
-            // supaya kedua Master Barang tidak saling terhubung.
-            $keteranganTujuan = 'Diterima' . $catatan;
+            // Keterangan: pakai persis apa yang diketik admin (dipakai sama
+            // di kedua sisi — Gudang Utama & tujuan). Kalau admin tidak
+            // mengisi apa-apa, baru pakai default berikut supaya tidak
+            // pernah dobel seperti "Diterima — Diterima".
+            $keteranganGudang = $catatanBaku ?: ('Kirim ke ' . $destinationLabels[$request->destination]);
+            $keteranganTujuan = $catatanBaku ?: 'Diterima';
 
             // Kurangi stok Gudang Utama pada barang sumber.
             StockOut::create([

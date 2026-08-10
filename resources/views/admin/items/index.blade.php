@@ -53,14 +53,19 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
                             <th>Barang</th>
                             <th>Hari, Tanggal &amp; Jam</th>
                             <th>Satuan</th>
-                            <th>Keterangan</th>
+                            <th>Keterangan Masuk</th>
+                            <th>Keterangan Keluar</th>
                             <th class="text-end">Stock</th>
                             <th style="width:1%;white-space:nowrap;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($groupItems as $item)
-                        @php $activity = $item->latestActivity(); @endphp
+                        @php
+                            $activity = $item->latestActivity();
+                            $masuk    = $item->latestMasukActivity();
+                            $keluar   = $item->latestKeluarActivity();
+                        @endphp
                         <tr class="kk-mb-row" data-name="{{ strtolower($item->name) }}">
                             <td>{{ $loop->iteration }}</td>
                             <td class="fw-semibold">{{ $item->name }}</td>
@@ -72,7 +77,8 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
                                 @endif
                             </td>
                             <td>{{ $item->unit }}</td>
-                            <td>{{ $activity->keterangan ?? '-' }}</td>
+                            <td>{{ $masuk->keterangan ?? '-' }}</td>
+                            <td>{{ $keluar->keterangan ?? '-' }}</td>
                             <td class="text-end">
                                 <span class="badge {{ $item->totalStock() <= $item->min_stock ? 'bg-danger' : 'bg-primary' }}">
                                     {{ $item->totalStock() }}
@@ -87,7 +93,7 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="7" class="text-center text-muted py-3">Belum ada barang di bagian ini.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted py-3">Belum ada barang di bagian ini.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -211,7 +217,7 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
         function updateKeteranganPreview() {
             const label = destinationLabels[destinationSelect.value];
             keteranganPreview.textContent = label
-                ? 'Otomatis tersimpan: "Kirim dari Gudang Utama ke ' + label + '" di Gudang Utama, dan "Diterima" di ' + label + '.'
+                ? 'Kalau "Catatan Tambahan" diisi, itu yang tersimpan sebagai keterangan (di Gudang Utama & di ' + label + '). Kalau dikosongkan, otomatis: "Kirim ke ' + label + '" di Gudang Utama, "Diterima" di ' + label + '.'
                 : '';
         }
 

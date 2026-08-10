@@ -81,11 +81,12 @@ class StockInController extends Controller
             ? StockIn::LOCATION_GUDANG
             : StockIn::LOCATION_RESTORAN;
 
-        // Keterangan selalu berbasis "Diterima" (konsisten dengan alur Kirim
-        // Barang di Master Barang). Catatan tambahan yang diketik admin
-        // ditempel di belakang, bukan menggantikan teks "Diterima".
-        $catatanBaku = $request->filled('keterangan') ? trim($request->keterangan) : null;
-        $keteranganFinal = 'Diterima' . ($catatanBaku ? ' — ' . $catatanBaku : '');
+        // Keterangan: pakai persis apa yang diketik admin. Kalau admin tidak
+        // mengisi apa-apa, baru pakai default "Diterima" — supaya tidak pernah
+        // dobel kalau admin sendiri kebetulan mengetik "Diterima".
+        $keteranganFinal = $request->filled('keterangan')
+            ? trim($request->keterangan)
+            : 'Diterima';
 
         $stockIn = StockIn::create([
             'item_id'      => $item->id,

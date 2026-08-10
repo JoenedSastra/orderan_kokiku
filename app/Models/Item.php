@@ -140,6 +140,35 @@ class Item extends Model
     }
 
     /**
+     * Catatan Barang Masuk TERAKHIR untuk barang ini (khusus StockIn saja),
+     * di ledger lokasi milik barang ini sendiri. Dipakai untuk kolom
+     * "Keterangan Masuk" di Master Barang.
+     */
+    public function latestMasukActivity(): ?StockIn
+    {
+        $location = $this->master_location === self::MASTER_GUDANG_UTAMA
+            ? StockIn::LOCATION_GUDANG
+            : StockIn::LOCATION_RESTORAN;
+
+        return $this->stockIns()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
+    }
+
+    /**
+     * Catatan Barang Keluar TERAKHIR untuk barang ini (khusus StockOut saja),
+     * di ledger lokasi milik barang ini sendiri. Dipakai untuk kolom
+     * "Keterangan Keluar" di Master Barang — hanya terisi untuk barang
+     * Gudang Utama yang pernah dikirim ke divisi lain.
+     */
+    public function latestKeluarActivity(): ?StockOut
+    {
+        $location = $this->master_location === self::MASTER_GUDANG_UTAMA
+            ? StockOut::LOCATION_GUDANG
+            : StockOut::LOCATION_RESTORAN;
+
+        return $this->stockOuts()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
+    }
+
+    /**
      * Hitung stok saat ini untuk user tertentu (berdasarkan role/lokasi).
      */
     public function currentStockForRole(string $roleSlug): int
