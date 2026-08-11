@@ -732,15 +732,22 @@ body {
 }
 
 .kk-auth-brand-icon {
-    width: 48px; height: 48px;
-    background: linear-gradient(135deg, var(--kk-orange) 0%, var(--kk-orange-dark) 100%);
-    border-radius: var(--kk-radius);
+    width: 60px; height: 60px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: #fff;
-    box-shadow: var(--kk-shadow-orange);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.kk-auth-brand-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .kk-auth-brand-name {

@@ -33,7 +33,6 @@
                     <td>{{ $s->keterangan ?? '-' }}</td>
                     <td>
                         <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
-                        {{ $s->user->name }}
                     </td>
                 </tr>
                 @empty

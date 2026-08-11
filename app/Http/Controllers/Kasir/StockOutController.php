@@ -15,7 +15,7 @@ class StockOutController extends Controller
 {
     public function index(): View
     {
-        $stockOuts = StockOut::with('item')
+        $stockOuts = StockOut::with(['item', 'user.role'])
             ->where('user_id', Auth::id())
             ->latest()
             ->paginate(15);

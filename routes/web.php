@@ -78,9 +78,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:kasir')->prefix('kasir')->name('kasir.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
 
-        Route::get('/stock-masuk',        [KasirStockInController::class,  'index'])->name('stock_in.index');
-        Route::get('/stock-masuk/tambah', [KasirStockInController::class,  'create'])->name('stock_in.create');
-        Route::post('/stock-masuk',       [KasirStockInController::class,  'store'])->name('stock_in.store');
+        Route::get('/stock-masuk', [KasirStockInController::class, 'index'])->name('stock_in.index');
 
         Route::get('/stock-keluar',        [KasirStockOutController::class, 'index'])->name('stock_out.index');
         Route::get('/stock-keluar/tambah', [KasirStockOutController::class, 'create'])->name('stock_out.create');
@@ -96,9 +94,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kitchen'])->name('dashboard');
         Route::get('/stock-harian', [StockHarianController::class, 'index'])->name('stock_harian.index');
 
-        Route::get('/stock-masuk',        [KitchenStockInController::class,  'index'])->name('stock_in.index');
-        Route::get('/stock-masuk/tambah', [KitchenStockInController::class,  'create'])->name('stock_in.create');
-        Route::post('/stock-masuk',       [KitchenStockInController::class,  'store'])->name('stock_in.store');
+        Route::get('/stock-masuk', [KitchenStockInController::class, 'index'])->name('stock_in.index');
 
         Route::get('/stock-keluar',        [KitchenStockOutController::class, 'index'])->name('stock_out.index');
         Route::get('/stock-keluar/tambah', [KitchenStockOutController::class, 'create'])->name('stock_out.create');

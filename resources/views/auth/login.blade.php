@@ -9,45 +9,25 @@
         {{-- Brand --}}
         <div class="kk-auth-brand">
             <div class="kk-auth-brand-icon">
-                <i class="bi bi-fire"></i>
+                <img src="{{ asset('images/logo-kokiku.jpeg') }}" alt="Logo Kokiku">
             </div>
             <div>
-                <div class="kk-auth-brand-name">Orderan Kokiku</div>
+                <div class="kk-auth-brand-name">Myhub Kokiku</div>
                 <div class="kk-auth-brand-sub">Inventory System</div>
             </div>
         </div>
 
         {{-- Headline --}}
         <h1 class="kk-auth-headline">
-            Kelola Stok<br>
-            <span>Dapur Anda</span><br>
-            dengan Mudah
+            Kelola Semua<br>
+            <span>Stock Anda</span><br>
+            Dengan Mudah
         </h1>
 
         <p class="kk-auth-sub">
-            Platform manajemen inventaris khusus untuk operasional dapur dan restoran
+            Platform manajemen inventaris operasional resto
             — real-time, cepat, dan andal.
         </p>
-
-        {{-- Feature List --}}
-        <div class="kk-auth-features">
-            <div class="kk-auth-feature">
-                <div class="kk-auth-feature-icon"><i class="bi bi-layers"></i></div>
-                Manajemen stok barang multi-lokasi
-            </div>
-            <div class="kk-auth-feature">
-                <div class="kk-auth-feature-icon"><i class="bi bi-clipboard-check"></i></div>
-                Sistem permintaan & persetujuan barang
-            </div>
-            <div class="kk-auth-feature">
-                <div class="kk-auth-feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
-                Laporan & grafik aktivitas bulanan
-            </div>
-            <div class="kk-auth-feature">
-                <div class="kk-auth-feature-icon"><i class="bi bi-bell"></i></div>
-                Notifikasi real-time antar divisi
-            </div>
-        </div>
     </div>
 
     {{-- RIGHT PANEL (Form) --}}
@@ -74,7 +54,6 @@
                     <input type="email" id="email" name="email"
                            value="{{ old('email') }}"
                            class="form-control @error('email') is-invalid @enderror"
-                           placeholder="nama@email.com"
                            required autofocus>
                 </div>
 
@@ -83,7 +62,6 @@
                     <div class="kk-pw-wrap">
                         <input type="password" id="password" name="password"
                                class="form-control @error('password') is-invalid @enderror"
-                               placeholder="••••••••"
                                required>
                         <button type="button" class="kk-pw-toggle" id="pwToggle" aria-label="Tampilkan password">
                             <i class="bi bi-eye" id="pwToggleIcon"></i>
@@ -104,7 +82,7 @@
             </form>
 
             <div class="text-center mt-4" style="font-size:0.78rem; color:var(--kk-text-light);">
-                &copy; {{ date('Y') }} Orderan Kokiku &mdash; Sistem Inventory Internal
+                Myhub Kokiku Sistem Inventory Internal
             </div>
         </div>
     </div>
