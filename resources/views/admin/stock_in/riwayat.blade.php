@@ -36,8 +36,9 @@ $adminDeletable = ['gudang_utama', 'gudang_resto'];
 
 {{-- Toolbar: kalender + tombol --}}
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+
     {{-- Tombol Kembali --}}
-    <a href="{{ route('admin.stock_in.index') }}" class="btn btn-danger btn-sm">
+    <a href="{{ route('admin.stock_in.index') }}?dari=kembali" class="btn btn-danger btn-sm">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
 
