@@ -188,18 +188,10 @@ class StockInController extends Controller
             return back()->withErrors(['ids' => 'Pilih minimal 1 item untuk dihapus.']);
         }
 
-        // Admin hanya boleh hapus gudang_utama & gudang_resto
-        $adminDeletable = [Item::MASTER_GUDANG_UTAMA, Item::MASTER_GUDANG_RESTO];
-
         $deleted = 0;
         foreach ($ids as $id) {
-            $stockIn = StockIn::with('item')->find($id);
+            $stockIn = StockIn::find($id);
             if (!$stockIn) continue;
-
-            if (!in_array($stockIn->item->master_location, $adminDeletable)) {
-                // Lewati — bukan wewenang admin
-                continue;
-            }
 
             $stockIn->delete();
             $deleted++;

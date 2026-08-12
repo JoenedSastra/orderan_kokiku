@@ -14,8 +14,8 @@ $lokasiOptions = [
     'kitchen'       => 'Kitchen',
 ];
 
-// Lokasi yang boleh dihapus oleh admin
-$adminDeletable = ['gudang_utama', 'gudang_resto'];
+// Semua lokasi bisa dihapus oleh admin
+$adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 @endphp
 
 @push('topbar-extra')
@@ -148,12 +148,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto'];
                     <tr>
                         {{-- Checkbox hapus --}}
                         <td class="text-center delete-col d-none align-middle">
-                            @if($canDelete)
-                                <input type="checkbox" name="ids[]" value="{{ $s->id }}" class="form-check-input row-check">
-                            @else
-                                <input type="checkbox" class="form-check-input" disabled
-                                       title="Hanya bisa dihapus oleh {{ $lokasi === 'kasir' ? 'Kasir' : 'Kitchen' }}">
-                            @endif
+                            <input type="checkbox" name="ids[]" value="{{ $s->id }}" class="form-check-input row-check">
                         </td>
                         <td class="text-center"><strong>{{ $loop->iteration }}</strong></td>
                         <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
