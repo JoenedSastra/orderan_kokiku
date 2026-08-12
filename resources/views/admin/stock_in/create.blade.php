@@ -83,10 +83,10 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
         <span class="small text-muted"><span id="kkBarisTerisi">0</span> dari {{ $jumlahBaris }} baris terisi</span>
         <div class="d-flex gap-2">
-            <button type="button" id="btnKosongkan" class="btn btn-outline-secondary btn-sm">
+            <button type="button" id="btnKosongkan" class="btn btn-danger btn-sm">
                 <i class="bi bi-eraser"></i> Kosongkan Semua
             </button>
-            <button type="submit" class="btn text-white" style="background:var(--kk-accent)">
+            <button type="submit" class="btn text-white" style="background:#2563eb;">
                 <i class="bi bi-send-fill"></i> Kirim ke {{ $lokasiLabel }}
             </button>
         </div>
