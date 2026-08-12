@@ -22,7 +22,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto'];
 <span class="text-muted d-none d-md-flex align-items-center gap-1" style="font-size:.78rem; font-weight:400;">
     <i class="bi bi-calendar3" style="color:var(--kk-orange); font-size:.8rem;"></i>
     <span>{{ $hariIndo[$tanggal->format('l')] }}, {{ $tanggal->format('d-m-Y') }}</span>
-    @if($isToday)<span class="badge" style="background:var(--kk-success); font-size:.65rem;">Hari Ini</span>@endif
+    @if($isToday)<span class="badge bg-success">{{ $s->item->masterLocationLabel() }}</span>
 </span>
 @endpush
 

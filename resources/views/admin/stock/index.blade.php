@@ -33,7 +33,7 @@
                     <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
                     <td class="text-center">{{ $s->item->unit }}</td>
-                    <td class="text-center"><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
+                    <td class="text-center"><span class="badge bg-success">{{ $s->item->masterLocationLabel() }}</span></td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
                     <td class="text-center">
                         <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
