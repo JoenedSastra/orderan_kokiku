@@ -8,30 +8,30 @@
 
 <div class="kk-stat-card p-0">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0 text-center">
             <thead class="table-light">
                 <tr>
-                    <th>No</th>
-                    <th>Hari, Jam, &amp; Tanggal</th>
-                    <th>Nama Barang</th>
-                    <th>Jumlah</th>
-                    <th>Satuan</th>
-                    <th>Master</th>
-                    <th>Keterangan</th>
-                    <th>Dicatat Oleh</th>
+                    <th class="text-center">No</th>
+                    <th class="text-center">Hari, Jam, &amp; Tanggal</th>
+                    <th class="text-center">Nama Barang</th>
+                    <th class="text-center">Jumlah</th>
+                    <th class="text-center">Satuan</th>
+                    <th class="text-center">Master</th>
+                    <th class="text-center">Keterangan</th>
+                    <th class="text-center">Dicatat Oleh</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($stockIns as $s)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $s->created_at->translatedFormat('l, d M Y H:i') }}</td>
-                    <td class="fw-semibold">{{ $s->item->name }}</td>
-                    <td>{{ $s->quantity }}</td>
-                    <td>{{ $s->item->unit }}</td>
-                    <td><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
-                    <td>{{ $s->keterangan ?? '-' }}</td>
-                    <td>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center">{{ $s->created_at->translatedFormat('l, d M Y H:i') }}</td>
+                    <td class="text-center fw-semibold">{{ $s->item->name }}</td>
+                    <td class="text-center">{{ $s->quantity }}</td>
+                    <td class="text-center">{{ $s->item->unit }}</td>
+                    <td class="text-center"><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
+                    <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
+                    <td class="text-center">
                         <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
                     </td>
                 </tr>

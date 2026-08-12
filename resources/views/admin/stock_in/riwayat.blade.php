@@ -37,33 +37,35 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
 
 <div class="kk-stat-card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0 text-center">
             <thead class="table-light">
                 <tr>
-                    <th>No</th>
-                    <th>Nama Barang</th>
-                    <th>Jumlah</th>
-                    <th>Satuan</th>
-                    <th>Master</th>
-                    <th>Keterangan</th>
-                    <th>Dicatat Oleh</th>
+                    <th class="text-center">No</th>
+                    <th class="text-center">Nama Barang</th>
+                    <th class="text-center">Jumlah</th>
+                    <th class="text-center">Satuan</th>
+                    <th class="text-center">Master</th>
+                    <th class="text-center">Keterangan</th>
+                    <th class="text-center">Dicatat Oleh</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($stockIns as $s)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $s->item->name }}</td>
-                    <td>{{ $s->quantity }}</td>
-                    <td>{{ $s->item->unit }}</td>
-                    <td><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
-                    <td>
+                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center">{{ $s->item->name }}</td>
+                    <td class="text-center">{{ $s->quantity }}</td>
+                    <td class="text-center">{{ $s->item->unit }}</td>
+                    <td class="text-center"><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
+                    <td class="text-center">
                         {{ $s->keterangan ?? '-' }}
                         @if($s->is_completed)
                             <i class="bi bi-check-circle-fill text-success ms-1" title="Selesai"></i>
                         @endif
                     </td>
-                    <td>{{ $s->user->name }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
+                    </td>
                 </tr>
                 @empty
                 <tr><td colspan="7" class="text-center text-muted py-3">Belum ada barang masuk pada tanggal ini.</td></tr>
