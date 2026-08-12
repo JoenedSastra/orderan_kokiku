@@ -21,17 +21,6 @@
     @endforeach
 </datalist>
 
-<datalist id="satuanOptions">
-    @foreach($satuanSuggestions as $satuan)
-    <option value="{{ $satuan }}">
-    @endforeach
-    <option value="Pcs"><option value="Buah"><option value="Botol"><option value="Kaleng">
-    <option value="Pack"><option value="Bungkus"><option value="Karton"><option value="Box">
-    <option value="Saset"><option value="Renteng"><option value="Jeriken">
-    <option value="Gram"><option value="Kg"><option value="Ons">
-    <option value="Ml"><option value="Liter">
-</datalist>
-
 <form action="{{ route('admin.stock_in.store', ['lokasi' => $lokasi]) }}" method="POST" id="formBarangMasukMassal">
     @csrf
 
@@ -54,8 +43,8 @@
                     <tr>
                         <td class="text-center text-muted fw-bold">{{ $i + 1 }}</td>
                         <td>
-                            <input type="text" name="rows[{{ $i }}][item_name]" list="namaBarangOptions"
-                                   class="form-control form-control-sm fw-bold kk-baris-nama">
+                            <input type="text" name="rows[{{ $i }}][unit]" autocomplete="off"
+       class="form-control form-control-sm text-center">
                         </td>
                         <td>
                             <input type="number" name="rows[{{ $i }}][quantity]" min="1"
@@ -69,8 +58,8 @@
                             <span class="badge bg-success">{{ $lokasiLabel }}</span>
                         </td>
                         <td>
-                            <input type="text" name="rows[{{ $i }}][keterangan]"
-                                   class="form-control form-control-sm">
+                            <input type="text" name="rows[{{ $i }}][keterangan]" autocomplete="off"
+       class="form-control form-control-sm">
                         </td>
                         <td class="text-center text-muted small">{{ auth()->user()->name }}</td>
                     </tr>
