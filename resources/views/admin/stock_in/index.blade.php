@@ -2,6 +2,19 @@
 @section('title', 'Barang Masuk Harian')
 @section('content')
 
+<script>
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('dari')) return; // Admin sengaja klik "Kembali" — tampilkan pilihan divisi seperti biasa.
+
+    const validLokasi = @json(collect($lokasiList)->pluck('key'));
+    const lastLokasi  = localStorage.getItem('kk_last_lokasi');
+    if (lastLokasi && validLokasi.includes(lastLokasi)) {
+        window.location.replace('{{ url('/admin/stock-masuk/tambah') }}/' + lastLokasi);
+    }
+})();
+</script>
+
 <div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
     <div>
         <h2 class="h5 mb-1">Barang Masuk Harian</h2>

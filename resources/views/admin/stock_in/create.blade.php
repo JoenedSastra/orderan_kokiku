@@ -1,13 +1,12 @@
 @extends('layouts.app')
-@section('title', 'Catat Barang Masuk — ' . $lokasiLabel)
+@section('title', 'Catatan Barang Masuk Di ' . $lokasiLabel)
 @section('content')
 
 <div class="mb-3 kk-page-header">
-    <a href="{{ route('admin.stock_in.index') }}" class="text-decoration-none small d-inline-flex align-items-center gap-1 mb-1" style="color:var(--kk-text-muted)">
-        <i class="bi bi-arrow-left"></i> Kembali pilih divisi
+    <a href="{{ route('admin.stock_in.index') }}?dari=kembali" class="btn btn-sm text-white d-inline-flex align-items-center gap-1"
+       style="background:var(--kk-danger);">
+        <i class="bi bi-arrow-left"></i> Kembali
     </a>
-    <h2 class="h5 mb-1">Catat Barang Masuk — <span class="badge bg-secondary">{{ $lokasiLabel }}</span></h2>
-    <p class="text-muted small mb-0">Isi manual tiap baris seperti Excel. Baris yang dibiarkan kosong otomatis diabaikan. Tanggal &amp; jam otomatis mengikuti waktu saat "Kirim" ditekan.</p>
 </div>
 
 @if($errors->has('rows'))
@@ -38,42 +37,42 @@
 
     <div class="kk-stat-card p-0">
         <div class="table-responsive" style="max-height:70vh;">
-            <table class="table table-bordered table-sm mb-0 align-middle" id="tabelBarangMasuk" style="min-width:920px;">
+            <table class="table table-bordered table-sm mb-0 align-middle" id="tabelBarangMasuk">
                 <thead class="table-light" style="position:sticky; top:0; z-index:1;">
                     <tr>
-                        <th style="width:40px;">No</th>
-                        <th style="min-width:200px;">Nama Barang</th>
-                        <th style="width:100px;">Jumlah</th>
-                        <th style="width:130px;">Satuan</th>
-                        <th style="width:120px;">Master</th>
-                        <th style="min-width:200px;">Keterangan</th>
-                        <th style="width:140px;">Dicatat Oleh</th>
+                        <th class="text-center" style="width:40px;">No</th>
+                        <th class="text-center" style="width:220px;">Nama Barang</th>
+                        <th class="text-center" style="width:90px;">Jumlah</th>
+                        <th class="text-center" style="width:110px;">Satuan</th>
+                        <th class="text-center" style="width:110px;">Master</th>
+                        <th class="text-center" style="width:200px;">Keterangan</th>
+                        <th class="text-center" style="width:130px;">Dicatat Oleh</th>
                     </tr>
                 </thead>
                 <tbody>
                     @for($i = 0; $i < $jumlahBaris; $i++)
                     <tr>
-                        <td class="text-center text-muted">{{ $i + 1 }}</td>
+                        <td class="text-center text-muted fw-bold">{{ $i + 1 }}</td>
                         <td>
                             <input type="text" name="rows[{{ $i }}][item_name]" list="namaBarangOptions"
-                                   class="form-control form-control-sm kk-baris-nama" placeholder="Ketik nama barang">
+                                   class="form-control form-control-sm fw-bold kk-baris-nama">
                         </td>
                         <td>
                             <input type="number" name="rows[{{ $i }}][quantity]" min="1"
-                                   class="form-control form-control-sm" placeholder="0">
+                                   class="form-control form-control-sm text-center">
                         </td>
                         <td>
                             <input type="text" name="rows[{{ $i }}][unit]" list="satuanOptions"
-                                   class="form-control form-control-sm" placeholder="Kg, Pcs, ...">
+                                   class="form-control form-control-sm text-center">
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-secondary">{{ $lokasiLabel }}</span>
+                            <span class="badge bg-success">{{ $lokasiLabel }}</span>
                         </td>
                         <td>
                             <input type="text" name="rows[{{ $i }}][keterangan]"
-                                   class="form-control form-control-sm" placeholder="Diterima">
+                                   class="form-control form-control-sm">
                         </td>
-                        <td class="text-muted small">{{ auth()->user()->name }}</td>
+                        <td class="text-center text-muted small">{{ auth()->user()->name }}</td>
                     </tr>
                     @endfor
                 </tbody>
@@ -102,6 +101,50 @@
     const hitung = document.getElementById('kkBarisTerisi');
     const btnKosongkan = document.getElementById('btnKosongkan');
 
+    // Ingat lokasi ini sebagai yang terakhir dibuka, supaya halaman "pilih divisi"
+    // bisa langsung lompat ke sini di kunjungan berikutnya.
+    localStorage.setItem('kk_last_lokasi', '{{ $lokasi }}');
+
+    // Key unik per lokasi, supaya draft Gudang Utama & Gudang Resto tidak tercampur.
+    const draftKey = 'kk_stock_draft_{{ $lokasi }}';
+    const fieldKeys = ['item_name', 'quantity', 'unit', 'keterangan'];
+
+    function saveDraft() {
+        const rows = tabel.querySelectorAll('tbody tr');
+        const data = [];
+        rows.forEach(function (row) {
+            const rowData = {};
+            fieldKeys.forEach(function (key) {
+                const input = row.querySelector('[name$="[' + key + ']"]');
+                rowData[key] = input ? input.value : '';
+            });
+            data.push(rowData);
+        });
+        localStorage.setItem(draftKey, JSON.stringify(data));
+    }
+
+    function loadDraft() {
+        const saved = localStorage.getItem(draftKey);
+        if (!saved) return;
+        try {
+            const data = JSON.parse(saved);
+            const rows = tabel.querySelectorAll('tbody tr');
+            rows.forEach(function (row, i) {
+                if (!data[i]) return;
+                fieldKeys.forEach(function (key) {
+                    const input = row.querySelector('[name$="[' + key + ']"]');
+                    if (input && data[i][key]) input.value = data[i][key];
+                });
+            });
+        } catch (e) {
+            localStorage.removeItem(draftKey);
+        }
+    }
+
+    function clearDraft() {
+        localStorage.removeItem(draftKey);
+    }
+
     function updateHitung() {
         const namaInputs = tabel.querySelectorAll('.kk-baris-nama');
         let terisi = 0;
@@ -111,8 +154,14 @@
         hitung.textContent = terisi;
     }
 
-    tabel.addEventListener('input', updateHitung);
+    // Pulihkan draft yang belum terkirim (kalau ada) saat halaman dibuka.
+    loadDraft();
     updateHitung();
+
+    tabel.addEventListener('input', function () {
+        updateHitung();
+        saveDraft();
+    });
 
     tabel.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
@@ -130,13 +179,17 @@
         if (!confirm('Kosongkan semua isian baris?')) return;
         tabel.querySelectorAll('input').forEach(function (input) { input.value = ''; });
         updateHitung();
+        clearDraft();
     });
 
     form.addEventListener('submit', function (e) {
         if (parseInt(hitung.textContent, 10) === 0) {
             e.preventDefault();
             alert('Isi minimal 1 baris sebelum kirim.');
+            return;
         }
+        // Data berhasil dikirim ke server, draft lokal tidak diperlukan lagi.
+        clearDraft();
     });
 })();
 </script>
