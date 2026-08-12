@@ -45,6 +45,8 @@
             </tbody>
         </table>
     </div>
+    @if($stockIns->hasPages())
     <div class="p-3">{{ $stockIns->links() }}</div>
+    @endif
 </div>
 @endsection
