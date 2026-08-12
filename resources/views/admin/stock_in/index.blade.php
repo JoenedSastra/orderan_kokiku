@@ -5,13 +5,35 @@
 <script>
 (function () {
     const params = new URLSearchParams(window.location.search);
-    if (params.has('dari')) return; // Admin sengaja klik "Kembali" — tampilkan pilihan divisi seperti biasa.
+    const sengajaKembali = params.has('dari'); // Admin sengaja klik "Kembali" dari grid.
+
+    // Auto-lompat ke grid divisi terakhir HANYA kalau admin datang dari salah
+    // satu halaman Stock (Gudang Utama, Gudang Resto, Kasir, Kitchen) DAN
+    // memang sebelumnya sedang mengisi divisi tertentu (bukan lagi di hub).
+    let asalDariHalamanStock = false;
+    try {
+        const referrer = new URL(document.referrer);
+        const halamanStock = ['/admin/stock', '/admin/stock-kasir-kitchen'];
+        asalDariHalamanStock = halamanStock.includes(referrer.pathname);
+    } catch (e) {
+        asalDariHalamanStock = false; // Tidak ada referrer (tab baru / bookmark, dsb).
+    }
 
     const validLokasi = @json(collect($lokasiList)->pluck('key'));
     const lastLokasi  = localStorage.getItem('kk_last_lokasi');
-    if (lastLokasi && validLokasi.includes(lastLokasi)) {
+
+    const bolehLompat = !sengajaKembali && asalDariHalamanStock
+        && lastLokasi && validLokasi.includes(lastLokasi);
+
+    if (bolehLompat) {
         window.location.replace('{{ url('/admin/stock-masuk/tambah') }}/' + lastLokasi);
+        return;
     }
+
+    // Hub benar-benar ditampilkan (bukan auto-lompat) — hapus "ingatan" divisi
+    // terakhir. Jadi selama admin belum klik salah satu kotak divisi lagi,
+    // menu Stock manapun yang dibuka lalu balik ke sini akan tetap di hub.
+    localStorage.removeItem('kk_last_lokasi');
 })();
 </script>
 
