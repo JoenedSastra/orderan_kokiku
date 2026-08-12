@@ -25,9 +25,9 @@
             <tbody>
                 @forelse($stockIns as $s)
                 <tr>
-                    <td class="text-center">{{ $loop->iteration }}</td>
+                    <td class="text-center"><strong>{{ $loop->iteration }}</strong></td>
                     <td class="text-center">{{ $s->created_at->translatedFormat('l, H:i, d-m-Y') }}</td>
-                    <td class="text-center fw-semibold" data-search="nama-barang">{{ $s->item->name }}</td>
+                    <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
                     <td class="text-center">{{ $s->item->unit }}</td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>

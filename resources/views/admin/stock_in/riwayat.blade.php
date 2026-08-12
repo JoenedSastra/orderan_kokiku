@@ -41,7 +41,7 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
     </span>
 </form>
 
-<div class="kk-stat-card">
+<div class="kk-stat-card p-0">
     <div class="table-responsive">
         <table class="table table-hover mb-0 text-center">
             <thead class="table-light">
@@ -58,8 +58,8 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
             <tbody>
                 @forelse($stockIns as $s)
                 <tr>
-                    <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center" data-search="nama-barang">{{ $s->item->name }}</td>
+                    <td class="text-center"><strong>{{ $loop->iteration }}</strong></td>
+                    <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
                     <td class="text-center">{{ $s->item->unit }}</td>
                     <td class="text-center"><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
@@ -79,6 +79,8 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
             </tbody>
         </table>
     </div>
-    <div class="mt-3">{{ $stockIns->links() }}</div>
+    @if($stockIns->hasPages())
+    <div class="p-3">{{ $stockIns->links() }}</div>
+    @endif
 </div>
 @endsection
