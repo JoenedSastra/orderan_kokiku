@@ -5,9 +5,9 @@
 <div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
     <div>
         <h2 class="h5 mb-1">Barang Masuk Harian</h2>
-        <p class="text-muted small mb-0">Pilih divisi tujuan, lalu isi tabel barang masuk secara massal seperti Excel.</p>
+        <p class="text-muted small mb-0">Pilih divisi tujuan, lalu isi barang yang masuk hari ini.</p>
     </div>
-    <a href="{{ route('admin.stock_in.riwayat') }}" class="btn btn-sm btn-outline-secondary">
+    <a href="{{ route('admin.stock_in.riwayat') }}" class="btn btn-sm btn-secondary">
         <i class="bi bi-clock-history"></i> Riwayat Hari Ini
     </a>
 </div>

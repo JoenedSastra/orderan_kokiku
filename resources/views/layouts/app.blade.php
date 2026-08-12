@@ -74,8 +74,9 @@
                 <button class="kk-hamburger" id="kkHamburger" aria-label="Buka menu">
                     <i class="bi bi-list"></i>
                 </button>
-                <div class="kk-topbar-title">
+                <div class="kk-topbar-title d-flex align-items-center gap-2">
                     <h1>@yield('title', 'Dashboard')</h1>
+                    @stack('topbar-extra')
                 </div>
             </div>
 

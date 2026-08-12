@@ -73,12 +73,17 @@ class StockInController extends Controller
             ? Carbon::parse($request->input('tanggal'))
             : today();
 
-        $stockIns = StockIn::with(['item', 'user'])
-            ->whereHas('user.role', fn ($q) => $q->where('slug', Role::ADMIN))
+        $lokasiFilter = $request->input('lokasi'); // null = semua
+
+        $query = StockIn::with(['item', 'user'])
             ->whereDate('tanggal', $tanggal->toDateString())
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+            ->latest();
+
+        if ($lokasiFilter) {
+            $query->whereHas('item', fn ($q) => $q->where('master_location', $lokasiFilter));
+        }
+
+        $stockIns = $query->paginate(15)->withQueryString();
 
         return view('admin.stock_in.riwayat', compact('stockIns', 'tanggal'));
     }
@@ -173,6 +178,34 @@ class StockInController extends Controller
         return redirect()
             ->to($this->stockPageUrl($lokasi))
             ->with('success', $savedCount . ' barang berhasil dicatat & otomatis masuk ke Stok ' . $lokasiLabel . '.');
+    }
+
+    public function destroyBulk(Request $request): RedirectResponse
+    {
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return back()->withErrors(['ids' => 'Pilih minimal 1 item untuk dihapus.']);
+        }
+
+        // Admin hanya boleh hapus gudang_utama & gudang_resto
+        $adminDeletable = [Item::MASTER_GUDANG_UTAMA, Item::MASTER_GUDANG_RESTO];
+
+        $deleted = 0;
+        foreach ($ids as $id) {
+            $stockIn = StockIn::with('item')->find($id);
+            if (!$stockIn) continue;
+
+            if (!in_array($stockIn->item->master_location, $adminDeletable)) {
+                // Lewati — bukan wewenang admin
+                continue;
+            }
+
+            $stockIn->delete();
+            $deleted++;
+        }
+
+        return back()->with('success', $deleted . ' data berhasil dihapus.');
     }
 
     private function stockPageUrl(string $lokasi): string

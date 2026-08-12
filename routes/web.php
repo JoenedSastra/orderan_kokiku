@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
             ->whereIn('lokasi', ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen']);
         Route::post('/stock-masuk/{lokasi}',        [AdminStockInController::class, 'store'])->name('stock_in.store')
             ->whereIn('lokasi', ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen']);
+        Route::delete('/stock-masuk/hapus-massal',  [AdminStockInController::class, 'destroyBulk'])->name('stock_in.destroy_bulk');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{order}/approve', [AdminOrderController::class, 'approve'])->name('orders.approve');
