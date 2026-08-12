@@ -1,3 +1,4 @@
+<div class="kk-sidebar-section-label">Utama</div>
 <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
     <i class="bi bi-grid-fill"></i> Dashbord
 </a>
@@ -6,6 +7,7 @@
     <i class="bi bi-box-arrow-in-down-right"></i> Barang Masuk Harian
 </a>
 
+<div class="kk-sidebar-section-label">Stock</div>
 <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="nav-link {{ request()->routeIs('admin.stock.index') && request('filter') === 'gudang_utama' ? 'active' : '' }}">
     <i class="bi bi-building"></i> Stock Gudang Utama
 </a>
@@ -22,6 +24,7 @@
     <i class="bi bi-egg-fried"></i> Stock Kitchen
 </a>
 
+<div class="kk-sidebar-section-label">Laporan</div>
 <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
     <i class="bi bi-clipboard2-check-fill"></i> Orderan Kasir & Kitchen
     @php $pending = \App\Models\Order::where('status','menunggu')->count(); @endphp
@@ -34,6 +37,7 @@
     <i class="bi bi-bar-chart-fill"></i> Laporan
 </a>
 
+<div class="kk-sidebar-section-label">Pengguna</div>
 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
     <i class="bi bi-people-fill"></i> User
 </a>

@@ -261,13 +261,45 @@ body {
 }
 
 .kk-sidebar-section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     text-transform: uppercase;
-    font-size: 0.63rem;
+    font-size: 0.68rem;
     font-weight: 700;
     letter-spacing: 0.1em;
-    color: #4b5563;
-    padding: 1rem 0.9rem 0.35rem;
+    color: var(--kk-orange);
+    white-space: nowrap;
+    padding: 1rem 0.9rem 0.6rem;
     margin-top: 0.25rem;
+}
+
+.kk-sidebar-section-label::before,
+.kk-sidebar-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--kk-sidebar-border);
+}
+
+/* Kotak pencarian nama barang — dipakai di semua tabel stock divisi */
+.kk-search-box {
+    position: relative;
+    width: 100%;
+    max-width: 260px;
+}
+.kk-search-box i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--kk-text-muted);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+.kk-search-box input.form-control {
+    padding-left: 2.1rem;
+    border-radius: var(--kk-radius-sm);
 }
 
 /* Sidebar footer (user info) */
@@ -988,13 +1020,13 @@ body {
     background-color: #FFC107 !important;
     color: #000000 !important;
     font-weight: 700 !important;
-    border: 1px solid #e0a800 !important;
+    border: 1px solid #000000 !important;
 }
 
 /* Garis tabel ala Excel — berlaku untuk setiap tabel divisi */
 .table th,
 .table td {
-    border: 1px solid #d1d5db !important;
+    border: 1px solid #000000 !important;
 }
 
 /* ==========================================================================

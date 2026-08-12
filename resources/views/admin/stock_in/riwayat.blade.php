@@ -7,16 +7,22 @@ $hariIndo = ['Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa', '
 $isToday = $tanggal->toDateString() === today()->toDateString();
 @endphp
 
-<div class="d-flex justify-content-between align-items-center mb-3 kk-page-header">
+<div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
     <div>
         <a href="{{ route('admin.stock_in.index') }}" class="text-decoration-none small d-inline-flex align-items-center gap-1 mb-1" style="color:var(--kk-text-muted)">
             <i class="bi bi-arrow-left"></i> Kembali ke Barang Masuk Harian
         </a>
         <h2 class="h5 mb-0">Riwayat Barang Masuk</h2>
     </div>
-    <a href="{{ route('admin.stock_in.index') }}" class="btn btn-sm text-white" style="background:var(--kk-accent)">
-        <i class="bi bi-plus-lg"></i> Catat Masuk
-    </a>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <div class="kk-search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang...">
+        </div>
+        <a href="{{ route('admin.stock_in.index') }}" class="btn btn-sm text-white" style="background:var(--kk-accent)">
+            <i class="bi bi-plus-lg"></i> Catat Masuk
+        </a>
+    </div>
 </div>
 
 <form method="GET" class="d-flex flex-wrap align-items-center gap-2 mb-3">
@@ -53,7 +59,7 @@ $isToday = $tanggal->toDateString() === today()->toDateString();
                 @forelse($stockIns as $s)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center">{{ $s->item->name }}</td>
+                    <td class="text-center" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
                     <td class="text-center">{{ $s->item->unit }}</td>
                     <td class="text-center"><span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span></td>
