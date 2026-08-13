@@ -35,9 +35,10 @@ class DashboardController extends Controller
             ->filter(fn ($item) => $item->min_stock > 0 && $item->stokRestoran() <= $item->min_stock)
             ->count();
 
-        $ordersRecent = Order::with(['item', 'user'])
+        // Gabungkan order dari semua role (kasir + kitchen + admin), latest 10
+        $ordersRecent = Order::with(['item', 'user', 'user.role'])
             ->latest()
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         return view('dashboard.admin', compact(
@@ -85,6 +86,30 @@ class DashboardController extends Controller
             'masuk'      => $masuk,
             'keluar'     => $keluar,
             'permintaan' => $permintaan,
+        ]);
+    }
+
+    /**
+     * Endpoint AJAX: data grafik stok barang per divisi.
+     * Mengembalikan label nama barang dan stok per lokasi (master_location).
+     */
+    public function divisionStockData(Request $request): JsonResponse
+    {
+        $division = $request->query('division', 'gudang_utama');
+
+        $items = Item::where('master_location', $division)->get();
+
+        $labels    = [];
+        $stockData = [];
+
+        foreach ($items as $item) {
+            $labels[]    = $item->name;
+            $stockData[] = $item->totalStock();
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'data'   => $stockData,
         ]);
     }
 

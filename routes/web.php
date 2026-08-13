@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
         Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->name('dashboard.chart-data');
+        Route::get('/dashboard/division-stock', [DashboardController::class, 'divisionStockData'])->name('dashboard.division-stock');
 
         // Master Data
         Route::resource('categories', CategoryController::class);
