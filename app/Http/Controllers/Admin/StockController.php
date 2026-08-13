@@ -61,7 +61,6 @@ class StockController extends Controller
         // Masuk — otomatis sinkron dengan hasil input di "Barang Masuk Harian".
         $stockIns = StockIn::with(['item', 'user.role'])
             ->whereHas('item', fn ($q) => $q->whereIn('master_location', $activeLocations))
-            ->whereDate('created_at', today())
             ->latest()
             ->paginate(15)
             ->withQueryString();
