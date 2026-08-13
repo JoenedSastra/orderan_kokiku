@@ -6,7 +6,7 @@
     <h2 class="h5 mb-0">Stok Barang — {{ $title }}</h2>
     <div class="kk-search-box">
         <i class="bi bi-search"></i>
-        <input type="text" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang...">
+        <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
     </div>
 </div>
 

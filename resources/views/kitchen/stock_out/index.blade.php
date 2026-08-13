@@ -6,7 +6,7 @@
     <div class="d-flex align-items-center gap-2 flex-wrap">
         <div class="kk-search-box">
             <i class="bi bi-search"></i>
-            <input type="text" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang...">
+            <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
         </div>
         <a href="{{ route('kitchen.stock_out.create') }}" class="btn btn-sm text-white" style="background:var(--kk-accent)">
             <i class="bi bi-plus-lg"></i> Catat Keluar

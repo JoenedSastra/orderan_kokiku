@@ -171,5 +171,102 @@
 </script>
 
 @stack('scripts')
+
+{{-- ===== PAGE STATE PERSISTENCE ===== --}}
+{{-- Menyimpan scroll + isian search per URL ke sessionStorage.            --}}
+{{-- Data ini hanya hidup selama tab browser terbuka (bukan localStorage). --}}
+<script>
+(function () {
+    'use strict';
+
+    // Kunci penyimpanan unik per URL penuh (path + query string).
+    var PAGE_KEY = 'kk_ps_' + window.location.pathname + window.location.search;
+
+    // Halaman form create/tambah: tidak perlu restore scroll (selalu mulai atas).
+    var IS_FORM_PAGE = /\/(tambah|create|edit|buat)\b/i.test(window.location.pathname);
+
+    // ---------------------------------------------------------------
+    // Tombol "Kembali" eksplisit (link dengan ?dari=kembali):
+    // saat diklik, hapus state yang tersimpan untuk halaman TUJUAN
+    // agar halaman hub/index terbuka fresh (tidak restore ke posisi lama).
+    // ---------------------------------------------------------------
+    document.querySelectorAll('a[href*="dari=kembali"]').forEach(function (link) {
+        link.addEventListener('click', function () {
+            try {
+                var url  = new URL(link.href);
+                var dest = url.pathname + url.search;
+                sessionStorage.removeItem('kk_ps_' + dest);
+            } catch (e) {}
+        });
+    });
+
+    // ---------------------------------------------------------------
+    // SIMPAN state saat meninggalkan halaman (navigasi ke mana saja).
+    // ---------------------------------------------------------------
+    window.addEventListener('beforeunload', function () {
+        var state = { scrollY: window.scrollY, inputs: {} };
+
+        // Input search live-filter (class kk-search-nama-barang, name="kk_search")
+        document.querySelectorAll('.kk-search-nama-barang').forEach(function (el) {
+            state.inputs['kk_search'] = el.value;
+        });
+
+        // Input date & select di dalam form GET (filter tanggal / lokasi)
+        document.querySelectorAll('form:not([method="POST"]) input[type="date"][name], form:not([method="POST"]) select[name]').forEach(function (el) {
+            state.inputs[el.name] = el.value;
+        });
+
+        try {
+            sessionStorage.setItem(PAGE_KEY, JSON.stringify(state));
+        } catch (e) { /* storage penuh, lewati saja */ }
+    });
+
+    // ---------------------------------------------------------------
+    // RESTORE state saat halaman dimuat kembali.
+    // Tidak berlaku untuk halaman form create/tambah.
+    // ---------------------------------------------------------------
+    if (IS_FORM_PAGE) return;
+
+    var saved;
+    try { saved = JSON.parse(sessionStorage.getItem(PAGE_KEY) || 'null'); }
+    catch (e) { saved = null; }
+
+    if (!saved) return;
+
+    // Restore input search
+    if (saved.inputs && saved.inputs['kk_search']) {
+        var searchEl = document.querySelector('.kk-search-nama-barang');
+        if (searchEl) {
+            searchEl.value = saved.inputs['kk_search'];
+            // Picu event input agar live-filter JS yang ada ikut aktif kembali.
+            searchEl.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
+    // Restore filter date/select (tidak ikut-campur submit form)
+    if (saved.inputs) {
+        Object.keys(saved.inputs).forEach(function (name) {
+            if (name === 'kk_search') return; // sudah ditangani di atas
+            var el = document.querySelector('form:not([method="POST"]) [name="' + name + '"]');
+            if (el) el.value = saved.inputs[name];
+        });
+    }
+
+    // Restore posisi scroll — setelah layout selesai dirender.
+    if (saved.scrollY && saved.scrollY > 0) {
+        // Coba via load event, dengan fallback setTimeout kecil.
+        var restored = false;
+        window.addEventListener('load', function () {
+            if (!restored) { window.scrollTo({ top: saved.scrollY, behavior: 'instant' }); restored = true; }
+        });
+        setTimeout(function () {
+            if (!restored && window.scrollY === 0) {
+                window.scrollTo({ top: saved.scrollY, behavior: 'instant' });
+                restored = true;
+            }
+        }, 100);
+    }
+})();
+</script>
 </body>
 </html>

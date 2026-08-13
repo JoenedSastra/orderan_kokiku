@@ -30,7 +30,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 <div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
     <div class="kk-search-box">
         <i class="bi bi-search"></i>
-        <input type="text" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang...">
+        <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
     </div>
 </div>
 
