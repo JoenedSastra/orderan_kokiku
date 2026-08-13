@@ -90,6 +90,94 @@ class DashboardController extends Controller
     }
 
     /**
+     * Endpoint AJAX: data grafik harian (per jam, hari ini).
+     * Mengembalikan data per jam (00-23) untuk tanggal hari ini.
+     */
+    public function chartDataHarian(Request $request): JsonResponse
+    {
+        $date = $request->query('date', now()->toDateString());
+
+        $masukPerJam = StockIn::whereDate('tanggal', $date)
+            ->selectRaw('HOUR(created_at) as jam, SUM(quantity) as total')
+            ->groupBy('jam')
+            ->pluck('total', 'jam');
+
+        $keluarPerJam = StockOut::whereDate('tanggal', $date)
+            ->selectRaw('HOUR(created_at) as jam, SUM(quantity) as total')
+            ->groupBy('jam')
+            ->pluck('total', 'jam');
+
+        $permintaanPerJam = Order::whereDate('created_at', $date)
+            ->selectRaw('HOUR(created_at) as jam, COUNT(*) as total')
+            ->groupBy('jam')
+            ->pluck('total', 'jam');
+
+        $masuk = $keluar = $permintaan = $labels = [];
+
+        // Tampilkan jam 06:00 - 22:00 (rentang operasional)
+        for ($jam = 0; $jam <= 23; $jam++) {
+            $labels[]     = sprintf('%02d:00', $jam);
+            $masuk[]      = (int) ($masukPerJam[$jam] ?? 0);
+            $keluar[]     = (int) ($keluarPerJam[$jam] ?? 0);
+            $permintaan[] = (int) ($permintaanPerJam[$jam] ?? 0);
+        }
+
+        return response()->json([
+            'labels'     => $labels,
+            'masuk'      => $masuk,
+            'keluar'     => $keluar,
+            'permintaan' => $permintaan,
+            'date'       => $date,
+        ]);
+    }
+
+    /**
+     * Endpoint AJAX: data grafik tahunan (per tahun, rentang 5 tahun terakhir).
+     */
+    public function chartDataTahunan(Request $request): JsonResponse
+    {
+        $currentYear = now()->year;
+        $startYear   = $currentYear - 4; // 5 tahun terakhir
+
+        $masukPerTahun = StockIn::whereBetween(
+                \DB::raw('YEAR(tanggal)'), [$startYear, $currentYear]
+            )
+            ->selectRaw('YEAR(tanggal) as tahun, SUM(quantity) as total')
+            ->groupBy('tahun')
+            ->pluck('total', 'tahun');
+
+        $keluarPerTahun = StockOut::whereBetween(
+                \DB::raw('YEAR(tanggal)'), [$startYear, $currentYear]
+            )
+            ->selectRaw('YEAR(tanggal) as tahun, SUM(quantity) as total')
+            ->groupBy('tahun')
+            ->pluck('total', 'tahun');
+
+        $permintaanPerTahun = Order::whereBetween(
+                \DB::raw('YEAR(created_at)'), [$startYear, $currentYear]
+            )
+            ->selectRaw('YEAR(created_at) as tahun, COUNT(*) as total')
+            ->groupBy('tahun')
+            ->pluck('total', 'tahun');
+
+        $masuk = $keluar = $permintaan = $labels = [];
+
+        for ($tahun = $startYear; $tahun <= $currentYear; $tahun++) {
+            $labels[]     = (string) $tahun;
+            $masuk[]      = (int) ($masukPerTahun[$tahun] ?? 0);
+            $keluar[]     = (int) ($keluarPerTahun[$tahun] ?? 0);
+            $permintaan[] = (int) ($permintaanPerTahun[$tahun] ?? 0);
+        }
+
+        return response()->json([
+            'labels'     => $labels,
+            'masuk'      => $masuk,
+            'keluar'     => $keluar,
+            'permintaan' => $permintaan,
+        ]);
+    }
+
+    /**
      * Endpoint AJAX: data grafik stok barang per divisi.
      * Mengembalikan label nama barang dan stok per lokasi (master_location).
      */

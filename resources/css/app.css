@@ -1339,3 +1339,67 @@ body {
     .kk-stat-card { padding: 1.1rem; }
     .kk-stat-card .kk-stat-value { font-size: 1.5rem; }
 }
+
+/* ==========================================================================
+   Chart Activity Tabs
+   ========================================================================== */
+.kk-chart-tabs {
+    display: inline-flex;
+    background: var(--kk-surface-2, #f3f4f6);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+}
+
+.kk-chart-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.85rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--kk-muted, #888);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.kk-chart-tab:hover {
+    background: rgba(255,107,53,0.08);
+    color: var(--kk-orange, #ff6b35);
+}
+
+.kk-chart-tab.active {
+    background: var(--kk-orange, #ff6b35);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+}
+
+.kk-chart-ctrl {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.kk-chart-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--kk-surface-2, #f3f4f6);
+    border: 1px solid var(--kk-border, #e5e7eb);
+    border-radius: 6px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--kk-text, #374151);
+    white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+    .kk-chart-tabs { width: 100%; }
+    .kk-chart-tab { flex: 1; justify-content: center; font-size: 0.72rem; padding: 0.28rem 0.5rem; }
+    .kk-chart-date-badge { font-size: 0.72rem; }
+}
+
