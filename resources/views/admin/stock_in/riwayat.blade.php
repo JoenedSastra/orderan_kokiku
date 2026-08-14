@@ -147,7 +147,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
                         <td class="text-center">{{ $s->quantity }}</td>
                         <td class="text-center">{{ $s->item->unit }}</td>
                         <td class="text-center">
-                            <span class="badge bg-secondary">{{ $s->item->masterLocationLabel() }}</span>
+                            <span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $s->item->masterLocationLabel() }}</span>
                         </td>
                         <td class="text-center">
                             {{ $s->keterangan ?? '-' }}
@@ -156,7 +156,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
                             @endif
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
+                            <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $s->user->role?->name ?? '?' }}</span>
                         </td>
                     </tr>
                     @empty

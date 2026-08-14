@@ -39,7 +39,7 @@
                     <td class="text-center">{{ $r->item->unit }}</td>
                     <td class="text-center">{{ $r->keterangan ?? '-' }}</td>
                     <td class="text-center">
-                        <span class="badge bg-secondary">{{ $r->user->role?->name ?? '?' }}</span>
+                        <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $r->user->role?->name ?? '?' }}</span>
                     </td>
                 </tr>
                 @empty
