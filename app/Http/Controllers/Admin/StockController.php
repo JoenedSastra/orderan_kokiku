@@ -154,14 +154,18 @@ class StockController extends Controller
      * Riwayat barang yang sudah dikirim KELUAR dari Gudang Utama ke divisi
      * lain (Gudang Resto/Kasir/Kitchen) — ledger StockOut lokasi "gudang".
      */
-    public function riwayatTerkirim(): View
+    public function riwayatTerkirim(Request $request): View
     {
+        $tanggal = $request->input('tanggal');
+
         $riwayat = StockOut::with(['item', 'user.role'])
             ->where('location', StockOut::LOCATION_GUDANG)
             ->whereHas('item', fn ($q) => $q->where('master_location', Item::MASTER_GUDANG_UTAMA))
+            ->when($tanggal, fn ($q) => $q->whereDate('created_at', $tanggal))
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('admin.stock.riwayat_terkirim', compact('riwayat'));
+        return view('admin.stock.riwayat_terkirim', compact('riwayat', 'tanggal'));
     }
 }

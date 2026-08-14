@@ -9,10 +9,25 @@
         </a>
         <h2 class="h5 mb-0">Riwayat Terkirim — Gudang Utama</h2>
     </div>
-    <div class="kk-search-box">
-        <i class="bi bi-search"></i>
-        <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
-    </div>
+    <form id="formFilter" method="GET" action="{{ route('admin.stock.riwayat_terkirim') }}" class="d-flex align-items-center gap-2 flex-nowrap">
+        {{-- Filter Tanggal --}}
+        <div class="input-group input-group-sm" style="width:200px;">
+            <span class="input-group-text bg-white border-end-0" style="border-color:#dee2e6;">
+                <i class="bi bi-calendar3" style="color:#6b7280;font-size:.85rem;"></i>
+            </span>
+            <input type="date" id="inputTanggal" name="tanggal"
+                class="form-control form-control-sm border-start-0"
+                value="{{ $tanggal ?? '' }}"
+                style="border-color:#dee2e6;"
+                title="Filter berdasarkan tanggal"
+                onchange="document.getElementById('formFilter').submit()">
+        </div>
+        {{-- Search --}}
+        <div class="kk-search-box" style="min-width:180px;">
+            <i class="bi bi-search"></i>
+            <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
+        </div>
+    </form>
 </div>
 
 <div class="kk-stat-card p-0">
