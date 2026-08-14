@@ -1,39 +1,93 @@
 @extends('layouts.app')
 @section('title', 'Catat Barang Keluar')
 @section('content')
-<div class="mb-3"><a href="{{ route('kasir.stock_out.index') }}" class="text-muted text-decoration-none"><i class="bi bi-arrow-left"></i> Kembali</a></div>
-<div class="kk-stat-card" style="max-width:520px">
-    <h5 class="mb-3">Catat Barang Keluar</h5>
-    <form action="{{ route('kasir.stock_out.store') }}" method="POST" id="formStockOut">
-        @csrf
-        <div class="mb-3">
-            <label class="form-label">Barang <span class="text-danger">*</span></label>
-            <select name="item_id" id="so_item_id" class="form-select @error('item_id') is-invalid @enderror" required>
-                <option value="">— Pilih Barang —</option>
-                @foreach($items as $item)
-                <option value="{{ $item->id }}" {{ old('item_id') == $item->id ? 'selected' : '' }}>{{ $item->name }} ({{ $item->unit }})</option>
-                @endforeach
-            </select>
-            @error('item_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+<div style="max-width:520px;">
+
+    {{-- Card utama --}}
+    <div class="border-0 shadow-sm" style="border-radius:16px;overflow:hidden;background:#fff;">
+
+        {{-- Header gradient --}}
+        <div style="background:linear-gradient(135deg,#ea580c 0%,#f97316 60%,#fb923c 100%);padding:1.25rem 1.5rem 2rem;">
+            <h5 class="mb-0 fw-bold text-white" style="font-size:1rem;">Catat Barang Keluar</h5>
+            <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Kasir</small>
         </div>
-        <div class="row g-2 mb-3">
-            <div class="col-6">
-                <label class="form-label">Jumlah <span class="text-danger">*</span></label>
-                <input type="number" name="quantity" id="so_quantity" class="form-control @error('quantity') is-invalid @enderror" value="{{ old('quantity', 1) }}" min="1" required>
-                @error('quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-6">
-                <label class="form-label">Tanggal <span class="text-danger">*</span></label>
-                <input type="date" name="tanggal" id="so_tanggal" class="form-control @error('tanggal') is-invalid @enderror" value="{{ old('tanggal', date('Y-m-d')) }}" required>
-                @error('tanggal')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
+
+        {{-- Form body --}}
+        <div class="p-4" style="margin-top:-1rem;">
+            <form action="{{ route('kasir.stock_out.store') }}" method="POST" id="formStockOut">
+                @csrf
+
+                {{-- Barang --}}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                        <i class="bi bi-box-seam me-1" style="color:#ea580c;"></i>Barang
+                    </label>
+                    <select name="item_id" id="so_item_id"
+                            class="form-select @error('item_id') is-invalid @enderror"
+                            style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
+                        <option value="">Pilih Barang</option>
+                        @foreach($items as $item)
+                        <option value="{{ $item->id }}" {{ old('item_id') == $item->id ? 'selected' : '' }}>{{ $item->name }} ({{ $item->unit }})</option>
+                        @endforeach
+                    </select>
+                    @error('item_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                {{-- Jumlah & Tanggal --}}
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                            <i class="bi bi-123 me-1" style="color:#ea580c;"></i>Jumlah
+                        </label>
+                        <input type="number" name="quantity" id="so_quantity"
+                               class="form-control @error('quantity') is-invalid @enderror"
+                               value="{{ old('quantity', 1) }}" min="1"
+                               style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;text-align:center;" required>
+                        @error('quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                            <i class="bi bi-calendar3 me-1" style="color:#ea580c;"></i>Tanggal
+                        </label>
+                        <input type="date" name="tanggal" id="so_tanggal"
+                               class="form-control @error('tanggal') is-invalid @enderror"
+                               value="{{ old('tanggal', date('Y-m-d')) }}"
+                               style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
+                        @error('tanggal')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
+                {{-- Keterangan --}}
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                        <i class="bi bi-chat-left-text me-1" style="color:#ea580c;"></i>Keterangan
+                    </label>
+                    <input type="text" name="keterangan" id="so_keterangan"
+                           class="form-control"
+                           value="{{ old('keterangan') }}"
+                           placeholder="Digunakan, Dijual, dll"
+                           style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;">
+                </div>
+
+                {{-- Tombol bersebelahan --}}
+                <div class="d-flex gap-2">
+                    <a href="{{ route('kasir.stock_out.index') }}"
+                       class="btn fw-semibold px-4"
+                       style="border-radius:10px;border:1.5px solid #e5e7eb;color:#6b7280;font-size:.875rem;background:#f9fafb;flex-shrink:0;">
+                        <i class="bi bi-arrow-left me-1"></i>Kembali
+                    </a>
+                    <button type="submit"
+                            class="btn text-white fw-semibold flex-grow-1"
+                            style="background:linear-gradient(135deg,#ea580c,#f97316);border:none;border-radius:10px;font-size:.875rem;transition:.2s;"
+                            onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                        <i class="bi bi-check-lg me-1"></i>Simpan
+                    </button>
+                </div>
+
+            </form>
         </div>
-        <div class="mb-3">
-            <label class="form-label">Keterangan</label>
-            <input type="text" name="keterangan" id="so_keterangan" class="form-control" value="{{ old('keterangan') }}" placeholder="Digunakan, Dijual, dll">
-        </div>
-        <button type="submit" class="btn text-white w-100" style="background:var(--kk-accent)">Simpan</button>
-    </form>
+    </div>
 </div>
 
 @push('scripts')

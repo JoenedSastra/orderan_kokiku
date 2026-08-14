@@ -69,63 +69,141 @@
 
 @if($title === 'Gudang Utama')
 <div class="modal fade" id="modalKirimBarang" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="{{ route('admin.stock.kirim') }}" method="POST">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <form action="{{ route('admin.stock.kirim') }}" method="POST" id="formKirimBarang">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Kirim Barang dari Gudang Utama</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+                {{-- Header gradient --}}
+                <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 60%,#3b82f6 100%);padding:1.4rem 1.5rem 2.5rem;">
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Kirim Barang</h5>
+                        <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Dari Gudang Utama ke Divisi Lain</small>
+                    </div>
                 </div>
-                <div class="modal-body">
+
+                {{-- Body --}}
+                <div class="modal-body px-4" style="margin-top:-1.2rem;padding-top:0;">
+
+                    {{-- Info card --}}
+                    <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3"
+                         style="background:#eff6ff;border:1px solid #bfdbfe;">
+                        <i class="bi bi-info-circle-fill" style="color:#2563eb;font-size:1rem;flex-shrink:0;"></i>
+                        <small style="color:#1e40af;line-height:1.4;">
+                            Barang yang dikirim akan <strong>mengurangi stok</strong> Gudang Utama dan
+                            <strong>menambah stok</strong> divisi tujuan secara otomatis.
+                        </small>
+                    </div>
+
+                    {{-- Pilih Barang --}}
                     <div class="mb-3">
-                        <label class="form-label">Pilih Barang <span class="text-danger">*</span></label>
-                        <select name="item_id" class="form-select @error('item_id') is-invalid @enderror" required>
-                            <option value="">— Pilih Barang —</option>
+                        <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                            <i class="bi bi-box-seam me-1" style="color:#2563eb;"></i>Pilih Barang
+                        </label>
+                        <select name="item_id" id="selectBarang"
+                                class="form-select @error('item_id') is-invalid @enderror"
+                                style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
+                            <option value="">Pilih Barang</option>
                             @foreach($itemsGudangUtama as $item)
-                            <option value="{{ $item->id }}">
-                                {{ $item->name }} (Stok: {{ $item->stokGudang() }} {{ $item->unit }})
+                            <option value="{{ $item->id }}" data-stok="{{ $item->stokGudang() }}" data-unit="{{ $item->unit }}">
+                                {{ $item->name }} — Stok: {{ $item->stokGudang() }} {{ $item->unit }}
                             </option>
                             @endforeach
                         </select>
                         @error('item_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+                        {{-- Stok tersedia badge --}}
+                        <div id="stokInfo" class="mt-2 d-none">
+                            <span class="badge px-3 py-2" style="background:#dbeafe;color:#1d4ed8;font-size:.8rem;border-radius:8px;">
+                                <i class="bi bi-layers-half me-1"></i>
+                                Stok tersedia: <strong id="stokText">-</strong>
+                            </span>
+                        </div>
                     </div>
 
+                    {{-- Kirim ke --}}
                     <div class="mb-3">
-                        <label class="form-label">Kirim ke <span class="text-danger">*</span></label>
-                        <select name="destination" class="form-select @error('destination') is-invalid @enderror" required>
-                            <option value="">— Pilih Divisi —</option>
-                            <option value="gudang_resto">Gudang Resto</option>
-                            <option value="kasir">Kasir</option>
-                            <option value="kitchen">Kitchen</option>
+                        <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                            <i class="bi bi-geo-alt me-1" style="color:#2563eb;"></i>Kirim ke
+                        </label>
+                        <select name="destination"
+                                class="form-select @error('destination') is-invalid @enderror"
+                                style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
+                            <option value="">Pilih Divisi</option>
+                            <option value="gudang_resto">🏠 Gudang Resto</option>
+                            <option value="kasir">💰 Kasir</option>
+                            <option value="kitchen">🍳 Kitchen</option>
                         </select>
                         @error('destination')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Jumlah <span class="text-danger">*</span></label>
-                        <input type="number" name="quantity" min="1" value="1" class="form-control @error('quantity') is-invalid @enderror" required>
-                        @error('quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-
-                    <div class="mb-1">
-                        <label class="form-label">Keterangan <span class="text-danger">*</span></label>
-                        <select name="keterangan" class="form-select @error('keterangan') is-invalid @enderror" required>
-                            <option value="">— Pilih Keterangan —</option>
-                            <option value="Gudang Resto">Gudang Resto</option>
-                            <option value="Kasir">Kasir</option>
-                            <option value="Kitchen">Kitchen</option>
-                        </select>
-                        @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    {{-- Jumlah & Keterangan dalam 1 baris --}}
+                    <div class="row g-3">
+                        <div class="col-5">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                                <i class="bi bi-123 me-1" style="color:#2563eb;"></i>Jumlah
+                            </label>
+                            <input type="number" name="quantity" min="1" value="1"
+                                   class="form-control @error('quantity') is-invalid @enderror"
+                                   style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;text-align:center;" required>
+                            @error('quantity')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-7">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
+                                <i class="bi bi-tag me-1" style="color:#2563eb;"></i>Keterangan
+                            </label>
+                            <select name="keterangan"
+                                    class="form-select @error('keterangan') is-invalid @enderror"
+                                    style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
+                                <option value="">Pilih Keterangan</option>
+                                <option value="Gudang Resto">Gudang Resto</option>
+                                <option value="Kasir">Kasir</option>
+                                <option value="Kitchen">Kitchen</option>
+                            </select>
+                            @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn text-white" style="background:#2563eb;">Kirim</button>
+
+                {{-- Footer --}}
+                <div class="modal-footer border-0 px-4 pb-4 pt-2 gap-2">
+                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal"
+                            style="border-radius:10px;font-size:.875rem;border:1px solid #e5e7eb;">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn text-white fw-semibold px-4 flex-grow-1"
+                            style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:10px;font-size:.875rem;transition:.2s;"
+                            onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
+                        Kirim Sekarang
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    const selectBarang = document.getElementById('selectBarang');
+    const stokInfo     = document.getElementById('stokInfo');
+    const stokText     = document.getElementById('stokText');
+
+    if (selectBarang) {
+        selectBarang.addEventListener('change', function () {
+            const opt = this.options[this.selectedIndex];
+            const stok = opt.dataset.stok;
+            const unit = opt.dataset.unit;
+            if (stok !== undefined && this.value) {
+                stokText.textContent = stok + ' ' + unit;
+                stokInfo.classList.remove('d-none');
+            } else {
+                stokInfo.classList.add('d-none');
+            }
+        });
+    }
+})();
+</script>
+@endpush
 @endif
 @endsection
