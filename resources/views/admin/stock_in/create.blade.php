@@ -146,15 +146,110 @@
         saveDraft();
     });
 
-    tabel.addEventListener('keydown', function (e) {
-        if (e.key !== 'Enter') return;
-        e.preventDefault();
+    // ── Navigasi Excel-like ────────────────────────────────────────────────
+    // Bangun grid dua dimensi: rows × cols (hanya <input> yang bisa difokus).
+    function buildGrid() {
+        const grid = [];
+        tabel.querySelectorAll('tbody tr').forEach(function (tr) {
+            const inputs = Array.from(tr.querySelectorAll('input'));
+            if (inputs.length) grid.push(inputs);
+        });
+        return grid;
+    }
 
-        const currentRow = e.target.closest('tr');
-        const nextRow = currentRow ? currentRow.nextElementSibling : null;
-        if (nextRow) {
-            const nextInput = nextRow.querySelector('.kk-baris-nama');
-            if (nextInput) nextInput.focus();
+    function findCell(grid, input) {
+        for (let r = 0; r < grid.length; r++) {
+            const c = grid[r].indexOf(input);
+            if (c !== -1) return { r, c };
+        }
+        return null;
+    }
+
+    function focusCell(grid, r, c) {
+        const row = grid[r];
+        if (!row) return;
+        const col = Math.max(0, Math.min(c, row.length - 1));
+        const el = row[col];
+        if (el) {
+            el.focus();
+            // Tempatkan kursor di akhir teks agar tidak overwrite
+            const len = el.value.length;
+            try { el.setSelectionRange(len, len); } catch (_) {}
+        }
+    }
+
+    tabel.addEventListener('keydown', function (e) {
+        const input = e.target;
+        if (input.tagName !== 'INPUT') return;
+
+        const grid = buildGrid();
+        const pos  = findCell(grid, input);
+        if (!pos) return;
+
+        const { r, c } = pos;
+
+        // type="number" tidak mendukung selectionStart/End (selalu null)
+        // → pada number input, selalu anggap bisa pindah ke kiri/kanan
+        const isNumber = input.type === 'number';
+        const atStart  = isNumber ? true  : (input.selectionStart === 0 && input.selectionEnd === 0);
+        const atEnd    = isNumber ? true  : (input.selectionStart === input.value.length && input.selectionEnd === input.value.length);
+
+        switch (e.key) {
+            case 'ArrowDown':
+                // Cegah browser mengubah nilai angka
+                e.preventDefault();
+                focusCell(grid, r + 1, c);
+                break;
+
+            case 'Enter':
+                e.preventDefault();
+                focusCell(grid, r + 1, c);
+                break;
+
+            case 'ArrowUp':
+                // Cegah browser mengubah nilai angka
+                e.preventDefault();
+                focusCell(grid, r - 1, c);
+                break;
+
+            case 'ArrowRight':
+                if (atEnd) {
+                    e.preventDefault();
+                    if (c + 1 < grid[r].length) {
+                        focusCell(grid, r, c + 1);
+                    } else if (r + 1 < grid.length) {
+                        focusCell(grid, r + 1, 0);
+                    }
+                }
+                break;
+
+            case 'ArrowLeft':
+                if (atStart) {
+                    e.preventDefault();
+                    if (c - 1 >= 0) {
+                        focusCell(grid, r, c - 1);
+                    } else if (r - 1 >= 0) {
+                        focusCell(grid, r - 1, grid[r - 1].length - 1);
+                    }
+                }
+                break;
+
+            case 'Tab':
+                e.preventDefault();
+                if (e.shiftKey) {
+                    if (c - 1 >= 0) {
+                        focusCell(grid, r, c - 1);
+                    } else if (r - 1 >= 0) {
+                        focusCell(grid, r - 1, grid[r - 1].length - 1);
+                    }
+                } else {
+                    if (c + 1 < grid[r].length) {
+                        focusCell(grid, r, c + 1);
+                    } else if (r + 1 < grid.length) {
+                        focusCell(grid, r + 1, 0);
+                    }
+                }
+                break;
         }
     });
 
