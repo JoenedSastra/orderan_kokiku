@@ -73,12 +73,12 @@
                 <div class="d-flex gap-2">
                     <a href="{{ route('kitchen.stock_out.index') }}"
                        class="btn fw-semibold px-4"
-                       style="border-radius:10px;border:1.5px solid #e5e7eb;color:#6b7280;font-size:.875rem;background:#f9fafb;flex-shrink:0;">
+                       style="border-radius:10px;border:1.5px solid #fca5a5;color:#dc2626;font-size:.875rem;background:#fff1f2;flex-shrink:0;">
                         <i class="bi bi-arrow-left me-1"></i>Kembali
                     </a>
                     <button type="submit"
-                            class="btn text-white fw-semibold flex-grow-1"
-                            style="background:linear-gradient(135deg,#ea580c,#f97316);border:none;border-radius:10px;font-size:.875rem;transition:.2s;"
+                            class="btn fw-semibold flex-grow-1"
+                            style="background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:10px;font-size:.875rem;transition:.2s;"
                             onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
                         <i class="bi bi-check-lg me-1"></i>Simpan
                     </button>
