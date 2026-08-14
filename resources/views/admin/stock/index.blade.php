@@ -2,16 +2,10 @@
 @section('title', 'Stok Barang - ' . $title)
 @section('content')
 
-@if(session('success'))
-<div class="alert alert-success alert-dismissible fade show">
-    <i class="bi bi-check-circle-fill me-1"></i> {{ session('success') }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-@endif
 
 <div class="mb-3 kk-page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <h2 class="h5 mb-0">Stok Barang — {{ $title }}</h2>
-    <div class="d-flex align-items-center gap-2 flex-wrap">
+    <div class="d-flex align-items-center gap-2 flex-nowrap">
         @if($title === 'Gudang Utama')
         <button type="button" class="btn btn-sm text-white text-nowrap" style="background:#2563eb;" data-bs-toggle="modal" data-bs-target="#modalKirimBarang">
             <i class="bi bi-send-fill"></i> Kirim Barang
@@ -20,7 +14,7 @@
             <i class="bi bi-clock-history"></i> Riwayat Terkirim
         </a>
         @endif
-        <div class="kk-search-box">
+        <div class="kk-search-box" style="min-width:180px;">
             <i class="bi bi-search"></i>
             <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
         </div>
