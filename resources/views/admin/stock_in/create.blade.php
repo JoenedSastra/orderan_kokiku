@@ -27,9 +27,8 @@
                         <th class="text-center" style="width:220px;">Nama Barang</th>
                         <th class="text-center" style="width:90px;">Jumlah</th>
                         <th class="text-center" style="width:110px;">Satuan</th>
-                        <th class="text-center" style="width:110px;">Master</th>
                         <th class="text-center" style="width:200px;">Keterangan</th>
-                        <th class="text-center" style="width:130px;">Dicatat Oleh</th>
+                        <th class="text-center" style="width:130px;">Master</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,14 +49,13 @@
                                    autocomplete="off"
                                    class="form-control form-control-sm text-center">
                         </td>
-                        <td class="text-center">
-                            <span class="badge bg-success">{{ $lokasiLabel }}</span>
-                        </td>
                         <td>
                             <input type="text" name="rows[{{ $i }}][keterangan]" autocomplete="off"
                                    class="form-control form-control-sm">
                         </td>
-                        <td class="text-center text-muted small">{{ auth()->user()->name }}</td>
+                        <td class="text-center">
+                            <span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $lokasiLabel }}</span>
+                        </td>
                     </tr>
                     @endfor
                 </tbody>
