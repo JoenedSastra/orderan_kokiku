@@ -4,17 +4,106 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use App\Models\Order;
+use App\Models\Role;
 use App\Models\StockIn;
 use App\Models\StockOut;
 use App\Models\Supplier;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    /**
+     * Tahun awal grafik "Aktivitas per Tahun". Rentang grafik akan selalu
+     * mulai dari tahun ini sampai tahun berjalan (now()->year), dan akan
+     * OTOMATIS bertambah satu kolom setiap tahun baru berjalan — tidak
+     * perlu diubah lagi tiap tahun.
+     */
+    public const TAHUN_MULAI_GRAFIK = 2026;
+
+    /**
+     * Query dasar "Barang Masuk" untuk grafik/statistik dashboard.
+     *
+     * Aturan bisnis: hanya barang masuk yang di-INPUT LANGSUNG OLEH ADMIN
+     * (lewat form Admin > Barang Masuk Harian) yang dihitung. Ini berlaku
+     * untuk SEMUA divisi stock (Gudang Utama, Gudang Resto, Kasir, Kitchen)
+     * sekaligus — karena form admin memang bisa input ke lokasi manapun.
+     *
+     * Catatan: StockIn yang otomatis tercipta saat Admin approve Permintaan
+     * (lihat Admin\OrderController::approve) TIDAK dihitung di sini, karena
+     * user_id pada record itu adalah requester (Kasir/Kitchen), bukan admin.
+     * Pergerakan itu sudah terwakili di grafik "Barang Keluar" (lihat bawah).
+     */
+    private function baseMasukQuery()
+    {
+        return StockIn::whereHas('user.role', fn ($q) => $q->where('slug', Role::ADMIN));
+    }
+
+    /**
+     * Query dasar "Barang Keluar" untuk grafik/statistik dashboard.
+     *
+     * Aturan bisnis: hanya dihitung saat barang dikirim KELUAR DARI GUDANG
+     * UTAMA menuju divisi lain (Gudang Resto, Kasir, Kitchen). Secara teknis
+     * ini adalah StockOut dengan location = 'gudang', yang HANYA tercipta
+     * lewat Admin\OrderController::approve() saat admin menyetujui
+     * permintaan Kasir/Kitchen.
+     *
+     * StockOut dengan location = 'restoran' (dicatat sendiri oleh Kasir/
+     * Kitchen saat mereka memakai/menjual stok) SENGAJA TIDAK dihitung,
+     * karena itu bukan "barang keluar dari Gudang Utama".
+     */
+    private function baseKeluarQuery()
+    {
+        return StockOut::where('location', StockOut::LOCATION_GUDANG);
+    }
+
+    /**
+     * Query dasar "Permintaan" untuk grafik/statistik dashboard.
+     *
+     * Aturan bisnis: hanya permintaan yang dibuat oleh role Kasir atau
+     * Kitchen yang dihitung (permintaan restock ke Gudang Utama).
+     */
+    private function basePermintaanQuery()
+    {
+        return Order::whereHas('user.role', fn ($q) => $q->whereIn('slug', [Role::KASIR, Role::KITCHEN]));
+    }
+
+    /**
+     * Bangun ekspresi SQL untuk mengambil bagian tanggal (tahun/bulan/hari/jam)
+     * dari sebuah kolom, secara PORTABLE antar driver database.
+     *
+     * PENTING: fungsi seperti MONTH(), YEAR(), HOUR() itu MySQL-only dan
+     * TIDAK ADA di SQLite (driver default project ini — lihat DB_CONNECTION
+     * di .env.example). Kalau project jalan di atas SQLite (biasanya dipakai
+     * saat development lokal / php artisan serve), query lama akan gagal
+     * total ("no such function: MONTH") dan fetch() grafik akan error diam-
+     * diam di background.
+     */
+    private function datePart(string $column, string $part): string
+    {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return match ($part) {
+                'year'  => "CAST(strftime('%Y', {$column}) AS INTEGER)",
+                'month' => "CAST(strftime('%m', {$column}) AS INTEGER)",
+                'day'   => "CAST(strftime('%d', {$column}) AS INTEGER)",
+                'hour'  => "CAST(strftime('%H', {$column}) AS INTEGER)",
+            };
+        }
+
+        // MySQL / MariaDB (target production umum di hosting cPanel)
+        return match ($part) {
+            'year'  => "YEAR({$column})",
+            'month' => "MONTH({$column})",
+            'day'   => "DAYOFMONTH({$column})",
+            'hour'  => "HOUR({$column})",
+        };
+    }
+
     public function admin(): View
     {
         $user = Auth::user();
@@ -27,8 +116,10 @@ class DashboardController extends Controller
         $totalUser     = User::count();
         $totalSupplier = Supplier::count();
 
-        $masukHariIni  = (int) StockIn::whereDate('tanggal', today())->sum('quantity');
-        $keluarHariIni = (int) StockOut::whereDate('tanggal', today())->sum('quantity');
+        $tahunMulaiGrafik = self::TAHUN_MULAI_GRAFIK;
+
+        $masukHariIni  = (int) $this->baseMasukQuery()->whereDate('tanggal', today())->sum('quantity');
+        $keluarHariIni = (int) $this->baseKeluarQuery()->whereDate('tanggal', today())->sum('quantity');
 
         // Barang stok rendah = saldo Restoran <= min_stock (butuh direstock dari Gudang)
         $stokRendah = Item::all()
@@ -44,32 +135,47 @@ class DashboardController extends Controller
         return view('dashboard.admin', compact(
             'user', 'permintaanMenunggu', 'permintaanDisetujui', 'permintaanDitolak',
             'totalBarang', 'totalUser', 'totalSupplier', 'masukHariIni', 'keluarHariIni',
-            'stokRendah', 'ordersRecent'
+            'stokRendah', 'ordersRecent', 'tahunMulaiGrafik'
         ));
     }
 
     /**
-     * Endpoint AJAX: data grafik bulanan (Barang Masuk, Barang Keluar, Permintaan) untuk 1 tahun.
-     * Dipanggil dari dashboard.admin via fetch().
+     * Endpoint AJAX: data grafik bulanan.
+     *
+     * - Kalau parameter `month` DIKIRIM (tab "Bulan" di UI kirim month & year):
+     *   balikin breakdown PER MINGGU (tepat 4 minggu) untuk bulan itu saja.
+     * - Kalau `month` TIDAK dikirim: balikin breakdown per-bulan untuk 1 tahun
+     *   penuh (perilaku lama, dipertahankan untuk kompatibilitas).
      */
     public function chartData(Request $request): JsonResponse
     {
-        $year = (int) $request->query('year', now()->year);
+        $year  = (int) $request->query('year', now()->year);
+        $month = $request->query('month');
+
+        if ($month) {
+            return $this->chartDataPerMinggu($year, (int) $month);
+        }
 
         $bulanLabel = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-        $masukPerBulan = StockIn::whereYear('tanggal', $year)
-            ->selectRaw('MONTH(tanggal) as bulan, SUM(quantity) as total')
+        $bulanExpr        = $this->datePart('tanggal', 'month');
+        $bulanExprCreated = $this->datePart('created_at', 'month');
+
+        $masukPerBulan = $this->baseMasukQuery()
+            ->whereYear('tanggal', $year)
+            ->selectRaw("{$bulanExpr} as bulan, SUM(quantity) as total")
             ->groupBy('bulan')
             ->pluck('total', 'bulan');
 
-        $keluarPerBulan = StockOut::whereYear('tanggal', $year)
-            ->selectRaw('MONTH(tanggal) as bulan, SUM(quantity) as total')
+        $keluarPerBulan = $this->baseKeluarQuery()
+            ->whereYear('tanggal', $year)
+            ->selectRaw("{$bulanExpr} as bulan, SUM(quantity) as total")
             ->groupBy('bulan')
             ->pluck('total', 'bulan');
 
-        $permintaanPerBulan = Order::whereYear('created_at', $year)
-            ->selectRaw('MONTH(created_at) as bulan, COUNT(*) as total')
+        $permintaanPerBulan = $this->basePermintaanQuery()
+            ->whereYear('created_at', $year)
+            ->selectRaw("{$bulanExprCreated} as bulan, COUNT(*) as total")
             ->groupBy('bulan')
             ->pluck('total', 'bulan');
 
@@ -90,6 +196,70 @@ class DashboardController extends Controller
     }
 
     /**
+     * Breakdown PER MINGGU untuk satu bulan tertentu — SELALU TEPAT 4 MINGGU
+     * (dipanggil dari chartData saat tab "Bulan" memilih bulan+tahun spesifik).
+     */
+    private function chartDataPerMinggu(int $year, int $month): JsonResponse
+    {
+        $hariExpr        = $this->datePart('tanggal', 'day');
+        $hariExprCreated = $this->datePart('created_at', 'day');
+
+        $masukPerHari = $this->baseMasukQuery()
+            ->whereYear('tanggal', $year)->whereMonth('tanggal', $month)
+            ->selectRaw("{$hariExpr} as hari, SUM(quantity) as total")
+            ->groupBy('hari')
+            ->pluck('total', 'hari');
+
+        $keluarPerHari = $this->baseKeluarQuery()
+            ->whereYear('tanggal', $year)->whereMonth('tanggal', $month)
+            ->selectRaw("{$hariExpr} as hari, SUM(quantity) as total")
+            ->groupBy('hari')
+            ->pluck('total', 'hari');
+
+        $permintaanPerHari = $this->basePermintaanQuery()
+            ->whereYear('created_at', $year)->whereMonth('created_at', $month)
+            ->selectRaw("{$hariExprCreated} as hari, COUNT(*) as total")
+            ->groupBy('hari')
+            ->pluck('total', 'hari');
+
+        $jumlahHari = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+
+        // Selalu dibagi TEPAT 4 minggu (bukan 5) — Minggu 4 menampung semua
+        // sisa hari di akhir bulan (termasuk tanggal 29/30/31 kalau ada),
+        // supaya bulan dengan 29-31 hari tidak memunculkan "Minggu 5".
+        $batasMinggu = [
+            1 => [1, 7],
+            2 => [8, 14],
+            3 => [15, 21],
+            4 => [22, $jumlahHari],
+        ];
+
+        $labels = $masuk = $keluar = $permintaan = [];
+
+        foreach ($batasMinggu as $minggu => [$awalHari, $akhirHari]) {
+            $labels[] = 'Minggu ' . $minggu;
+
+            $totalMasuk = $totalKeluar = $totalPermintaan = 0;
+            for ($hari = $awalHari; $hari <= $akhirHari; $hari++) {
+                $totalMasuk      += (int) ($masukPerHari[$hari] ?? 0);
+                $totalKeluar     += (int) ($keluarPerHari[$hari] ?? 0);
+                $totalPermintaan += (int) ($permintaanPerHari[$hari] ?? 0);
+            }
+
+            $masuk[]      = $totalMasuk;
+            $keluar[]     = $totalKeluar;
+            $permintaan[] = $totalPermintaan;
+        }
+
+        return response()->json([
+            'labels'     => $labels,
+            'masuk'      => $masuk,
+            'keluar'     => $keluar,
+            'permintaan' => $permintaan,
+        ]);
+    }
+
+    /**
      * Endpoint AJAX: data grafik harian (per jam, hari ini).
      * Mengembalikan data per jam (00-23) untuk tanggal hari ini.
      */
@@ -97,24 +267,28 @@ class DashboardController extends Controller
     {
         $date = $request->query('date', now()->toDateString());
 
-        $masukPerJam = StockIn::whereDate('tanggal', $date)
-            ->selectRaw('HOUR(created_at) as jam, SUM(quantity) as total')
+        $jamExpr = $this->datePart('created_at', 'hour');
+
+        $masukPerJam = $this->baseMasukQuery()
+            ->whereDate('tanggal', $date)
+            ->selectRaw("{$jamExpr} as jam, SUM(quantity) as total")
             ->groupBy('jam')
             ->pluck('total', 'jam');
 
-        $keluarPerJam = StockOut::whereDate('tanggal', $date)
-            ->selectRaw('HOUR(created_at) as jam, SUM(quantity) as total')
+        $keluarPerJam = $this->baseKeluarQuery()
+            ->whereDate('tanggal', $date)
+            ->selectRaw("{$jamExpr} as jam, SUM(quantity) as total")
             ->groupBy('jam')
             ->pluck('total', 'jam');
 
-        $permintaanPerJam = Order::whereDate('created_at', $date)
-            ->selectRaw('HOUR(created_at) as jam, COUNT(*) as total')
+        $permintaanPerJam = $this->basePermintaanQuery()
+            ->whereDate('created_at', $date)
+            ->selectRaw("{$jamExpr} as jam, COUNT(*) as total")
             ->groupBy('jam')
             ->pluck('total', 'jam');
 
         $masuk = $keluar = $permintaan = $labels = [];
 
-        // Tampilkan jam 06:00 - 22:00 (rentang operasional)
         for ($jam = 0; $jam <= 23; $jam++) {
             $labels[]     = sprintf('%02d:00', $jam);
             $masuk[]      = (int) ($masukPerJam[$jam] ?? 0);
@@ -132,31 +306,32 @@ class DashboardController extends Controller
     }
 
     /**
-     * Endpoint AJAX: data grafik tahunan (per tahun, rentang 5 tahun terakhir).
+     * Endpoint AJAX: data grafik tahunan — mulai dari TAHUN_MULAI_GRAFIK
+     * sampai tahun berjalan, otomatis bertambah tiap tahun baru.
      */
     public function chartDataTahunan(Request $request): JsonResponse
     {
         $currentYear = now()->year;
-        $startYear   = $currentYear - 4; // 5 tahun terakhir
+        $startYear   = min(self::TAHUN_MULAI_GRAFIK, $currentYear); // jaga-jaga kalau jam server keliru
 
-        $masukPerTahun = StockIn::whereBetween(
-                \DB::raw('YEAR(tanggal)'), [$startYear, $currentYear]
-            )
-            ->selectRaw('YEAR(tanggal) as tahun, SUM(quantity) as total')
+        $tahunExpr        = $this->datePart('tanggal', 'year');
+        $tahunExprCreated = $this->datePart('created_at', 'year');
+
+        $masukPerTahun = $this->baseMasukQuery()
+            ->whereBetween(DB::raw($tahunExpr), [$startYear, $currentYear])
+            ->selectRaw("{$tahunExpr} as tahun, SUM(quantity) as total")
             ->groupBy('tahun')
             ->pluck('total', 'tahun');
 
-        $keluarPerTahun = StockOut::whereBetween(
-                \DB::raw('YEAR(tanggal)'), [$startYear, $currentYear]
-            )
-            ->selectRaw('YEAR(tanggal) as tahun, SUM(quantity) as total')
+        $keluarPerTahun = $this->baseKeluarQuery()
+            ->whereBetween(DB::raw($tahunExpr), [$startYear, $currentYear])
+            ->selectRaw("{$tahunExpr} as tahun, SUM(quantity) as total")
             ->groupBy('tahun')
             ->pluck('total', 'tahun');
 
-        $permintaanPerTahun = Order::whereBetween(
-                \DB::raw('YEAR(created_at)'), [$startYear, $currentYear]
-            )
-            ->selectRaw('YEAR(created_at) as tahun, COUNT(*) as total')
+        $permintaanPerTahun = $this->basePermintaanQuery()
+            ->whereBetween(DB::raw($tahunExprCreated), [$startYear, $currentYear])
+            ->selectRaw("{$tahunExprCreated} as tahun, COUNT(*) as total")
             ->groupBy('tahun')
             ->pluck('total', 'tahun');
 

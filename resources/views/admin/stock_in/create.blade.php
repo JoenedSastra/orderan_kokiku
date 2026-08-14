@@ -15,18 +15,6 @@
 </div>
 @endif
 
-<datalist id="namaBarangOptions">
-    @foreach($namaBarangSuggestions as $nama)
-    <option value="{{ $nama }}">
-    @endforeach
-</datalist>
-
-<datalist id="satuanOptions">
-    @foreach($satuanSuggestions as $satuan)
-    <option value="{{ $satuan }}">
-    @endforeach
-</datalist>
-
 <form action="{{ route('admin.stock_in.store', ['lokasi' => $lokasi]) }}" method="POST" id="formBarangMasukMassal">
     @csrf
 
@@ -50,8 +38,8 @@
                         <td class="text-center text-muted fw-bold">{{ $i + 1 }}</td>
                         <td>
                             <input type="text" name="rows[{{ $i }}][item_name]"
-                                   list="namaBarangOptions" autocomplete="off"
-                                   class="form-control form-control-sm text-center kk-baris-nama">
+                                   autocomplete="off"
+                                   class="form-control form-control-sm kk-baris-nama">
                         </td>
                         <td>
                             <input type="number" name="rows[{{ $i }}][quantity]" min="1"
@@ -59,7 +47,7 @@
                         </td>
                         <td>
                             <input type="text" name="rows[{{ $i }}][unit]"
-                                   list="satuanOptions" autocomplete="off"
+                                   autocomplete="off"
                                    class="form-control form-control-sm text-center">
                         </td>
                         <td class="text-center">
@@ -155,7 +143,7 @@
     loadDraft();
     updateHitung();
 
-    tabel.addEventListener('input', function () {
+    tabel.addEventListener('input', function (e) {
         updateHitung();
         saveDraft();
     });

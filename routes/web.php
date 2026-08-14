@@ -54,6 +54,8 @@ Route::middleware('auth')->group(function () {
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::post('/stock/kirim-barang', [StockController::class, 'kirimBarang'])->name('stock.kirim');
+        Route::get('/stock/riwayat-terkirim', [StockController::class, 'riwayatTerkirim'])->name('stock.riwayat_terkirim');
         Route::get('/stock-kasir-kitchen', [StockController::class, 'kasirKitchen'])->name('stock_kasir_kitchen.index');
         Route::get('/stock-kitchen', [StockKitchenReportController::class, 'index'])->name('stock_kitchen.index');
 

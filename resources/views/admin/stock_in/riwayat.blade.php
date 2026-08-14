@@ -48,10 +48,9 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
             <span class="input-group-text" style="background:#fff3e8; border-color:#fdd9b5; border-right:none;">
                 <i class="bi bi-calendar2-event-fill" style="color:var(--kk-orange); font-size:1rem;"></i>
             </span>
-            <input type="date" name="tanggal" value="{{ $tanggal->toDateString() }}"
+            <input type="date" name="tanggal" id="inputTanggal" value="{{ $tanggal->toDateString() }}"
                    class="form-control"
-                   style="border-color:#fdd9b5; border-left:none; font-size:.875rem;"
-                   onchange="this.form.submit()">
+                   style="border-color:#fdd9b5; border-left:none; font-size:.875rem;">
         </div>
         {{-- Pertahankan lokasi saat ganti tanggal --}}
         @if(request('lokasi'))
@@ -61,13 +60,6 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 
     {{-- Spacer --}}
     <div class="ms-auto d-flex align-items-center gap-2 flex-wrap">
-        {{-- Reset ke hari ini --}}
-        @unless($isToday)
-        <a href="{{ route('admin.stock_in.riwayat') }}" class="btn btn-outline-secondary btn-sm" title="Kembali ke hari ini">
-            <i class="bi bi-arrow-counterclockwise"></i>
-        </a>
-        @endunless
-
         {{-- Filter Divisi — inline button group selalu tampil --}}
         @php
         $filterBtns = [
@@ -241,6 +233,15 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
     }
 
     rowChecks.forEach(c => c.addEventListener('change', updateCount));
+
+    // ── Auto-submit filter tanggal (hanya event change, satu kali saat picker ditutup) ──
+    const inputTanggal = document.getElementById('inputTanggal');
+    const filterForm   = document.getElementById('filterForm');
+    if (inputTanggal && filterForm) {
+        inputTanggal.addEventListener('change', function () {
+            if (this.value) filterForm.submit();
+        });
+    }
 })();
 </script>
 @endpush

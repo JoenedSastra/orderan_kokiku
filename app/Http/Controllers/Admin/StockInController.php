@@ -93,16 +93,7 @@ class StockInController extends Controller
         $lokasiLabel = self::LOKASI_LABELS[$lokasi];
         $jumlahBaris = self::JUMLAH_BARIS;
 
-        $namaBarangSuggestions = Item::where('master_location', $lokasi)
-            ->orderBy('name')
-            ->pluck('name');
-
-        $satuanSuggestions = Item::where('master_location', $lokasi)
-            ->distinct()
-            ->orderBy('unit')
-            ->pluck('unit');
-
-        return view('admin.stock_in.create', compact('lokasi', 'lokasiLabel', 'jumlahBaris', 'namaBarangSuggestions', 'satuanSuggestions'));
+        return view('admin.stock_in.create', compact('lokasi', 'lokasiLabel', 'jumlahBaris'));
     }
 
     public function store(Request $request, string $lokasi): RedirectResponse

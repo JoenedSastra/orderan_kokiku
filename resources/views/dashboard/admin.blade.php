@@ -226,7 +226,7 @@
             <span id="ctrlTahunan" class="kk-chart-ctrl" style="display:none;">
                 <span class="kk-chart-date-badge">
                     <i class="bi bi-calendar2-week me-1"></i>
-                    <span id="labelRentangTahun">{{ now()->year - 4 }} – {{ now()->year }}</span>
+                    <span id="labelRentangTahun">{{ $tahunMulaiGrafik }} – {{ now()->year }}</span>
                 </span>
             </span>
         </div>
