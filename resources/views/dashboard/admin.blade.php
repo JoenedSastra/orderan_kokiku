@@ -192,43 +192,30 @@
         </div>
         {{-- Tab switcher --}}
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <div class="kk-chart-tabs" id="chartTabs">
-                <button class="kk-chart-tab active" data-tab="harian" id="tabHarian">
-                    <i class="bi bi-calendar-day me-1"></i>Hari Ini
-                </button>
-                <button class="kk-chart-tab" data-tab="bulanan" id="tabBulanan">
-                    <i class="bi bi-calendar-month me-1"></i>Bulan
-                </button>
-                <button class="kk-chart-tab" data-tab="tahunan" id="tabTahunan">
-                    <i class="bi bi-calendar2-range me-1"></i>Tahun
-                </button>
+            {{-- Tanggal Saja (Bisa Diklik untuk memilih tanggal / hari sebelumnya) --}}
+            <div id="ctrlHarian" class="kk-chart-ctrl position-relative" style="display:inline-flex; align-items:center;">
+                <div id="badgeTanggal" class="kk-chart-date-badge d-flex align-items-center" style="background:var(--kk-surface-2); border:1px solid var(--kk-border); border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer; transition:all 0.2s;" title="Klik untuk pilih tanggal">
+                    <i class="bi bi-calendar-check me-1 text-primary"></i>
+                    <span id="labelHariIni">{{ now()->translatedFormat('d F Y') }}</span>
+                    <i class="bi bi-chevron-down ms-2 text-muted" style="font-size:0.7rem;"></i>
+                </div>
+                <input type="date" id="inputTanggalChart" value="{{ now()->toDateString() }}" max="{{ now()->toDateString() }}" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;" title="Pilih tanggal">
             </div>
-            {{-- Sub-control per tab --}}
-            <span id="ctrlHarian" class="kk-chart-ctrl">
-                <span class="kk-chart-date-badge">
-                    <i class="bi bi-calendar-check me-1"></i>
-                    <span id="labelHariIni">{{ now()->translatedFormat('l, d F Y') }}</span>
-                </span>
-            </span>
-            <span id="ctrlBulanan" class="kk-chart-ctrl" style="display:none;">
-                <select id="chartMonth" class="form-select form-select-sm" style="width:auto; display:inline-block;">
-                    @php $bulanIndo = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; @endphp
-                    @foreach ($bulanIndo as $bIdx => $bNama)
-                        <option value="{{ $bIdx + 1 }}" {{ ($bIdx + 1) === now()->month ? 'selected' : '' }}>{{ $bNama }}</option>
-                    @endforeach
-                </select>
-                <select id="chartMonthYear" class="form-select form-select-sm" style="width:auto; display:inline-block;">
-                    @for ($y = now()->year; $y >= 2022; $y--)
-                        <option value="{{ $y }}" {{ $y === now()->year ? 'selected' : '' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-            </span>
-            <span id="ctrlTahunan" class="kk-chart-ctrl" style="display:none;">
-                <span class="kk-chart-date-badge">
-                    <i class="bi bi-calendar2-week me-1"></i>
-                    <span id="labelRentangTahun">{{ $tahunMulaiGrafik }} – {{ now()->year }}</span>
-                </span>
-            </span>
+
+            {{-- Label Rentang Bulan (tersembunyi secara default) --}}
+            <div id="ctrlBulanan" class="kk-chart-ctrl position-relative" style="display:none; align-items:center;">
+                <div id="badgeBulan" class="kk-chart-date-badge d-flex align-items-center" style="background:var(--kk-surface-2); border:1px solid var(--kk-border); border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer; transition:all 0.2s;" title="Klik untuk pilih bulan">
+                    <i class="bi bi-calendar-month me-1 text-primary"></i>
+                    <span id="labelBulanIni">{{ now()->translatedFormat('F Y') }}</span>
+                    <i class="bi bi-chevron-down ms-2 text-muted" style="font-size:0.7rem;"></i>
+                </div>
+                <input type="month" id="inputBulanChart" value="{{ now()->format('Y-m') }}" max="{{ now()->format('Y-m') }}" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;" title="Pilih bulan">
+            </div>
+
+            {{-- Tombol Mode --}}
+            <button id="btnLihatSemua" class="btn btn-sm" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; transition: all 0.2s;">
+                <i class="bi bi-calendar-day me-1"></i> Hari Ini
+            </button>
         </div>
     </div>
 
@@ -270,10 +257,22 @@
 document.addEventListener('DOMContentLoaded', function () {
     const urlHarian   = '{{ route('admin.dashboard.chart-data-harian') }}';
     const urlBulanan  = '{{ route('admin.dashboard.chart-data') }}';
-    const urlTahunan  = '{{ route('admin.dashboard.chart-data-tahunan') }}';
 
-    let activeTab = 'harian';
-    let charts    = { masuk: null, keluar: null, permintaan: null };
+    let isShowingAll = false;
+    let currentDate  = '{{ now()->toDateString() }}';
+    let currentMonth = '{{ now()->format('Y-m') }}';
+    let charts       = { masuk: null, keluar: null, permintaan: null };
+
+    const inputTanggal  = document.getElementById('inputTanggalChart');
+    const labelHariIni  = document.getElementById('labelHariIni');
+    
+    const inputBulan    = document.getElementById('inputBulanChart');
+    const labelBulanIni = document.getElementById('labelBulanIni');
+
+    const chartSubtitle = document.getElementById('chartSubtitle');
+    const btnLihatSemua = document.getElementById('btnLihatSemua');
+    const ctrlHarian    = document.getElementById('ctrlHarian');
+    const ctrlBulanan   = document.getElementById('ctrlBulanan');
 
     /* ── Helpers ─────────────────────────────────────────────── */
     function destroyCharts() {
@@ -320,13 +319,41 @@ document.addEventListener('DOMContentLoaded', function () {
         charts.permintaan = buildChart('chartPermintaan', 'Permintaan',    json.permintaan, json.labels, '#ff6b35', type);
     }
 
+    function formatTanggalIndo(dateStr) {
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) return { tanggalSaja: dateStr, lengkap: dateStr };
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(year, month, day);
+        
+        const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        const namaHari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        
+        return {
+            tanggalSaja: `${day} ${namaBulan[month]} ${year}`,
+            lengkap: `${namaHari[d.getDay()]}, ${day} ${namaBulan[month]} ${year}`
+        };
+    }
+
+    function formatBulanIndo(monthStr) {
+        const parts = monthStr.split('-');
+        if (parts.length !== 2) return monthStr;
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        return `${namaBulan[month]} ${year}`;
+    }
+
     /* ── Loader per mode ─────────────────────────────────────── */
-    function loadHarian() {
-        const today = new Date();
-        const tgl   = today.toISOString().slice(0, 10);
-        const opts  = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
-        document.getElementById('labelHariIni').textContent = today.toLocaleDateString('id-ID', opts);
-        document.getElementById('chartSubtitle').textContent = 'Aktivitas per jam — ' + today.toLocaleDateString('id-ID', opts);
+    function loadHarian(dateStr) {
+        const tgl = dateStr || currentDate;
+        currentDate = tgl;
+        inputTanggal.value = tgl;
+
+        const infoTgl = formatTanggalIndo(tgl);
+        labelHariIni.textContent = infoTgl.tanggalSaja;
+        chartSubtitle.textContent = 'Aktivitas per jam — ' + infoTgl.lengkap;
 
         fetch(urlHarian + '?date=' + tgl)
             .then(r => r.json())
@@ -334,61 +361,62 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(() => console.error('Gagal muat data harian.'));
     }
 
-    function loadBulanan() {
-        const month = document.getElementById('chartMonth').value;
-        const year  = document.getElementById('chartMonthYear').value;
-        const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-        document.getElementById('chartSubtitle').textContent =
-            'Aktivitas per minggu — ' + namaBulan[parseInt(month) - 1] + ' ' + year;
+    function loadBulanan(monthStr) {
+        const bln = monthStr || currentMonth;
+        currentMonth = bln;
+        inputBulan.value = bln;
 
-        // Gunakan endpoint bulanan dengan filter tahun, lalu ambil 1 bulan saja
+        const infoBulan = formatBulanIndo(bln);
+        labelBulanIni.textContent = infoBulan;
+        chartSubtitle.textContent = 'Aktivitas per minggu — ' + infoBulan;
+
+        const [year, month] = bln.split('-');
+
         fetch(urlBulanan + '?year=' + year + '&month=' + month)
             .then(r => r.json())
-            .then(json => {
-                // Filter hanya bulan yang dipilih (ambil index bulan - 1)
-                const idx = parseInt(month) - 1;
-                // Buat data per minggu dalam 1 bulan (gunakan dummy 4 minggu dari total bulk)
-                // Atau tampilkan semua bulan dengan highlight bulan terpilih
-                renderCharts(json, 'bar');
-            })
+            .then(json => renderCharts(json, 'bar'))
             .catch(() => console.error('Gagal muat data bulanan.'));
     }
 
-    function loadTahunan() {
-        document.getElementById('chartSubtitle').textContent =
-            'Aktivitas per tahun — ' + document.getElementById('labelRentangTahun').textContent;
-
-        fetch(urlTahunan)
-            .then(r => r.json())
-            .then(json => renderCharts(json, 'bar'))
-            .catch(() => console.error('Gagal muat data tahunan.'));
-    }
-
-    /* ── Tab switching ───────────────────────────────────────── */
-    const tabs = document.querySelectorAll('.kk-chart-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function () {
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            activeTab = this.dataset.tab;
-
-            // Tampilkan kontrol yang sesuai
-            document.getElementById('ctrlHarian').style.display  = activeTab === 'harian'  ? '' : 'none';
-            document.getElementById('ctrlBulanan').style.display  = activeTab === 'bulanan'  ? '' : 'none';
-            document.getElementById('ctrlTahunan').style.display  = activeTab === 'tahunan'  ? '' : 'none';
-
-            if (activeTab === 'harian')  loadHarian();
-            if (activeTab === 'bulanan') loadBulanan();
-            if (activeTab === 'tahunan') loadTahunan();
-        });
+    /* ── Event Listeners Input ─────────────────────────────── */
+    inputTanggal.addEventListener('change', function () {
+        if (!this.value) return;
+        // Jika sedang mode 'Lihat Semua', kembalikan ke mode harian otomatis jika merubah tanggal
+        if (isShowingAll) {
+            isShowingAll = false;
+            ctrlHarian.style.display = '';
+            ctrlBulanan.style.display = 'none';
+            btnLihatSemua.innerHTML = '<i class="bi bi-calendar-day me-1"></i> Hari Ini';
+        }
+        loadHarian(this.value);
     });
 
-    // Kontrol bulan
-    document.getElementById('chartMonth').addEventListener('change', loadBulanan);
-    document.getElementById('chartMonthYear').addEventListener('change', loadBulanan);
+    inputBulan.addEventListener('change', function () {
+        if (!this.value) return;
+        loadBulanan(this.value);
+    });
 
-    // Load default: harian
-    loadHarian();
+    /* ── Toggle Lihat Semua ───────────────────────────────────────── */
+    btnLihatSemua.addEventListener('click', function () {
+        isShowingAll = !isShowingAll;
+        
+        if (isShowingAll) {
+            // Tampilkan Bulanan
+            ctrlHarian.style.display = 'none';
+            ctrlBulanan.style.display = '';
+            btnLihatSemua.innerHTML = '<i class="bi bi-arrows-fullscreen me-1"></i> Perbulan';
+            loadBulanan(currentMonth);
+        } else {
+            // Kembali ke Harian
+            ctrlHarian.style.display = '';
+            ctrlBulanan.style.display = 'none';
+            btnLihatSemua.innerHTML = '<i class="bi bi-calendar-day me-1"></i> Hari Ini';
+            loadHarian(currentDate);
+        }
+    });
+
+    // Load default: hari ini
+    loadHarian(currentDate);
 });
 </script>
 @endpush

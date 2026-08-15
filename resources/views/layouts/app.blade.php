@@ -75,13 +75,17 @@
                     <i class="bi bi-list"></i>
                 </button>
                 <div class="kk-topbar-title d-flex align-items-center gap-2">
-                    <h1>@yield('title', 'Dashboard')</h1>
                     @stack('topbar-extra')
                 </div>
             </div>
 
             {{-- Right: Clock + Notif + User --}}
             <div class="kk-topbar-actions">
+                {{-- Theme Toggle --}}
+                <button type="button" class="btn btn-sm d-flex align-items-center justify-content-center" id="themeToggleBtn" style="border:none; background:transparent; font-size:1.15rem; color:#4b5563; padding:0.35rem 0.5rem; border-radius:50%;" aria-label="Toggle Theme">
+                    <i class="bi bi-moon-fill" id="themeToggleIcon"></i>
+                </button>
+
                 {{-- Live Clock --}}
                 <div class="kk-live-clock d-none d-md-flex" id="kkClock">
                     <i class="bi bi-clock" style="color:var(--kk-orange);"></i>
@@ -105,7 +109,7 @@
                     {{-- Logout --}}
                     <form method="POST" action="{{ route('logout') }}" class="mb-0">
                         @csrf
-                        <button type="submit" class="btn btn-sm" style="background:var(--kk-danger-soft);color:var(--kk-danger);border:1px solid rgba(239,68,68,0.2);border-radius:var(--kk-radius-sm);padding:0.35rem 0.7rem;" title="Keluar">
+                        <button type="submit" class="btn btn-sm btn-danger d-flex align-items-center" style="border-radius:var(--kk-radius-sm);padding:0.35rem 0.75rem; font-weight:500;" title="Keluar">
                             <i class="bi bi-box-arrow-right"></i>
                             <span class="d-none d-lg-inline ms-1">Keluar</span>
                         </button>
@@ -168,6 +172,41 @@
         setInterval(updateClock, 1000);
     }
 })();
+</script>
+
+<script>
+    (function () {
+        const themeBtn = document.getElementById('themeToggleBtn');
+        const themeIcon = document.getElementById('themeToggleIcon');
+        const htmlEl = document.documentElement;
+        
+        // Cek saved theme atau system pref
+        const savedTheme = localStorage.getItem('kk_theme') || 
+                          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        
+        function setTheme(theme) {
+            htmlEl.setAttribute('data-bs-theme', theme);
+            if (theme === 'dark') {
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-fill');
+                themeIcon.style.color = '#f8f9fa'; // warna terang agar terlihat di mode gelap
+            } else {
+                themeIcon.classList.remove('bi-moon-fill');
+                themeIcon.classList.add('bi-sun-fill');
+                themeIcon.style.color = '#f59e0b'; // warna amber/kuning gelap agar terlihat
+            }
+            localStorage.setItem('kk_theme', theme);
+        }
+        
+        setTheme(savedTheme);
+
+        if(themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                const current = htmlEl.getAttribute('data-bs-theme');
+                setTheme(current === 'dark' ? 'light' : 'dark');
+            });
+        }
+    })();
 </script>
 
 @stack('scripts')
@@ -267,6 +306,21 @@
         }, 100);
     }
 })();
+</script>
+
+<script>
+    // Menghilangkan notifikasi (alert) otomatis dalam 3 detik
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                alert.classList.remove('show');
+                setTimeout(function() {
+                    alert.remove();
+                }, 150);
+            });
+        }, 3000);
+    });
 </script>
 </body>
 </html>

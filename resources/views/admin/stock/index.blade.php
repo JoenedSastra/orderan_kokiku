@@ -4,7 +4,7 @@
 
 
 <div class="mb-3 kk-page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <h2 class="h5 mb-0">Stok Barang — {{ $title }}</h2>
+    <h2 class="h5 mb-0">Stok Barang {{ $title }}</h2>
     <div class="d-flex align-items-center gap-2 flex-nowrap">
         @if($title === 'Gudang Utama')
         <button type="button" class="btn btn-sm text-white text-nowrap" style="background:#2563eb;" data-bs-toggle="modal" data-bs-target="#modalKirimBarang">

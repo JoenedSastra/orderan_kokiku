@@ -71,6 +71,20 @@
     --kk-accent-soft:   var(--kk-orange-soft);
 }
 
+[data-bs-theme="dark"] {
+    --kk-bg:            #212529;
+    --kk-surface:       #2b3035;
+    --kk-surface-2:     #343a40;
+    --kk-border:        #495057;
+    
+    --kk-text:          #f3f4f6;
+    --kk-text-muted:    #9ca3af;
+    --kk-text-light:    #6b7280;
+
+    --kk-topbar-bg:     #161922;
+    --kk-topbar-border: rgba(255,255,255,0.06);
+}
+
 /* ==========================================================================
    Base Reset & Typography
    ========================================================================== */
