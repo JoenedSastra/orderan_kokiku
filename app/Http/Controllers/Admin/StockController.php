@@ -58,11 +58,22 @@ class StockController extends Controller
         // bukan judul gabungan, supaya jelas sedang melihat stok divisi apa.
         $title = ($filter && isset($filterOptions[$filter])) ? $filterOptions[$filter] : $title;
 
-        // Satu-satunya tabel yang ditampilkan sekarang adalah ledger Barang
-        // Masuk — otomatis sinkron dengan hasil input di "Barang Masuk Harian".
-        $stockIns = StockIn::with(['item', 'user.role'])
-            ->whereHas('item', fn ($q) => $q->whereIn('master_location', $activeLocations))
-            ->latest()
+        // Tampilkan STOK TERKINI per barang (masuk dikurangi keluar lewat
+        // Item::totalStock()) — bukan daftar transaksi Barang Masuk mentah.
+        // Dengan begini, saat barang dikirim lewat "Kirim Barang", jumlah yang
+        // tampil di sini langsung ikut berkurang karena dihitung ulang tiap
+        // kali halaman ini dibuka, bukan angka statis dari satu transaksi.
+        //
+        // Cuma tampilkan barang yang benar-benar pernah ada aktivitas (Barang
+        // Masuk atau Kirim Barang). Barang "hantu" tanpa riwayat sama sekali
+        // (sisa duplikat lama) disembunyikan supaya tabel tidak penuh baris
+        // kosong yang membingungkan.
+        $items = Item::with(['stockIns.user.role', 'stockOuts.user.role'])
+            ->whereIn('master_location', $activeLocations)
+            ->where(function ($q) {
+                $q->whereHas('stockIns')->orWhereHas('stockOuts');
+            })
+            ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
 
@@ -78,7 +89,7 @@ class StockController extends Controller
                 ->values();
         }
 
-        return view('admin.stock.index', compact('stockIns', 'title', 'itemsGudangUtama'));
+        return view('admin.stock.index', compact('items', 'title', 'itemsGudangUtama'));
     }
 
     /**

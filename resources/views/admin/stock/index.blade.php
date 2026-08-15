@@ -37,17 +37,18 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($stockIns as $s)
+                @forelse($items as $item)
+                @php $aktivitas = $item->latestMasukActivity(); @endphp
                 <tr>
                     <td class="text-center"><strong>{{ $loop->iteration }}</strong></td>
-                    <td class="text-center">{{ $s->created_at->translatedFormat('l, d M Y H:i') }}</td>
-                    <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
-                    <td class="text-center">{{ $s->quantity }}</td>
-                    <td class="text-center">{{ $s->item->unit }}</td>
-                    <td class="text-center"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $s->item->masterLocationLabel() }}</span></td>
-                    <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
+                    <td class="text-center">{{ $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-' }}</td>
+                    <td class="text-center fw-bold" data-search="nama-barang">{{ $item->name }}</td>
+                    <td class="text-center">{{ $item->totalStock() }}</td>
+                    <td class="text-center">{{ $item->unit }}</td>
+                    <td class="text-center"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $item->masterLocationLabel() }}</span></td>
+                    <td class="text-center">{{ $aktivitas?->keterangan ?? '-' }}</td>
                     <td class="text-center">
-                        <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $s->user->role?->name ?? '?' }}</span>
+                        <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $aktivitas?->user?->role?->name ?? '-' }}</span>
                     </td>
                 </tr>
                 @empty
@@ -56,8 +57,8 @@
             </tbody>
         </table>
     </div>
-    @if($stockIns->hasPages())
-    <div class="p-3">{{ $stockIns->links() }}</div>
+    @if($items->hasPages())
+    <div class="p-3">{{ $items->links() }}</div>
     @endif
 </div>
 
