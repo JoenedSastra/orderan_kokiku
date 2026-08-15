@@ -21,39 +21,6 @@
     </div>
 </div>
 
-{{-- Quick Actions --}}
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-3 col-lg-2">
-        <a href="{{ route('admin.stock_in.index') }}" class="kk-quick-action">
-            <i class="bi bi-box-arrow-in-down-right" style="color:var(--kk-success);"></i>
-            <span>Barang Masuk</span>
-        </a>
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <a href="{{ route('admin.orders.index') }}" class="kk-quick-action">
-            <i class="bi bi-clipboard2-check-fill" style="color:var(--kk-orange);"></i>
-            <span>Permintaan</span>
-        </a>
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <a href="{{ route('admin.stock.index') }}" class="kk-quick-action">
-            <i class="bi bi-layers-fill" style="color:var(--kk-info);"></i>
-            <span>Stok Barang</span>
-        </a>
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <a href="{{ route('admin.reports.index') }}" class="kk-quick-action">
-            <i class="bi bi-bar-chart-fill" style="color:var(--kk-danger);"></i>
-            <span>Laporan</span>
-        </a>
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <a href="{{ route('admin.users.index') }}" class="kk-quick-action">
-            <i class="bi bi-people-fill" style="color:#8b5cf6;"></i>
-            <span>Pengguna</span>
-        </a>
-    </div>
-</div>
 
 {{-- Stat Cards Row 1 --}}
 <div class="row g-3 mb-3">
@@ -95,53 +62,7 @@
     </div>
 </div>
 
-{{-- Stat Cards Row 2 --}}
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
-        <div class="kk-stat-card">
-            <div class="d-flex align-items-start justify-content-between">
-                <div>
-                    <div class="kk-stat-value" style="color:var(--kk-danger);">{{ $stokRendah }}</div>
-                    <div class="kk-stat-label">Stok Rendah / Habis</div>
-                </div>
-                <div class="kk-stat-icon red"><i class="bi bi-exclamation-triangle-fill"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="kk-stat-card">
-            <div class="d-flex align-items-start justify-content-between">
-                <div>
-                    <div class="kk-stat-value" style="color:var(--kk-success);">{{ $permintaanDisetujui }}</div>
-                    <div class="kk-stat-label">Permintaan Disetujui</div>
-                </div>
-                <div class="kk-stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="kk-stat-card">
-            <div class="d-flex align-items-start justify-content-between">
-                <div>
-                    <div class="kk-stat-value" style="color:var(--kk-danger);">{{ $permintaanDitolak }}</div>
-                    <div class="kk-stat-label">Permintaan Ditolak</div>
-                </div>
-                <div class="kk-stat-icon red"><i class="bi bi-x-circle-fill"></i></div>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="kk-stat-card">
-            <div class="d-flex align-items-start justify-content-between">
-                <div>
-                    <div class="kk-stat-value">{{ $totalSupplier }}</div>
-                    <div class="kk-stat-label">Total Supplier</div>
-                </div>
-                <div class="kk-stat-icon orange"><i class="bi bi-truck-front-fill"></i></div>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 {{-- Recent Orders Table --}}
 <div class="kk-stat-card mb-4">

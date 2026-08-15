@@ -26,7 +26,7 @@
 
 <div class="kk-sidebar-section-label">Laporan</div>
 <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-    <i class="bi bi-clipboard2-check-fill"></i> Orderan Kasir & Kitchen
+    <i class="bi bi-clipboard2-check-fill"></i> Permintaan Barang
     @php $pending = \App\Models\Order::where('status','menunggu')->count(); @endphp
     @if($pending > 0)
         <span class="badge ms-auto rounded-pill" style="background:var(--kk-orange); font-size:0.65rem;">{{ $pending }}</span>
