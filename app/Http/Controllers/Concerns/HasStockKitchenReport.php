@@ -33,25 +33,25 @@ trait HasStockKitchenReport
             $itemsReport = [];
 
             foreach ($category->items as $item) {
-                // Saldo awal = total stok restoran sebelum tanggal mulai
+                // Saldo awal = total stok kitchen sebelum tanggal mulai
                 $saldoAwal = $item->stockIns()
-                        ->where('location', StockIn::LOCATION_RESTORAN)
+                        ->where('location', StockIn::LOCATION_KITCHEN)
                         ->where('tanggal', '<', $startDate)
                         ->sum('quantity')
                     - $item->stockOuts()
-                        ->where('location', StockOut::LOCATION_RESTORAN)
+                        ->where('location', StockOut::LOCATION_KITCHEN)
                         ->where('tanggal', '<', $startDate)
                         ->sum('quantity');
 
                 $masukPerHari = $item->stockIns()
-                    ->where('location', StockIn::LOCATION_RESTORAN)
+                    ->where('location', StockIn::LOCATION_KITCHEN)
                     ->whereBetween('tanggal', [$startDate, $endDate])
                     ->selectRaw('tanggal, SUM(quantity) as total')
                     ->groupBy('tanggal')
                     ->pluck('total', 'tanggal');
 
                 $keluarPerHari = $item->stockOuts()
-                    ->where('location', StockOut::LOCATION_RESTORAN)
+                    ->where('location', StockOut::LOCATION_KITCHEN)
                     ->whereBetween('tanggal', [$startDate, $endDate])
                     ->selectRaw('tanggal, SUM(quantity) as total')
                     ->groupBy('tanggal')

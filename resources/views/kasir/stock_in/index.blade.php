@@ -3,9 +3,21 @@
 @section('content')
 <div class="mb-3 kk-page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <h2 class="h5 mb-0">Stock Barang Masuk</h2>
-    <div class="kk-search-box">
-        <i class="bi bi-search"></i>
-        <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
+    <div class="d-flex align-items-center gap-2 flex-nowrap">
+        <form action="{{ route('kasir.stock_in.index') }}" method="GET" class="m-0">
+            <input type="hidden" name="kk_search" value="{{ request('kk_search') }}">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white text-dark"><i class="bi bi-calendar-date"></i></span>
+                <input type="date" name="tanggal" class="form-control border-start-0 ps-0" value="{{ request('tanggal') }}" onchange="this.form.submit()" style="max-width: 130px;" title="Filter berdasarkan tanggal">
+            </div>
+        </form>
+        <button type="button" class="btn btn-sm text-white text-nowrap" style="background:#0ea5e9;" data-bs-toggle="modal" data-bs-target="#modalAturStok">
+            <i class="bi bi-sliders"></i> Atur Jumlah Stock
+        </button>
+        <div class="kk-search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
+        </div>
     </div>
 </div>
 <div class="kk-stat-card p-0">
@@ -20,6 +32,7 @@
                     <th class="text-center">Satuan</th>
                     <th class="text-center">Keterangan</th>
                     <th class="text-center">Dicatat Oleh</th>
+                    <th class="text-center">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,15 +45,102 @@
                     <td class="text-center">{{ $s->item->unit }}</td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
                     <td class="text-center">
-                        <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
+                        @php $roleName = $s->user->role?->name ?? '?'; @endphp
+                        @if($roleName === 'Admin')
+                            <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $roleName }}</span>
+                        @elseif(in_array($roleName, ['Kasir', 'Kitchen']))
+                            <span class="badge" style="background:#bae6fd;color:#0369a1;font-weight:600;">{{ $roleName }}</span>
+                        @else
+                            <span class="badge bg-secondary">{{ $roleName }}</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        <form action="{{ route('kasir.stock_in.destroy', $s->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat barang masuk ini?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-light text-danger p-1" style="border:1px solid #fee2e2;background:#fef2f2;">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" class="text-center text-muted py-3">Belum ada catatan masuk.</td></tr>
+                <tr><td colspan="8" class="text-center text-muted py-3">Belum ada catatan masuk.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+    @if($stockIns->hasPages())
     <div class="p-3">{{ $stockIns->links() }}</div>
+    @endif
 </div>
+</div>
+
+{{-- Modal Atur Jumlah Stok (Kasir) --}}
+<div class="modal fade" id="modalAturStok" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <form action="{{ route('kasir.stock.adjust') }}" method="POST">
+                @csrf
+                <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%);padding:1.4rem 1.5rem 2.5rem;">
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Atur Jumlah Stock</h5>
+                        <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Penyesuaian stok manual secara massal untuk Kasir</small>
+                    </div>
+                </div>
+                <div class="modal-body px-4" style="margin-top:-1.2rem;padding-top:0;">
+                    <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3" style="background:#e0f2fe;border:1px solid #bae6fd;">
+                        <i class="bi bi-info-circle-fill" style="color:#0284c7;font-size:1rem;flex-shrink:0;"></i>
+                        <small style="color:#0369a1;line-height:1.4;">
+                            Masukkan jumlah stok yang sebenarnya. Sistem akan otomatis menyesuaikan jumlahnya.
+                        </small>
+                    </div>
+                    
+                    <div class="table-responsive border rounded-3" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top" style="z-index: 1;">
+                                <tr>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;">Nama Barang</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:150px;">Stok Saat Ini</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;">Jumlah Stok Baru</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(isset($allItemsForAdjust))
+                                @forelse($allItemsForAdjust as $item)
+                                <tr>
+                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $loop->iteration }}</td>
+                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1 fw-normal" style="font-size:.8rem;">
+                                            {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
+                                        </span>
+                                    </td>
+                                    <td class="pe-3 align-middle">
+                                        <div class="input-group input-group-sm mx-auto" style="max-width: 160px;">
+                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px;">
+                                            <span class="input-group-text bg-light text-dark" style="border-radius:0 6px 6px 0; font-size: .75rem; min-width: 60px; justify-content: center; border: 1px solid #ced4da;">{{ $item->unit }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">Belum ada barang untuk disesuaikan.</td>
+                                </tr>
+                                @endforelse
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4 pt-3 gap-2">
+                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal" style="border-radius:10px;font-size:.875rem;border:1px solid #e5e7eb;">Batal</button>
+                    <button type="submit" class="btn text-white fw-semibold px-4 flex-grow-1" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:10px;font-size:.875rem;">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection

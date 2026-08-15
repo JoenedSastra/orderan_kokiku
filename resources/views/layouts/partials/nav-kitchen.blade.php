@@ -9,8 +9,9 @@
 <a href="{{ route('kitchen.stock_out.index') }}" class="nav-link {{ request()->routeIs('kitchen.stock_out.*') ? 'active' : '' }}">
     <i class="bi bi-box-arrow-up-right"></i> Barang Keluar
 </a>
+
 <a href="{{ route('kitchen.stock_harian.index') }}" class="nav-link {{ request()->routeIs('kitchen.stock_harian.*') ? 'active' : '' }}">
-    <i class="bi bi-calendar-week-fill"></i> Stock Harian
+    <i class="bi bi-bar-chart-line-fill"></i> Total Stock Barang
 </a>
 
 <div class="kk-sidebar-section-label">Permintaan</div>

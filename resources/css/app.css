@@ -94,11 +94,11 @@ body.theme-kasir {
 }
 
 body.theme-kitchen {
-    --kk-orange:        #10b981;
-    --kk-orange-dark:   #059669;
-    --kk-orange-light:  #34d399;
-    --kk-orange-soft:   rgba(16, 185, 129, 0.12);
-    --kk-orange-glow:   rgba(16, 185, 129, 0.25);
+    --kk-orange:        #ef4444;
+    --kk-orange-dark:   #dc2626;
+    --kk-orange-light:  #f87171;
+    --kk-orange-soft:   rgba(239, 68, 68, 0.12);
+    --kk-orange-glow:   rgba(239, 68, 68, 0.25);
 }
 
 /* ==========================================================================

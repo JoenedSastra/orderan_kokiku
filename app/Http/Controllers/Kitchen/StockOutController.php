@@ -13,12 +13,17 @@ use Illuminate\View\View;
 
 class StockOutController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $stockOuts = StockOut::with(['item', 'user.role'])
+        $query = StockOut::with(['item', 'user.role'])
             ->where('user_id', Auth::id())
-            ->latest()
-            ->paginate(15);
+            ->latest();
+
+        if ($request->has('trashed')) {
+            $query->onlyTrashed();
+        }
+
+        $stockOuts = $query->paginate(15);
         return view('kitchen.stock_out.index', compact('stockOuts'));
     }
 
@@ -59,5 +64,30 @@ class StockOutController extends Controller
         ]);
 
         return redirect()->route('kitchen.stock_out.index')->with('success', 'Stock keluar berhasil dicatat.');
+    }
+
+    public function destroy($id): RedirectResponse
+    {
+        $stockOut = StockOut::findOrFail($id);
+        
+        // Pastikan hanya bisa menghapus catatan milik Kitchen (termasuk data lama dengan location 'restoran')
+        if (!in_array($stockOut->location, [StockOut::LOCATION_KITCHEN, 'restoran'])) {
+            abort(403);
+        }
+
+        $stockOut->delete();
+        return back()->with('success', 'Riwayat barang keluar berhasil dihapus (masuk ke tempat sampah).');
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $stockOut = StockOut::withTrashed()->findOrFail($id);
+        
+        if (!in_array($stockOut->location, [StockOut::LOCATION_KITCHEN, 'restoran'])) {
+            abort(403);
+        }
+
+        $stockOut->restore();
+        return back()->with('success', 'Riwayat barang keluar berhasil dipulihkan.');
     }
 }

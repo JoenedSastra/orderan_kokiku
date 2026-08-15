@@ -14,10 +14,13 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Kasir\OrderController as KasirOrderController;
 use App\Http\Controllers\Kasir\StockInController as KasirStockInController;
 use App\Http\Controllers\Kasir\StockOutController as KasirStockOutController;
+use App\Http\Controllers\Kasir\StockSisaController as KasirStockSisaController;
+use App\Http\Controllers\Kasir\StockHarianController as KasirStockHarianController;
 use App\Http\Controllers\Kitchen\OrderController as KitchenOrderController;
 use App\Http\Controllers\Kitchen\StockInController as KitchenStockInController;
 use App\Http\Controllers\Kitchen\StockHarianController;
 use App\Http\Controllers\Kitchen\StockOutController as KitchenStockOutController;
+use App\Http\Controllers\Kitchen\StockSisaController as KitchenStockSisaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -55,6 +58,8 @@ Route::middleware('auth')->group(function () {
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
         Route::post('/stock/kirim-barang', [StockController::class, 'kirimBarang'])->name('stock.kirim');
+        Route::post('/stock/adjust', [StockController::class, 'adjustStock'])->name('stock.adjust');
+        Route::delete('/stock/delete-items', [StockController::class, 'deleteItems'])->name('stock.delete_items');
         Route::get('/stock/riwayat-terkirim', [StockController::class, 'riwayatTerkirim'])->name('stock.riwayat_terkirim');
         Route::get('/stock-kasir-kitchen', [StockController::class, 'kasirKitchen'])->name('stock_kasir_kitchen.index');
         Route::get('/stock-kitchen', [StockKitchenReportController::class, 'index'])->name('stock_kitchen.index');
@@ -85,10 +90,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'kasir'])->name('dashboard');
 
         Route::get('/stock-masuk', [KasirStockInController::class, 'index'])->name('stock_in.index');
+        Route::delete('/stock-masuk/{id}', [KasirStockInController::class, 'destroy'])->name('stock_in.destroy');
+        Route::post('/stock/adjust', [KasirStockInController::class, 'adjustStock'])->name('stock.adjust');
 
         Route::get('/stock-keluar',        [KasirStockOutController::class, 'index'])->name('stock_out.index');
+        Route::delete('/stock-keluar/{id}', [KasirStockOutController::class, 'destroy'])->name('stock_out.destroy');
+        Route::post('/stock-keluar/{id}/restore', [KasirStockOutController::class, 'restore'])->name('stock_out.restore');
         Route::get('/stock-keluar/tambah', [KasirStockOutController::class, 'create'])->name('stock_out.create');
         Route::post('/stock-keluar',       [KasirStockOutController::class, 'store'])->name('stock_out.store');
+        
+        Route::get('/stock-sisa', [KasirStockSisaController::class, 'index'])->name('stock_sisa.index');
+        Route::get('/stock-harian', [KasirStockHarianController::class, 'index'])->name('stock_harian.index');
 
         Route::get('/orders',        [KasirOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/tambah', [KasirOrderController::class, 'create'])->name('orders.create');
@@ -101,10 +113,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/stock-harian', [StockHarianController::class, 'index'])->name('stock_harian.index');
 
         Route::get('/stock-masuk', [KitchenStockInController::class, 'index'])->name('stock_in.index');
+        Route::delete('/stock-masuk/{id}', [KitchenStockInController::class, 'destroy'])->name('stock_in.destroy');
+        Route::post('/stock/adjust', [KitchenStockInController::class, 'adjustStock'])->name('stock.adjust');
 
         Route::get('/stock-keluar',        [KitchenStockOutController::class, 'index'])->name('stock_out.index');
+        Route::delete('/stock-keluar/{id}', [KitchenStockOutController::class, 'destroy'])->name('stock_out.destroy');
+        Route::post('/stock-keluar/{id}/restore', [KitchenStockOutController::class, 'restore'])->name('stock_out.restore');
         Route::get('/stock-keluar/tambah', [KitchenStockOutController::class, 'create'])->name('stock_out.create');
         Route::post('/stock-keluar',       [KitchenStockOutController::class, 'store'])->name('stock_out.store');
+        
+        Route::get('/stock-sisa', [KitchenStockSisaController::class, 'index'])->name('stock_sisa.index');
 
         Route::get('/orders',        [KitchenOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/tambah', [KitchenOrderController::class, 'create'])->name('orders.create');

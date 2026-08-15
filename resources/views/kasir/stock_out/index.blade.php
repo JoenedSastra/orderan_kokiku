@@ -4,13 +4,11 @@
 <div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
     <h2 class="h5 mb-0">Stock Barang Keluar</h2>
     <div class="d-flex align-items-center gap-2 flex-wrap">
+
         <div class="kk-search-box">
             <i class="bi bi-search"></i>
             <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
         </div>
-        <a href="{{ route('kasir.stock_out.create') }}" class="btn btn-sm text-white" style="background:var(--kk-accent)">
-            <i class="bi bi-plus-lg"></i> Catat Keluar
-        </a>
     </div>
 </div>
 <div class="kk-stat-card p-0">
@@ -37,7 +35,14 @@
                     <td class="text-center">{{ $s->item->unit }}</td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
                     <td class="text-center">
-                        <span class="badge bg-secondary">{{ $s->user->role?->name ?? '?' }}</span>
+                        @php $roleName = $s->user->role?->name ?? '?'; @endphp
+                        @if($roleName === 'Admin')
+                            <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $roleName }}</span>
+                        @elseif(in_array($roleName, ['Kasir', 'Kitchen']))
+                            <span class="badge" style="background:#bae6fd;color:#0369a1;font-weight:600;">{{ $roleName }}</span>
+                        @else
+                            <span class="badge bg-secondary">{{ $roleName }}</span>
+                        @endif
                     </td>
                 </tr>
                 @empty
@@ -46,6 +51,8 @@
             </tbody>
         </table>
     </div>
+    @if($stockOuts->hasPages())
     <div class="p-3">{{ $stockOuts->links() }}</div>
+    @endif
 </div>
 @endsection

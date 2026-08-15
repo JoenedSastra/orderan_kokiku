@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockIn extends Model
 {
-    use HasFactory;
+    use HasFactory, \Illuminate\Database\Eloquent\SoftDeletes;
 
     public const LOCATION_GUDANG_UTAMA = 'gudang_utama';
     public const LOCATION_KASIR        = 'kasir';

@@ -88,7 +88,13 @@ class StockController extends Controller
                 ->values();
         }
 
-        return view('admin.stock.index', compact('items', 'title', 'itemsGudangUtama'));
+        // Fetch all items for the selected filter to be used in the Adjust Stock modal dropdown
+        $allItemsForAdjust = Item::whereIn('master_location', $activeLocations)
+            ->whereHas('stockIns')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.stock.index', compact('items', 'title', 'itemsGudangUtama', 'allItemsForAdjust'));
     }
 
     /**
@@ -132,7 +138,13 @@ class StockController extends Controller
         // yang sesungguhnya menerima barang ini.
         $keteranganTersimpan = 'Kirim di ' . $labelTujuan;
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $sourceItem, $labelTujuan, $keteranganTersimpan) {
+        $targetLocation = match ($request->destination) {
+            'kasir'        => StockIn::LOCATION_KASIR,
+            'kitchen'      => StockIn::LOCATION_KITCHEN,
+            default        => StockIn::LOCATION_GUDANG_UTAMA, // Gudang Resto uses gudang_utama location for stock pooling
+        };
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $sourceItem, $labelTujuan, $keteranganTersimpan, $targetLocation) {
             $userId = \Illuminate\Support\Facades\Auth::id();
 
             // Kurangi stok Gudang Utama pada barang sumber.
@@ -140,7 +152,7 @@ class StockController extends Controller
                 'item_id'    => $sourceItem->id,
                 'user_id'    => $userId,
                 'quantity'   => $request->quantity,
-                'location'   => StockOut::LOCATION_GUDANG,
+                'location'   => StockOut::LOCATION_GUDANG_UTAMA,
                 'keterangan' => $keteranganTersimpan,
                 'tanggal'    => today(),
             ]);
@@ -157,7 +169,7 @@ class StockController extends Controller
                 'item_id'      => $targetItem->id,
                 'user_id'      => $userId,
                 'quantity'     => $request->quantity,
-                'location'     => StockIn::LOCATION_RESTORAN,
+                'location'     => $targetLocation,
                 'keterangan'   => $keteranganTersimpan,
                 'tanggal'      => today(),
                 'is_completed' => true,
@@ -165,6 +177,97 @@ class StockController extends Controller
         });
 
         return back()->with('success', $sourceItem->name . ' berhasil dikirim ke ' . $labelTujuan . '.');
+    }
+
+    /**
+     * Penyesuaian jumlah stok manual oleh Admin.
+     */
+    public function adjustStock(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'new_stock' => 'required|array',
+            'new_stock.*' => 'required|integer|min:0',
+        ]);
+
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        $changedCount = 0;
+
+        foreach ($request->new_stock as $itemId => $newStock) {
+            $item = Item::find($itemId);
+            if (!$item) continue;
+            
+            $currentStock = $item->stokByLocation($item->master_location);
+            $newStockInt = (int) $newStock;
+            
+            if ($newStockInt === $currentStock) {
+                continue;
+            }
+
+            $difference = $newStockInt - $currentStock;
+
+            $location = match ($item->master_location) {
+                Item::MASTER_KASIR   => StockIn::LOCATION_KASIR,
+                Item::MASTER_KITCHEN => StockIn::LOCATION_KITCHEN,
+                default              => StockIn::LOCATION_GUDANG_UTAMA,
+            };
+
+            $keterangan = 'Penyesuaian stok manual oleh Admin';
+
+            if ($difference > 0) {
+                // Stok bertambah
+                StockIn::create([
+                    'item_id'      => $item->id,
+                    'user_id'      => $userId,
+                    'quantity'     => $difference,
+                    'location'     => $location,
+                    'keterangan'   => $keterangan,
+                    'tanggal'      => today(),
+                    'is_completed' => true,
+                ]);
+            } else {
+                // Stok berkurang
+                StockOut::create([
+                    'item_id'    => $item->id,
+                    'user_id'    => $userId,
+                    'quantity'   => abs($difference),
+                    'location'   => $location,
+                    'keterangan' => $keterangan,
+                    'tanggal'    => today(),
+                ]);
+            }
+            
+            $changedCount++;
+        }
+
+        if ($changedCount > 0) {
+            return back()->with('success', $changedCount . ' barang berhasil disesuaikan stoknya.');
+        }
+
+        return back()->with('info', 'Tidak ada perubahan stok yang dilakukan.');
+    }
+
+    /**
+     * Hapus barang secara massal (beserta riwayatnya secara kaskade).
+     */
+    public function deleteItems(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'item_ids'   => 'required|array',
+            'item_ids.*' => 'exists:items,id',
+        ]);
+
+        $itemIds = $request->input('item_ids');
+        $deletedCount = 0;
+
+        foreach ($itemIds as $id) {
+            $item = Item::find($id);
+            if ($item) {
+                $item->delete(); // Automatically cascades to stock_ins, stock_outs, and orders
+                $deletedCount++;
+            }
+        }
+
+        return back()->with('success', $deletedCount . ' barang berhasil dihapus permanen beserta seluruh riwayatnya.');
     }
 
     /**
@@ -176,7 +279,7 @@ class StockController extends Controller
         $tanggal = $request->input('tanggal');
 
         $riwayat = StockOut::with(['item', 'user.role'])
-            ->where('location', StockOut::LOCATION_GUDANG)
+            ->where('location', StockOut::LOCATION_GUDANG_UTAMA)
             ->whereHas('item', fn ($q) => $q->where('master_location', Item::MASTER_GUDANG_UTAMA))
             ->when($tanggal, fn ($q) => $q->whereDate('created_at', $tanggal))
             ->latest()

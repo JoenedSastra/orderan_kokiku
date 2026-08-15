@@ -138,9 +138,11 @@ class StockInController extends Controller
                     ['min_stock' => 0]
                 );
 
-                $ledgerLocation = $item->master_location === Item::MASTER_GUDANG_UTAMA
-                    ? StockIn::LOCATION_GUDANG
-                    : StockIn::LOCATION_RESTORAN;
+                $ledgerLocation = match ($item->master_location) {
+                    Item::MASTER_KASIR   => StockIn::LOCATION_KASIR,
+                    Item::MASTER_KITCHEN => StockIn::LOCATION_KITCHEN,
+                    default              => StockIn::LOCATION_GUDANG_UTAMA,
+                };
 
                 $keteranganFinal = filled($row['keterangan'] ?? null)
                     ? trim($row['keterangan'])

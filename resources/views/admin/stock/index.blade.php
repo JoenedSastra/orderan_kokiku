@@ -14,6 +14,16 @@
             <i class="bi bi-clock-history"></i> Riwayat Terkirim
         </a>
         @endif
+        @if(in_array($title, ['Gudang Utama', 'Gudang Resto']))
+        <button type="button" class="btn btn-sm text-white text-nowrap" style="background:#f59e0b;" data-bs-toggle="modal" data-bs-target="#modalAturStok">
+            <i class="bi bi-sliders"></i> Atur Jumlah Stock
+        </button>
+        @endif
+        @if(in_array($title, ['Gudang Utama', 'Gudang Resto']))
+        <button type="button" class="btn btn-sm text-white text-nowrap" style="background:#ef4444;" data-bs-toggle="modal" data-bs-target="#modalHapusBarang">
+            <i class="bi bi-trash"></i> Hapus Barang
+        </button>
+        @endif
         <div class="kk-search-box" style="min-width:180px;">
             <i class="bi bi-search"></i>
             <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
@@ -218,4 +228,159 @@
 </script>
 @endpush
 @endif
+
+{{-- Modal Atur Jumlah Stok (Semua Divisi) --}}
+<div class="modal fade" id="modalAturStok" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <form action="{{ route('admin.stock.adjust') }}" method="POST">
+                @csrf
+                <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);padding:1.4rem 1.5rem 2.5rem;">
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Atur Jumlah Stock</h5>
+                        <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Penyesuaian stok manual secara massal untuk {{ $title }}</small>
+                    </div>
+                </div>
+                <div class="modal-body px-4" style="margin-top:-1.2rem;padding-top:0;">
+                    <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3" style="background:#fef3c7;border:1px solid #fde68a;">
+                        <i class="bi bi-info-circle-fill" style="color:#d97706;font-size:1rem;flex-shrink:0;"></i>
+                        <small style="color:#92400e;line-height:1.4;">
+                            Masukkan jumlah stok yang sebenarnya. Sistem akan otomatis menyesuaikan jumlahnya.
+                        </small>
+                    </div>
+                    
+                    <div class="table-responsive border rounded-3" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top" style="z-index: 1;">
+                                <tr>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;">Nama Barang</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:150px;">Stok Saat Ini</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;">Jumlah Stok Baru</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($allItemsForAdjust as $item)
+                                <tr>
+                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $loop->iteration }}</td>
+                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1 fw-normal" style="font-size:.8rem;">
+                                            {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
+                                        </span>
+                                    </td>
+                                    <td class="pe-3 align-middle">
+                                        <div class="input-group input-group-sm mx-auto" style="max-width: 160px;">
+                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px;">
+                                            <span class="input-group-text bg-light text-dark" style="border-radius:0 6px 6px 0; font-size: .75rem; min-width: 60px; justify-content: center;">{{ $item->unit }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">Belum ada barang untuk disesuaikan.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4 pt-3 gap-2">
+                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal" style="border-radius:10px;font-size:.875rem;border:1px solid #e5e7eb;">Batal</button>
+                    <button type="submit" class="btn text-white fw-semibold px-4 flex-grow-1" style="background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:10px;font-size:.875rem;">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Modal Hapus Barang (Semua Divisi) --}}
+<div class="modal fade" id="modalHapusBarang" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <form action="{{ route('admin.stock.delete_items') }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#ef4444 0%,#b91c1c 100%);padding:1.4rem 1.5rem 2.5rem;">
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Hapus Barang</h5>
+                        <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Pilih barang yang ingin dihapus permanen dari {{ $title }}</small>
+                    </div>
+                </div>
+                <div class="modal-body px-4" style="margin-top:-1.2rem;padding-top:0;">
+                    <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3" style="background:#fef2f2;border:1px solid #fecaca;">
+                        <i class="bi bi-exclamation-triangle-fill" style="color:#dc2626;font-size:1rem;flex-shrink:0;"></i>
+                        <small style="color:#991b1b;line-height:1.4;">
+                            <strong>Peringatan:</strong> Menghapus barang akan menghapus secara permanen seluruh riwayat barang masuk, barang keluar, dan pesanan yang terkait dengan barang tersebut.
+                        </small>
+                    </div>
+                    
+                    <div class="table-responsive border rounded-3" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top" style="z-index: 1;">
+                                <tr>
+                                    <th class="text-center" style="width: 50px;">
+                                        <input class="form-check-input" type="checkbox" id="checkAllHapus">
+                                    </th>
+                                    <th style="font-size:.85rem;color:#374151;">Nama Barang</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:150px;">Stok Saat Ini</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($allItemsForAdjust as $item)
+                                <tr>
+                                    <td class="text-center">
+                                        <input class="form-check-input check-item-hapus" type="checkbox" name="item_ids[]" value="{{ $item->id }}">
+                                    </td>
+                                    <td class="fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1 fw-normal" style="font-size:.8rem;">
+                                            {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">Belum ada barang yang dapat dihapus.</td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4 pt-3 gap-2">
+                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal" style="border-radius:10px;font-size:.875rem;border:1px solid #e5e7eb;">Batal</button>
+                    <button type="submit" class="btn text-white fw-semibold px-4 flex-grow-1" style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;border-radius:10px;font-size:.875rem;" onclick="return confirm('Apakah Anda yakin ingin menghapus barang terpilih secara permanen beserta riwayatnya?')">Hapus Barang Terpilih</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkAll = document.getElementById('checkAllHapus');
+        const checkItems = document.querySelectorAll('.check-item-hapus');
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function () {
+                checkItems.forEach(item => {
+                    item.checked = this.checked;
+                });
+            });
+
+            checkItems.forEach(item => {
+                item.addEventListener('change', function () {
+                    const allChecked = Array.from(checkItems).every(i => i.checked);
+                    const someChecked = Array.from(checkItems).some(i => i.checked);
+                    checkAll.checked = allChecked;
+                    checkAll.indeterminate = someChecked && !allChecked;
+                });
+            });
+        }
+    });
+</script>
+@endpush
+
 @endsection

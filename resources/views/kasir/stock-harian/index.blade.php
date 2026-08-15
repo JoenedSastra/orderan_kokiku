@@ -6,7 +6,7 @@
     <div class="d-flex align-items-center gap-2 flex-nowrap">
         <div class="kk-search-box">
             <i class="bi bi-search"></i>
-            <form action="{{ route('kitchen.stock_harian.index') }}" method="GET" class="m-0">
+            <form action="{{ route('kasir.stock_harian.index') }}" method="GET" class="m-0">
                 <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." value="{{ request('kk_search') }}" autocomplete="off">
             </form>
         </div>

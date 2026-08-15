@@ -66,7 +66,7 @@ class Item extends Model
     public function stokByLocation(string $locationKey): int
     {
         return match ($locationKey) {
-            'gudang_utama', 'gudang'  => $this->stokGudangUtama(),
+            'gudang_utama', 'gudang_resto', 'gudang'  => $this->stokGudangUtama(),
             'kasir'   => $this->stokKasir(),
             'kitchen' => $this->stokKitchen(),
             default   => 0,
