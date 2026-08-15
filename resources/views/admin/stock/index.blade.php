@@ -120,7 +120,7 @@
                         <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
                             <i class="bi bi-geo-alt me-1" style="color:#2563eb;"></i>Kirim ke
                         </label>
-                        <select name="destination"
+                        <select name="destination" id="selectKirimKe"
                                 class="form-select @error('destination') is-invalid @enderror"
                                 style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
                             <option value="">Pilih Divisi</option>
@@ -146,7 +146,7 @@
                             <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
                                 <i class="bi bi-tag me-1" style="color:#2563eb;"></i>Keterangan
                             </label>
-                            <select name="keterangan"
+                            <select name="keterangan" id="selectKeterangan"
                                     class="form-select @error('keterangan') is-invalid @enderror"
                                     style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
                                 <option value="">Pilih Keterangan</option>
@@ -194,6 +194,23 @@
             } else {
                 stokInfo.classList.add('d-none');
             }
+        });
+    }
+
+    // Auto-sync "Keterangan" mengikuti pilihan "Kirim ke", supaya keterangan
+    // yang tersimpan di divisi tujuan selalu sesuai divisi yang sesungguhnya
+    // dipilih (server tetap jadi penjamin akhir lewat $labelTujuan).
+    const selectKirimKe    = document.getElementById('selectKirimKe');
+    const selectKeterangan = document.getElementById('selectKeterangan');
+    const kirimKeToKeterangan = {
+        gudang_resto: 'Gudang Resto',
+        kasir: 'Kasir',
+        kitchen: 'Kitchen',
+    };
+
+    if (selectKirimKe && selectKeterangan) {
+        selectKirimKe.addEventListener('change', function () {
+            selectKeterangan.value = kirimKeToKeterangan[this.value] || '';
         });
     }
 })();

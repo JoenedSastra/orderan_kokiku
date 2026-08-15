@@ -119,14 +119,16 @@ class StockController extends Controller
         \Illuminate\Support\Facades\DB::transaction(function () use ($request, $sourceItem, $labelTujuan) {
             $userId = \Illuminate\Support\Facades\Auth::id();
 
-            // Kurangi stok Gudang Utama pada barang sumber. Keterangan yang
-            // tersimpan PERSIS sama dengan yang dipilih admin di dropdown.
+            // Kurangi stok Gudang Utama pada barang sumber. Keterangan selalu
+            // ikut $labelTujuan (diturunkan dari "Kirim ke"), supaya konsisten
+            // dengan divisi tujuan yang sesungguhnya menerima barang ini —
+            // bukan dari dropdown "Keterangan" secara terpisah.
             StockOut::create([
                 'item_id'    => $sourceItem->id,
                 'user_id'    => $userId,
                 'quantity'   => $request->quantity,
                 'location'   => StockOut::LOCATION_GUDANG,
-                'keterangan' => $request->keterangan,
+                'keterangan' => $labelTujuan,
                 'tanggal'    => today(),
             ]);
 
@@ -136,12 +138,15 @@ class StockController extends Controller
                 ['unit' => $sourceItem->unit, 'min_stock' => 0]
             );
 
+            // Stok divisi tujuan bertambah otomatis. Keterangan di sini yang
+            // sebelumnya di-hardcode "Diterima" — sekarang otomatis mengikuti
+            // divisi tujuan (Gudang Resto / Kasir / Kitchen) sesuai permintaan.
             StockIn::create([
                 'item_id'      => $targetItem->id,
                 'user_id'      => $userId,
                 'quantity'     => $request->quantity,
                 'location'     => StockIn::LOCATION_RESTORAN,
-                'keterangan'   => 'Diterima',
+                'keterangan'   => $labelTujuan,
                 'tanggal'      => today(),
                 'is_completed' => true,
             ]);
