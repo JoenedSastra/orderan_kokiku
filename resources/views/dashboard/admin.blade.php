@@ -64,111 +64,178 @@
 
 
 
-{{-- Recent Orders Table --}}
-<div class="kk-stat-card mb-4">
-    <div class="kk-section-header">
-        <div class="kk-section-title">
-            <i class="bi bi-clock-history"></i>
-            Permintaan Barang Terbaru
+{{-- Baris 2: Grafik Aktivitas & Donut Kategori --}}
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="kk-stat-card h-100 mb-0">
+            <div class="kk-section-header" style="flex-wrap:wrap; gap:0.5rem;">
+                <div class="kk-section-title">
+                    <i class="bi bi-graph-up-arrow"></i> Grafik Aktivitas
+                </div>
+                {{-- Tab switcher --}}
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div id="ctrlHarian" class="kk-chart-ctrl position-relative" style="display:inline-flex; align-items:center;">
+                        <div id="badgeTanggal" class="kk-chart-date-badge d-flex align-items-center" style="background:var(--kk-surface-2); border:1px solid var(--kk-border); border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer; transition:all 0.2s;" title="Klik untuk pilih tanggal">
+                            <i class="bi bi-calendar-check me-1 text-primary"></i>
+                            <span id="labelHariIni">{{ now()->translatedFormat('d F Y') }}</span>
+                            <i class="bi bi-chevron-down ms-2 text-muted" style="font-size:0.7rem;"></i>
+                        </div>
+                        <input type="date" id="inputTanggalChart" value="{{ now()->toDateString() }}" max="{{ now()->toDateString() }}" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;" title="Pilih tanggal">
+                    </div>
+
+                    <div id="ctrlBulanan" class="kk-chart-ctrl position-relative" style="display:none; align-items:center;">
+                        <div id="badgeBulan" class="kk-chart-date-badge d-flex align-items-center" style="background:var(--kk-surface-2); border:1px solid var(--kk-border); border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer; transition:all 0.2s;" title="Klik untuk pilih bulan">
+                            <i class="bi bi-calendar-month me-1 text-primary"></i>
+                            <span id="labelBulanIni">{{ now()->translatedFormat('F Y') }}</span>
+                            <i class="bi bi-chevron-down ms-2 text-muted" style="font-size:0.7rem;"></i>
+                        </div>
+                        <input type="month" id="inputBulanChart" value="{{ now()->format('Y-m') }}" max="{{ now()->format('Y-m') }}" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;" title="Pilih bulan">
+                    </div>
+
+                    <button id="btnLihatSemua" class="btn btn-sm" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; transition: all 0.2s;">
+                        <i class="bi bi-calendar-day me-1"></i> Hari Ini
+                    </button>
+                </div>
+            </div>
+
+            <div id="chartSubtitle" style="font-size:0.8rem; color:var(--kk-text-muted); margin-bottom:1rem; margin-top:-0.25rem; padding-left:0.1rem;">
+                Menampilkan data hari ini
+            </div>
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="h-100 d-flex flex-column" style="background:var(--kk-surface-2); border-radius:var(--kk-radius-sm); padding:1rem; min-height: 250px;">
+                        <div class="flex-grow-1 position-relative" style="height: 250px;">
+                            <canvas id="chartAktivitas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary">
-            Lihat Semua <i class="bi bi-arrow-right"></i>
-        </a>
     </div>
-    @if($ordersRecent->isEmpty())
-        <div class="text-center py-4">
-            <div style="font-size:2.5rem; color:var(--kk-border);"><i class="bi bi-inbox"></i></div>
-            <div class="text-muted mt-2" style="font-size:0.875rem;">Belum ada permintaan barang.</div>
+
+    {{-- Donut Chart Devisi --}}
+    <div class="col-lg-4">
+        <div class="kk-stat-card h-100">
+            <div class="kk-section-header">
+                <div class="kk-section-title">
+                    <i class="bi bi-pie-chart-fill"></i> Barang per Devisi
+                </div>
+            </div>
+            <div class="mt-3">
+                <canvas id="chartKategori" height="250"></canvas>
+            </div>
         </div>
-    @else
-        <div class="table-responsive">
-            <table class="table table-sm table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th><th>Dari</th><th>Barang</th><th>Jumlah</th><th>Status</th><th>Tanggal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($ordersRecent as $order)
-                    <tr>
-                        <td class="text-muted" style="font-size:0.8rem;">#{{ $order->id }}</td>
-                        <td class="fw-semibold" style="font-size:0.875rem;">{{ $order->user->name }}</td>
-                        <td style="font-size:0.875rem;">{{ $order->item->name }}</td>
-                        <td style="font-size:0.875rem;">{{ $order->quantity }} {{ $order->item->unit }}</td>
-                        <td><span class="kk-badge-{{ $order->status }}">{{ strtoupper($order->status) }}</span></td>
-                        <td class="text-muted" style="font-size:0.8rem;">{{ $order->created_at->format('d M Y') }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
+    </div>
 </div>
 
-{{-- Charts --}}
-<div class="kk-stat-card mb-3">
-    <div class="kk-section-header" style="flex-wrap:wrap; gap:0.5rem;">
+{{-- Baris 3: Aksi Cepat (Terpisah agar lebih rapi memanjang) --}}
+<div class="kk-stat-card mb-4">
+    <div class="kk-section-header mb-3">
         <div class="kk-section-title">
-            <i class="bi bi-graph-up-arrow"></i> Grafik Aktivitas
-        </div>
-        {{-- Tab switcher --}}
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            {{-- Tanggal Saja (Bisa Diklik untuk memilih tanggal / hari sebelumnya) --}}
-            <div id="ctrlHarian" class="kk-chart-ctrl position-relative" style="display:inline-flex; align-items:center;">
-                <div id="badgeTanggal" class="kk-chart-date-badge d-flex align-items-center" style="background:var(--kk-surface-2); border:1px solid var(--kk-border); border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer; transition:all 0.2s;" title="Klik untuk pilih tanggal">
-                    <i class="bi bi-calendar-check me-1 text-primary"></i>
-                    <span id="labelHariIni">{{ now()->translatedFormat('d F Y') }}</span>
-                    <i class="bi bi-chevron-down ms-2 text-muted" style="font-size:0.7rem;"></i>
-                </div>
-                <input type="date" id="inputTanggalChart" value="{{ now()->toDateString() }}" max="{{ now()->toDateString() }}" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;" title="Pilih tanggal">
-            </div>
-
-            {{-- Label Rentang Bulan (tersembunyi secara default) --}}
-            <div id="ctrlBulanan" class="kk-chart-ctrl position-relative" style="display:none; align-items:center;">
-                <div id="badgeBulan" class="kk-chart-date-badge d-flex align-items-center" style="background:var(--kk-surface-2); border:1px solid var(--kk-border); border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer; transition:all 0.2s;" title="Klik untuk pilih bulan">
-                    <i class="bi bi-calendar-month me-1 text-primary"></i>
-                    <span id="labelBulanIni">{{ now()->translatedFormat('F Y') }}</span>
-                    <i class="bi bi-chevron-down ms-2 text-muted" style="font-size:0.7rem;"></i>
-                </div>
-                <input type="month" id="inputBulanChart" value="{{ now()->format('Y-m') }}" max="{{ now()->format('Y-m') }}" style="position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index:2;" title="Pilih bulan">
-            </div>
-
-            {{-- Tombol Mode --}}
-            <button id="btnLihatSemua" class="btn btn-sm" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; border-radius:8px; padding:0.4rem 0.75rem; font-size:0.875rem; font-weight:500; transition: all 0.2s;">
-                <i class="bi bi-calendar-day me-1"></i> Hari Ini
-            </button>
+            <i class="bi bi-lightning-charge"></i> Aksi Cepat
         </div>
     </div>
-
-    {{-- Subtitle tanggal aktif --}}
-    <div id="chartSubtitle" style="font-size:0.8rem; color:var(--kk-muted,#888); margin-bottom:1rem; margin-top:-0.25rem; padding-left:0.1rem;">
-        Menampilkan data hari ini
-    </div>
-
     <div class="row g-3">
-        <div class="col-lg-4">
-            <div style="background:var(--kk-surface-2); border-radius:var(--kk-radius-sm); padding:1rem;">
-                <div style="font-size:0.78rem; font-weight:700; color:var(--kk-success); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
-                    <i class="bi bi-box-arrow-in-down-right me-1"></i>Barang Masuk
-                </div>
-                <canvas id="chartMasuk" height="180"></canvas>
-            </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.stock_in.create', ['lokasi' => 'gudang_utama']) }}" class="kk-quick-action">
+                <i class="bi bi-box-arrow-in-down"></i>
+                <span>Barang Masuk</span>
+            </a>
         </div>
-        <div class="col-lg-4">
-            <div style="background:var(--kk-surface-2); border-radius:var(--kk-radius-sm); padding:1rem;">
-                <div style="font-size:0.78rem; font-weight:700; color:var(--kk-danger); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
-                    <i class="bi bi-box-arrow-up-right me-1"></i>Barang Keluar
-                </div>
-                <canvas id="chartKeluar" height="180"></canvas>
-            </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
+                <i class="bi bi-box-arrow-up"></i>
+                <span>Kirim Barang</span>
+            </a>
         </div>
-        <div class="col-lg-4">
-            <div style="background:var(--kk-surface-2); border-radius:var(--kk-radius-sm); padding:1rem;">
-                <div style="font-size:0.78rem; font-weight:700; color:var(--kk-orange); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.75rem;">
-                    <i class="bi bi-clipboard2-check-fill me-1"></i>Permintaan
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
+                <i class="bi bi-box-seam"></i>
+                <span>Data Stock</span>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a href="{{ route('admin.orders.index') }}" class="kk-quick-action">
+                <i class="bi bi-ui-checks"></i>
+                <span>Permintaan</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+{{-- Baris 4: Permintaan Terbaru & Peringatan Stok Rendah --}}
+<div class="row g-3 mb-4">
+    {{-- Kiri: Recent Orders --}}
+    <div class="col-lg-8">
+        <div class="kk-stat-card h-100">
+            <div class="kk-section-header">
+                <div class="kk-section-title">
+                    <i class="bi bi-clock-history"></i>
+                    Permintaan Barang Terbaru
                 </div>
-                <canvas id="chartPermintaan" height="180"></canvas>
+                <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary">
+                    Lihat Semua <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
+            @if($ordersRecent->isEmpty())
+                <div class="text-center py-4">
+                    <div style="font-size:2.5rem; color:var(--kk-border);"><i class="bi bi-inbox"></i></div>
+                    <div class="text-muted mt-2" style="font-size:0.875rem;">Belum ada permintaan barang.</div>
+                </div>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th><th>Dari</th><th>Barang</th><th>Jumlah</th><th>Status</th><th>Tanggal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($ordersRecent as $order)
+                            <tr>
+                                <td class="text-muted" style="font-size:0.8rem;">#{{ $order->id }}</td>
+                                <td class="fw-semibold" style="font-size:0.875rem;">{{ $order->user->name }}</td>
+                                <td style="font-size:0.875rem;">{{ $order->item->name }}</td>
+                                <td style="font-size:0.875rem;">{{ $order->quantity }} {{ $order->item->unit }}</td>
+                                <td><span class="kk-badge-{{ $order->status }}">{{ strtoupper($order->status) }}</span></td>
+                                <td class="text-muted" style="font-size:0.8rem;">{{ $order->created_at->format('d M Y') }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Kanan: Stok Rendah --}}
+    <div class="col-lg-4">
+        <div class="kk-stat-card h-100 flex-fill">
+            <div class="kk-section-header mb-3">
+                <div class="kk-section-title text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> Peringatan Stok Rendah
+                </div>
+                <span class="badge bg-danger rounded-pill">{{ $stokRendah }}</span>
+            </div>
+            @if($stokRendah > 0)
+                <div class="d-flex flex-column gap-2">
+                    @foreach(\App\Models\Item::where('min_stock', '>', 0)->whereIn('master_location', [\App\Models\Item::MASTER_GUDANG_UTAMA, \App\Models\Item::MASTER_GUDANG_RESTO])->get()->filter(fn($i) => $i->stokGudangUtama() <= $i->min_stock)->take(5) as $item)
+                        <div class="d-flex align-items-center justify-content-between p-2 rounded" style="background: var(--kk-danger-soft); border: 1px solid rgba(239, 68, 68, 0.2);">
+                            <div>
+                                <div class="fw-semibold" style="font-size:0.85rem; color:var(--kk-text);">{{ $item->name }}</div>
+                                <div style="font-size:0.75rem; color:var(--kk-danger);">Sisa: {{ $item->stokGudangUtama() }} {{ $item->unit }}</div>
+                            </div>
+                            <a href="{{ route('admin.stock_in.create', ['lokasi' => 'gudang_utama', 'item_id' => $item->id]) }}" class="btn btn-sm btn-outline-danger" style="font-size:0.7rem; padding:0.2rem 0.5rem;">Restock</a>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-3 text-muted" style="font-size:0.875rem;">
+                    <i class="bi bi-check-circle text-success fs-3 d-block mb-2"></i>
+                    Stok gudang aman.
+                </div>
+            @endif
         </div>
     </div>
 </div>
@@ -182,62 +249,125 @@ document.addEventListener('DOMContentLoaded', function () {
     let isShowingAll = false;
     let currentDate  = '{{ now()->toDateString() }}';
     let currentMonth = '{{ now()->format('Y-m') }}';
-    let charts       = { masuk: null, keluar: null, permintaan: null };
+    let chartAktivitas = null;
 
     const inputTanggal  = document.getElementById('inputTanggalChart');
     const labelHariIni  = document.getElementById('labelHariIni');
-    
     const inputBulan    = document.getElementById('inputBulanChart');
     const labelBulanIni = document.getElementById('labelBulanIni');
-
     const chartSubtitle = document.getElementById('chartSubtitle');
     const btnLihatSemua = document.getElementById('btnLihatSemua');
     const ctrlHarian    = document.getElementById('ctrlHarian');
     const ctrlBulanan   = document.getElementById('ctrlBulanan');
 
-    /* ── Helpers ─────────────────────────────────────────────── */
-    function destroyCharts() {
-        ['masuk', 'keluar', 'permintaan'].forEach(k => {
-            if (charts[k]) { charts[k].destroy(); charts[k] = null; }
-        });
-    }
-
-    function buildChart(canvasId, label, data, labels, color, type = 'bar') {
-        const ctx = document.getElementById(canvasId);
-        return new window.Chart(ctx, {
+    function renderCharts(json, type = 'bar') {
+        if (chartAktivitas) {
+            chartAktivitas.destroy();
+        }
+        
+        const ctx = document.getElementById('chartAktivitas');
+        chartAktivitas = new window.Chart(ctx, {
             type: type,
             data: {
-                labels: labels,
-                datasets: [{
-                    label: label,
-                    data: data,
-                    backgroundColor: color + '99',
-                    borderColor: color,
-                    borderWidth: 2,
-                    borderRadius: type === 'bar' ? 6 : 0,
-                    maxBarThickness: 32,
-                    fill: type === 'line',
-                    tension: 0.4,
-                    pointRadius: type === 'line' ? 3 : 0,
-                    pointHoverRadius: type === 'line' ? 6 : 0,
-                }],
+                labels: json.labels,
+                datasets: [
+                    {
+                        label: 'Barang Masuk',
+                        data: json.masuk,
+                        backgroundColor: type === 'line' ? '#10b98133' : '#10b981',
+                        borderColor: '#10b981',
+                        borderWidth: 2,
+                        borderRadius: type === 'bar' ? 4 : 0,
+                        fill: type === 'line',
+                        tension: 0.4,
+                        pointRadius: type === 'line' ? 3 : 0,
+                        pointHoverRadius: type === 'line' ? 6 : 0,
+                    },
+                    {
+                        label: 'Barang Keluar',
+                        data: json.keluar,
+                        backgroundColor: type === 'line' ? '#ef444433' : '#ef4444',
+                        borderColor: '#ef4444',
+                        borderWidth: 2,
+                        borderRadius: type === 'bar' ? 4 : 0,
+                        fill: type === 'line',
+                        tension: 0.4,
+                        pointRadius: type === 'line' ? 3 : 0,
+                        pointHoverRadius: type === 'line' ? 6 : 0,
+                    },
+                    {
+                        label: 'Permintaan',
+                        data: json.permintaan,
+                        backgroundColor: type === 'line' ? '#ff6b3533' : '#ff6b35',
+                        borderColor: '#ff6b35',
+                        borderWidth: 2,
+                        borderRadius: type === 'bar' ? 4 : 0,
+                        fill: type === 'line',
+                        tension: 0.4,
+                        pointRadius: type === 'line' ? 3 : 0,
+                        pointHoverRadius: type === 'line' ? 6 : 0,
+                    }
+                ]
             },
             options: {
                 responsive: true,
-                plugins: { legend: { display: false } },
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: { 
+                    legend: { 
+                        display: true,
+                        position: 'top',
+                        labels: { color: '#9ca3af', usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(0,0,0,0.04)' } },
-                    x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }
+                    y: { beginAtZero: true, ticks: { precision: 0, color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#9ca3af', maxRotation: 45 } }
                 },
             },
         });
     }
 
-    function renderCharts(json, type = 'bar') {
-        destroyCharts();
-        charts.masuk      = buildChart('chartMasuk',      'Barang Masuk',  json.masuk,      json.labels, '#10b981', type);
-        charts.keluar     = buildChart('chartKeluar',     'Barang Keluar', json.keluar,     json.labels, '#ef4444', type);
-        charts.permintaan = buildChart('chartPermintaan', 'Permintaan',    json.permintaan, json.labels, '#ff6b35', type);
+    // Donut Chart Devisi
+    const ctxKategori = document.getElementById('chartKategori');
+    if(ctxKategori) {
+        new window.Chart(ctxKategori, {
+            type: 'doughnut',
+            data: {
+                labels: {!! json_encode($donutLabels) !!},
+                datasets: [{
+                    data: {!! json_encode($donutData) !!},
+                    backgroundColor: [
+                        '#ff6b35', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'
+                    ],
+                    borderWidth: 2,
+                    borderColor: 'rgba(255,255,255,0.05)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#9ca3af',
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 11 }
+                        }
+                    }
+                }
+            }
+        });
     }
 
     function formatTanggalIndo(dateStr) {

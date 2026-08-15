@@ -59,7 +59,7 @@ class DashboardController extends Controller
      */
     private function baseKeluarQuery()
     {
-        return StockOut::where('location', StockOut::LOCATION_GUDANG);
+        return StockOut::where('location', StockOut::LOCATION_GUDANG_UTAMA);
     }
 
     /**
@@ -121,9 +121,10 @@ class DashboardController extends Controller
         $masukHariIni  = (int) $this->baseMasukQuery()->whereDate('tanggal', today())->sum('quantity');
         $keluarHariIni = (int) $this->baseKeluarQuery()->whereDate('tanggal', today())->sum('quantity');
 
-        // Barang stok rendah = saldo Restoran <= min_stock (butuh direstock dari Gudang)
-        $stokRendah = Item::all()
-            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokRestoran() <= $item->min_stock)
+        // Barang stok rendah = saldo Gudang Utama <= min_stock, HANYA untuk barang Gudang Utama & Gudang Resto
+        $stokRendah = Item::whereIn('master_location', [Item::MASTER_GUDANG_UTAMA, Item::MASTER_GUDANG_RESTO])
+            ->get()
+            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokGudangUtama() <= $item->min_stock)
             ->count();
 
         // Gabungkan order dari semua role (kasir + kitchen + admin), latest 10
@@ -132,10 +133,28 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $itemsPerDivision = Item::selectRaw('master_location, count(*) as total')
+            ->groupBy('master_location')
+            ->pluck('total', 'master_location');
+
+        $divisionMap = [
+            Item::MASTER_GUDANG_UTAMA => 'Gudang Utama',
+            Item::MASTER_GUDANG_RESTO => 'Gudang Resto',
+            Item::MASTER_KASIR        => 'Kasir',
+            Item::MASTER_KITCHEN      => 'Kitchen',
+        ];
+
+        $donutLabels = [];
+        $donutData   = [];
+        foreach ($divisionMap as $key => $label) {
+            $donutLabels[] = $label;
+            $donutData[]   = $itemsPerDivision[$key] ?? 0;
+        }
+
         return view('dashboard.admin', compact(
             'user', 'permintaanMenunggu', 'permintaanDisetujui', 'permintaanDitolak',
             'totalBarang', 'totalUser', 'totalSupplier', 'masukHariIni', 'keluarHariIni',
-            'stokRendah', 'ordersRecent', 'tahunMulaiGrafik'
+            'stokRendah', 'ordersRecent', 'tahunMulaiGrafik', 'donutLabels', 'donutData'
         ));
     }
 
@@ -387,9 +406,10 @@ class DashboardController extends Controller
         $keluarHariIni = StockOut::where('user_id', $userId)
             ->whereDate('tanggal', today())->sum('quantity');
 
-        // Barang stok rendah di Resto (saldo bersama Kasir & Kitchen)
-        $stokRendah = Item::all()
-            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokRestoran() <= $item->min_stock)
+        // Barang stok rendah di Kasir (berdasarkan master_location)
+        $stokRendah = Item::where('master_location', Item::MASTER_KASIR)
+            ->get()
+            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokKasir() <= $item->min_stock)
             ->count();
 
         $ordersRecent = Order::with('item')
@@ -412,8 +432,10 @@ class DashboardController extends Controller
         $keluarHariIni = StockOut::where('user_id', $userId)
             ->whereDate('tanggal', today())->sum('quantity');
 
-        $stokRendah = Item::all()
-            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokRestoran() <= $item->min_stock)
+        // Barang stok rendah di Kitchen (berdasarkan master_location)
+        $stokRendah = Item::where('master_location', Item::MASTER_KITCHEN)
+            ->get()
+            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokKitchen() <= $item->min_stock)
             ->count();
 
         $ordersRecent = Order::with('item')

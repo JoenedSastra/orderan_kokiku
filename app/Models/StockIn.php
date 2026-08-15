@@ -10,8 +10,9 @@ class StockIn extends Model
 {
     use HasFactory;
 
-    public const LOCATION_GUDANG   = 'gudang';
-    public const LOCATION_RESTORAN = 'restoran';
+    public const LOCATION_GUDANG_UTAMA = 'gudang_utama';
+    public const LOCATION_KASIR        = 'kasir';
+    public const LOCATION_KITCHEN      = 'kitchen';
 
     protected $fillable = [
         'item_id', 'user_id', 'supplier_id',

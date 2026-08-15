@@ -35,11 +35,11 @@ class OrderController extends Controller
             return back()->with('error', 'Permintaan sudah diproses sebelumnya.');
         }
 
-        $stokGudang = $order->item->stokGudang();
+        $stokGudang = $order->item->stokGudangUtama();
 
         if ($order->quantity > $stokGudang) {
             return back()->with('error',
-                'Stok Gudang tidak mencukupi untuk menyetujui permintaan #' . $order->id .
+                'Stok Gudang Utama tidak mencukupi untuk menyetujui permintaan #' . $order->id .
                 '. Stok Gudang saat ini: ' . $stokGudang . ' ' . $order->item->unit .
                 '. Silakan tolak permintaan ini atau tambah stok gudang dulu.'
             );
@@ -52,23 +52,27 @@ class OrderController extends Controller
                 'approved_at' => now(),
             ]);
 
-            // Keluar dari Gudang
+            // Keluar dari Gudang Utama
             StockOut::create([
                 'item_id'    => $order->item_id,
                 'user_id'    => Auth::id(),
                 'quantity'   => $order->quantity,
-                'location'   => StockOut::LOCATION_GUDANG,
-                'keterangan' => 'Transfer ke Restoran — Permintaan #' . $order->id,
+                'location'   => StockOut::LOCATION_GUDANG_UTAMA,
+                'keterangan' => 'Transfer — Permintaan #' . $order->id,
                 'tanggal'    => now()->toDateString(),
             ]);
 
-            // Masuk ke Restoran, atas nama requester (kasir/kitchen)
+            // Tentukan lokasi tujuan berdasarkan role peminta
+            $destination = $order->user->isKasir() ? StockIn::LOCATION_KASIR : StockIn::LOCATION_KITCHEN;
+            $namaDivisi  = $order->user->isKasir() ? 'Kasir' : 'Kitchen';
+
+            // Masuk ke tujuan, atas nama requester
             StockIn::create([
                 'item_id'    => $order->item_id,
                 'user_id'    => $order->user_id,
                 'quantity'   => $order->quantity,
-                'location'   => StockIn::LOCATION_RESTORAN,
-                'keterangan' => 'Dari Gudang — Permintaan #' . $order->id . ' (disetujui Admin)',
+                'location'   => $destination,
+                'keterangan' => 'Dari Gudang Utama — Permintaan #' . $order->id . ' (disetujui Admin)',
                 'tanggal'    => now()->toDateString(),
             ]);
         });

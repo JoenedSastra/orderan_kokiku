@@ -41,13 +41,13 @@ class StockOutController extends Controller
             'tanggal'    => 'required|date',
         ]);
 
-        // Cek stok restoran tersedia
+        // Cek stok kasir tersedia
         $item = Item::findOrFail($request->item_id);
-        $stok = $item->stokRestoran();
+        $stok = $item->stokKasir();
 
         if ($request->quantity > $stok) {
             return back()
-                ->withErrors(['quantity' => 'Stok tidak mencukupi. Stok tersedia: ' . $stok . ' ' . $item->unit])
+                ->withErrors(['quantity' => 'Stok tidak mencukupi. Stok Kasir tersedia: ' . $stok . ' ' . $item->unit])
                 ->withInput();
         }
 
@@ -55,7 +55,7 @@ class StockOutController extends Controller
             'item_id'    => $request->item_id,
             'user_id'    => Auth::id(),
             'quantity'   => $request->quantity,
-            'location'   => StockOut::LOCATION_RESTORAN,
+            'location'   => StockOut::LOCATION_KASIR,
             'keterangan' => $request->keterangan,
             'tanggal'    => $request->tanggal,
         ]);

@@ -84,7 +84,7 @@ class StockController extends Controller
             $itemsGudangUtama = Item::where('master_location', Item::MASTER_GUDANG_UTAMA)
                 ->orderBy('name')
                 ->get()
-                ->filter(fn (Item $item) => $item->stokGudang() > 0)
+                ->filter(fn (Item $item) => $item->stokGudangUtama() > 0)
                 ->values();
         }
 
@@ -112,7 +112,7 @@ class StockController extends Controller
             return back()->withErrors(['item_id' => 'Barang ini bukan barang Gudang Utama.'])->withInput();
         }
 
-        $stokTersedia = $sourceItem->stokGudang();
+        $stokTersedia = $sourceItem->stokGudangUtama();
 
         if ($request->quantity > $stokTersedia) {
             return back()->withErrors([

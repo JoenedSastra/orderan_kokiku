@@ -12,7 +12,14 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 </head>
-<body>
+@php
+    $themeClass = 'theme-admin';
+    if (auth()->check()) {
+        if (auth()->user()->isKasir()) $themeClass = 'theme-kasir';
+        if (auth()->user()->isKitchen()) $themeClass = 'theme-kitchen';
+    }
+@endphp
+<body class="{{ $themeClass }}">
 
 {{-- Overlay (mobile) --}}
 <div class="kk-overlay" id="kkOverlay"></div>
@@ -180,9 +187,8 @@
         const themeIcon = document.getElementById('themeToggleIcon');
         const htmlEl = document.documentElement;
         
-        // Cek saved theme atau system pref
-        const savedTheme = localStorage.getItem('kk_theme') || 
-                          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        // Force dark theme as default for modern design
+        const savedTheme = localStorage.getItem('kk_theme') || 'dark';
         
         function setTheme(theme) {
             htmlEl.setAttribute('data-bs-theme', theme);

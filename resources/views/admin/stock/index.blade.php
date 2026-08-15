@@ -100,8 +100,8 @@
                                 style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
                             <option value="">Pilih Barang</option>
                             @foreach($itemsGudangUtama as $item)
-                            <option value="{{ $item->id }}" data-stok="{{ $item->stokGudang() }}" data-unit="{{ $item->unit }}">
-                                {{ $item->name }} — Stok: {{ $item->stokGudang() }} {{ $item->unit }}
+                            <option value="{{ $item->id }}" data-stok="{{ $item->stokGudangUtama() }}" data-unit="{{ $item->unit }}">
+                                {{ $item->name }} — Stok: {{ $item->stokGudangUtama() }} {{ $item->unit }}
                             </option>
                             @endforeach
                         </select>

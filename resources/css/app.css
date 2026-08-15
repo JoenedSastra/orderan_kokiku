@@ -85,6 +85,22 @@
     --kk-topbar-border: rgba(255,255,255,0.06);
 }
 
+body.theme-kasir {
+    --kk-orange:        #3b82f6;
+    --kk-orange-dark:   #2563eb;
+    --kk-orange-light:  #60a5fa;
+    --kk-orange-soft:   rgba(59, 130, 246, 0.12);
+    --kk-orange-glow:   rgba(59, 130, 246, 0.25);
+}
+
+body.theme-kitchen {
+    --kk-orange:        #10b981;
+    --kk-orange-dark:   #059669;
+    --kk-orange-light:  #34d399;
+    --kk-orange-soft:   rgba(16, 185, 129, 0.12);
+    --kk-orange-glow:   rgba(16, 185, 129, 0.25);
+}
+
 /* ==========================================================================
    Base Reset & Typography
    ========================================================================== */

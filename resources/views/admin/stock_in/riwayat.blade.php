@@ -169,8 +169,8 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
         </div>
 
         {{-- Tombol konfirmasi hapus — muncul saat mode hapus aktif --}}
-        <div id="deleteBar" class="d-none px-3 py-2 border-top d-flex align-items-center gap-3 bg-light">
-            <span class="text-muted small"><span id="selectedCount">0</span> item dipilih</span>
+        <div id="deleteBar" class="d-none px-3 py-2 border-top d-flex align-items-center gap-3" style="background: var(--kk-card-bg);">
+            <span class="small" style="color: var(--kk-text);"><strong id="selectedCount">0</strong> item dipilih</span>
             <button type="submit" class="btn btn-danger btn-sm" id="btnConfirmDelete" disabled
                     onclick="return confirm('Yakin hapus item yang dipilih?')">
                 <i class="bi bi-trash3-fill"></i> Hapus Terpilih

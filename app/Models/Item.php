@@ -42,66 +42,40 @@ class Item extends Model
         return $this->hasMany(Order::class);
     }
 
-    /**
-     * Stok Gudang = masuk lokasi gudang - keluar lokasi gudang.
-     */
-    public function stokGudang(): int
+    public function stokGudangUtama(): int
     {
-        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_GUDANG)->sum('quantity');
-        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_GUDANG)->sum('quantity');
+        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_GUDANG_UTAMA)->sum('quantity');
+        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_GUDANG_UTAMA)->sum('quantity');
         return max(0, $masuk - $keluar);
     }
 
-    /**
-     * Stok Restoran = masuk lokasi restoran - keluar lokasi restoran.
-     */
-    public function stokRestoran(): int
-    {
-        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_RESTORAN)->sum('quantity');
-        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_RESTORAN)->sum('quantity');
-        return max(0, $masuk - $keluar);
-    }
-
-    /**
-     * Stok Kasir = stok Restoran, hanya jika master_location barang ini = Kasir.
-     */
     public function stokKasir(): int
     {
-        return $this->master_location === self::MASTER_KASIR ? $this->stokRestoran() : 0;
+        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_KASIR)->sum('quantity');
+        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_KASIR)->sum('quantity');
+        return max(0, $masuk - $keluar);
     }
 
-    /**
-     * Stok Kitchen = stok Restoran, hanya jika master_location barang ini = Kitchen.
-     */
     public function stokKitchen(): int
     {
-        return $this->master_location === self::MASTER_KITCHEN ? $this->stokRestoran() : 0;
+        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_KITCHEN)->sum('quantity');
+        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_KITCHEN)->sum('quantity');
+        return max(0, $masuk - $keluar);
     }
 
-    /**
-     * Ambil nilai stok sesuai kunci lokasi ('gudang', 'resto', 'kasir', 'kitchen').
-     */
     public function stokByLocation(string $locationKey): int
     {
         return match ($locationKey) {
-            'gudang'  => $this->stokGudang(),
-            'resto'   => $this->stokRestoran(),
+            'gudang_utama', 'gudang'  => $this->stokGudangUtama(),
             'kasir'   => $this->stokKasir(),
             'kitchen' => $this->stokKitchen(),
             default   => 0,
         };
     }
 
-    /**
-     * Total Stock yang relevan untuk master_location barang ini:
-     * - Gudang Utama -> stok Gudang
-     * - Gudang Resto / Kasir / Kitchen -> stok Restoran
-     */
     public function totalStock(): int
     {
-        return $this->master_location === self::MASTER_GUDANG_UTAMA
-            ? $this->stokGudang()
-            : $this->stokRestoran();
+        return $this->stokGudangUtama() + $this->stokKasir() + $this->stokKitchen();
     }
 
     public function masterLocationLabel(): string
@@ -115,20 +89,14 @@ class Item extends Model
         };
     }
 
-    /**
-     * Aktivitas stok TERAKHIR untuk barang ini, di ledger lokasi milik barang
-     * ini sendiri (Gudang Utama -> ledger "gudang", Gudang Resto/Kasir/Kitchen
-     * -> ledger "restoran"). Dipakai untuk kolom Hari/Tanggal/Jam & Keterangan
-     * di Master Barang. Sengaja HANYA melihat ledger lokasi barang itu sendiri,
-     * supaya keterangan Gudang Utama (mis. "Kirim dari Gudang Utama ke Kasir")
-     * dan keterangan barang tujuan (mis. "Diterima") tetap berdiri
-     * sendiri-sendiri dan tidak saling menimpa.
-     */
     public function latestActivity(): StockIn|StockOut|null
     {
-        $location = $this->master_location === self::MASTER_GUDANG_UTAMA
-            ? StockIn::LOCATION_GUDANG
-            : StockIn::LOCATION_RESTORAN;
+        $location = match ($this->master_location) {
+            self::MASTER_GUDANG_UTAMA => StockIn::LOCATION_GUDANG_UTAMA,
+            self::MASTER_KASIR        => StockIn::LOCATION_KASIR,
+            self::MASTER_KITCHEN      => StockIn::LOCATION_KITCHEN,
+            default                   => StockIn::LOCATION_GUDANG_UTAMA,
+        };
 
         $masuk  = $this->stockIns()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
         $keluar = $this->stockOuts()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
@@ -139,43 +107,38 @@ class Item extends Model
             ->first();
     }
 
-    /**
-     * Catatan Barang Masuk TERAKHIR untuk barang ini (khusus StockIn saja),
-     * di ledger lokasi milik barang ini sendiri. Dipakai untuk kolom
-     * "Keterangan Masuk" di Master Barang.
-     */
     public function latestMasukActivity(): ?StockIn
     {
-        $location = $this->master_location === self::MASTER_GUDANG_UTAMA
-            ? StockIn::LOCATION_GUDANG
-            : StockIn::LOCATION_RESTORAN;
+        $location = match ($this->master_location) {
+            self::MASTER_GUDANG_UTAMA => StockIn::LOCATION_GUDANG_UTAMA,
+            self::MASTER_KASIR        => StockIn::LOCATION_KASIR,
+            self::MASTER_KITCHEN      => StockIn::LOCATION_KITCHEN,
+            default                   => StockIn::LOCATION_GUDANG_UTAMA,
+        };
 
         return $this->stockIns()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
     }
 
-    /**
-     * Catatan Barang Keluar TERAKHIR untuk barang ini (khusus StockOut saja),
-     * di ledger lokasi milik barang ini sendiri. Dipakai untuk kolom
-     * "Keterangan Keluar" di Master Barang — hanya terisi untuk barang
-     * Gudang Utama yang pernah dikirim ke divisi lain.
-     */
     public function latestKeluarActivity(): ?StockOut
     {
-        $location = $this->master_location === self::MASTER_GUDANG_UTAMA
-            ? StockOut::LOCATION_GUDANG
-            : StockOut::LOCATION_RESTORAN;
+        $location = match ($this->master_location) {
+            self::MASTER_GUDANG_UTAMA => StockOut::LOCATION_GUDANG_UTAMA,
+            self::MASTER_KASIR        => StockOut::LOCATION_KASIR,
+            self::MASTER_KITCHEN      => StockOut::LOCATION_KITCHEN,
+            default                   => StockOut::LOCATION_GUDANG_UTAMA,
+        };
 
         return $this->stockOuts()->where('location', $location)->latest('tanggal')->latest('created_at')->first();
     }
 
-    /**
-     * Hitung stok saat ini untuk user tertentu (berdasarkan role/lokasi).
-     */
     public function currentStockForRole(string $roleSlug): int
     {
-        $location = ($roleSlug === Role::ADMIN)
-            ? StockIn::LOCATION_GUDANG
-            : StockIn::LOCATION_RESTORAN;
+        $location = match ($roleSlug) {
+            Role::ADMIN   => StockIn::LOCATION_GUDANG_UTAMA,
+            Role::KASIR   => StockIn::LOCATION_KASIR,
+            Role::KITCHEN => StockIn::LOCATION_KITCHEN,
+            default       => StockIn::LOCATION_GUDANG_UTAMA,
+        };
 
         $masuk  = $this->stockIns()->where('location', $location)->sum('quantity');
         $keluar = $this->stockOuts()->where('location', $location)->sum('quantity');
