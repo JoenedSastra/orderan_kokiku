@@ -64,15 +64,14 @@ class StockController extends Controller
         // tampil di sini langsung ikut berkurang karena dihitung ulang tiap
         // kali halaman ini dibuka, bukan angka statis dari satu transaksi.
         //
-        // Cuma tampilkan barang yang benar-benar pernah ada aktivitas (Barang
-        // Masuk atau Kirim Barang). Barang "hantu" tanpa riwayat sama sekali
-        // (sisa duplikat lama) disembunyikan supaya tabel tidak penuh baris
-        // kosong yang membingungkan.
+        // Cuma tampilkan barang yang MASIH punya riwayat masuk (StockIn).
+        // Barang yang riwayat masuknya sudah dihapus semua (lewat "Hapus
+        // Terpilih" di Riwayat) otomatis hilang dari sini juga, walau dulu
+        // pernah punya riwayat "Kirim Barang" — riwayat kirimnya sendiri
+        // tetap bisa dilihat lengkap di halaman "Riwayat Terkirim".
         $items = Item::with(['stockIns.user.role', 'stockOuts.user.role'])
             ->whereIn('master_location', $activeLocations)
-            ->where(function ($q) {
-                $q->whereHas('stockIns')->orWhereHas('stockOuts');
-            })
+            ->whereHas('stockIns')
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
@@ -104,7 +103,7 @@ class StockController extends Controller
             'item_id'     => 'required|exists:items,id',
             'destination' => 'required|in:gudang_resto,kasir,kitchen',
             'quantity'    => 'required|integer|min:1',
-            'keterangan'  => 'required|in:Gudang Resto,Kasir,Kitchen',
+            'keterangan'  => 'required|in:Kirim di Gudang Resto,Kirim di Kasir,Kirim di Kitchen',
         ]);
 
         $sourceItem = Item::findOrFail($request->item_id);
@@ -127,19 +126,22 @@ class StockController extends Controller
             'kitchen'      => 'Kitchen',
         ][$request->destination];
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $sourceItem, $labelTujuan) {
+        // Teks Keterangan yang benar-benar tersimpan — selalu "Kirim di
+        // <Divisi>", diturunkan dari "Kirim ke" (bukan dari nilai mentah
+        // dropdown Keterangan), supaya selalu konsisten dengan divisi tujuan
+        // yang sesungguhnya menerima barang ini.
+        $keteranganTersimpan = 'Kirim di ' . $labelTujuan;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $sourceItem, $labelTujuan, $keteranganTersimpan) {
             $userId = \Illuminate\Support\Facades\Auth::id();
 
-            // Kurangi stok Gudang Utama pada barang sumber. Keterangan selalu
-            // ikut $labelTujuan (diturunkan dari "Kirim ke"), supaya konsisten
-            // dengan divisi tujuan yang sesungguhnya menerima barang ini —
-            // bukan dari dropdown "Keterangan" secara terpisah.
+            // Kurangi stok Gudang Utama pada barang sumber.
             StockOut::create([
                 'item_id'    => $sourceItem->id,
                 'user_id'    => $userId,
                 'quantity'   => $request->quantity,
                 'location'   => StockOut::LOCATION_GUDANG,
-                'keterangan' => $labelTujuan,
+                'keterangan' => $keteranganTersimpan,
                 'tanggal'    => today(),
             ]);
 
@@ -149,15 +151,14 @@ class StockController extends Controller
                 ['unit' => $sourceItem->unit, 'min_stock' => 0]
             );
 
-            // Stok divisi tujuan bertambah otomatis. Keterangan di sini yang
-            // sebelumnya di-hardcode "Diterima" — sekarang otomatis mengikuti
-            // divisi tujuan (Gudang Resto / Kasir / Kitchen) sesuai permintaan.
+            // Stok divisi tujuan bertambah otomatis, dengan keterangan yang
+            // sama persis ("Kirim di <Divisi>").
             StockIn::create([
                 'item_id'      => $targetItem->id,
                 'user_id'      => $userId,
                 'quantity'     => $request->quantity,
                 'location'     => StockIn::LOCATION_RESTORAN,
-                'keterangan'   => $labelTujuan,
+                'keterangan'   => $keteranganTersimpan,
                 'tanggal'      => today(),
                 'is_completed' => true,
             ]);

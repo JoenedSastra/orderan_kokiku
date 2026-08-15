@@ -179,13 +179,29 @@ class StockInController extends Controller
             return back()->withErrors(['ids' => 'Pilih minimal 1 item untuk dihapus.']);
         }
 
-        $deleted = 0;
+        $deleted     = 0;
+        $itemIdsKena = [];
+
         foreach ($ids as $id) {
             $stockIn = StockIn::find($id);
             if (!$stockIn) continue;
 
+            $itemIdsKena[] = $stockIn->item_id;
             $stockIn->delete();
             $deleted++;
+        }
+
+        // Barang yang riwayat masuknya baru saja dihapus, kalau ternyata
+        // sekarang sudah tidak punya riwayat masuk MAUPUN keluar sama sekali
+        // (stok 0, tidak ada aktivitas lain), ikut dihapus juga datanya —
+        // supaya tidak nyangkut jadi baris kosong di halaman Stock manapun.
+        foreach (array_unique($itemIdsKena) as $itemId) {
+            $item = Item::find($itemId);
+            if (!$item) continue;
+
+            if (!$item->stockIns()->exists() && !$item->stockOuts()->exists()) {
+                $item->delete();
+            }
         }
 
         return back()->with('success', $deleted . ' data berhasil dihapus.');

@@ -151,9 +151,9 @@
                                     class="form-select @error('keterangan') is-invalid @enderror"
                                     style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
                                 <option value="">Pilih Keterangan</option>
-                                <option value="Gudang Resto">Gudang Resto</option>
-                                <option value="Kasir">Kasir</option>
-                                <option value="Kitchen">Kitchen</option>
+                                <option value="Kirim di Gudang Resto">Kirim di Gudang Resto</option>
+                                <option value="Kirim di Kasir">Kirim di Kasir</option>
+                                <option value="Kirim di Kitchen">Kirim di Kitchen</option>
                             </select>
                             @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
@@ -204,9 +204,9 @@
     const selectKirimKe    = document.getElementById('selectKirimKe');
     const selectKeterangan = document.getElementById('selectKeterangan');
     const kirimKeToKeterangan = {
-        gudang_resto: 'Gudang Resto',
-        kasir: 'Kasir',
-        kitchen: 'Kitchen',
+        gudang_resto: 'Kirim di Gudang Resto',
+        kasir: 'Kirim di Kasir',
+        kitchen: 'Kirim di Kitchen',
     };
 
     if (selectKirimKe && selectKeterangan) {
