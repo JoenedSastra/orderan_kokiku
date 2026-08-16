@@ -4,21 +4,32 @@
 
 <div class="kk-stat-card mb-3">
     <form method="GET" action="{{ route('admin.reports.index') }}" class="row g-2 align-items-end" autocomplete="off">
-        <div class="col-md-4">
-            <label class="form-label">Jenis Laporan</label>
-            <select name="type" class="form-select" onchange="this.form.submit()" autocomplete="off">
-                <option value="barang_masuk" {{ $type === 'barang_masuk' ? 'selected' : '' }}>Laporan Barang Masuk Harian</option>
-                <option value="barang_keluar_kasir" {{ $type === 'barang_keluar_kasir' ? 'selected' : '' }}>Laporan Barang Keluar Kasir</option>
-                <option value="barang_keluar_kitchen" {{ $type === 'barang_keluar_kitchen' ? 'selected' : '' }}>Laporan Barang Keluar Kitchen</option>
-            </select>
+        <div class="col-md-6 mb-md-0 mb-2">
+            <label class="form-label d-block text-muted" style="font-size:0.85rem;">Jenis Laporan</label>
+            <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" name="type" id="type_masuk" value="barang_masuk" autocomplete="off" onchange="this.form.submit()" {{ $type === 'barang_masuk' ? 'checked' : '' }}>
+                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_masuk">
+                    <i class="bi bi-box-arrow-in-down"></i> Masuk Harian
+                </label>
+
+                <input type="radio" class="btn-check" name="type" id="type_keluar_kasir" value="barang_keluar_kasir" autocomplete="off" onchange="this.form.submit()" {{ $type === 'barang_keluar_kasir' ? 'checked' : '' }}>
+                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_keluar_kasir">
+                    <i class="bi bi-cart-dash"></i> Keluar Kasir
+                </label>
+
+                <input type="radio" class="btn-check" name="type" id="type_keluar_kitchen" value="barang_keluar_kitchen" autocomplete="off" onchange="this.form.submit()" {{ $type === 'barang_keluar_kitchen' ? 'checked' : '' }}>
+                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_keluar_kitchen">
+                    <i class="bi bi-cup-hot"></i> Keluar Kitchen
+                </label>
+            </div>
         </div>
-        <div class="col-6 col-md-4">
-            <label class="form-label">Dari Tanggal</label>
-            <input type="date" name="start_date" class="form-control" value="{{ $startDate }}" onchange="this.form.submit()">
+        <div class="col-6 col-md-3">
+            <label class="form-label text-muted" style="font-size:0.85rem;">Dari Tanggal</label>
+            <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $startDate }}" onchange="this.form.submit()">
         </div>
-        <div class="col-6 col-md-4">
-            <label class="form-label">Sampai Tanggal</label>
-            <input type="date" name="end_date" class="form-control" value="{{ $endDate }}" onchange="this.form.submit()">
+        <div class="col-6 col-md-3">
+            <label class="form-label text-muted" style="font-size:0.85rem;">Sampai Tanggal</label>
+            <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $endDate }}" onchange="this.form.submit()">
         </div>
     </form>
 </div>
