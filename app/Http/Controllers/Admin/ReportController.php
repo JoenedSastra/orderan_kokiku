@@ -65,6 +65,14 @@ class ReportController extends Controller
     private function resolveFilters(Request $request): array
     {
         $type      = $request->input('type', 'barang_masuk');
+        
+        // Backward compatibility for old URLs
+        if ($type === 'total_stock_kitchen') {
+            $type = 'barang_keluar_kitchen';
+        } elseif ($type === 'total_stock_kasir') {
+            $type = 'barang_keluar_kasir';
+        }
+        
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate   = $request->input('end_date', now()->toDateString());
 

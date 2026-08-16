@@ -17,7 +17,7 @@
             </span>
             <input type="date" id="inputTanggal" name="tanggal"
                 class="form-control form-control-sm border-start-0"
-                value="{{ $tanggal ?? '' }}"
+                value="{{ request('tanggal', now()->toDateString()) }}"
                 style="border-color:#dee2e6;"
                 title="Filter berdasarkan tanggal"
                 onchange="document.getElementById('formFilter').submit()">

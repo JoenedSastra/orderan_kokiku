@@ -38,4 +38,24 @@ class StockIn extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (StockIn $stockIn) {
+            // Cari StockOut pasangannya di Gudang Utama yang terbuat secara bersamaan
+            // saat proses "Kirim Barang" (created_at sama, quantity sama, nama barang sama)
+            $matchingStockOut = StockOut::where('location', self::LOCATION_GUDANG_UTAMA)
+                ->where('quantity', $stockIn->quantity)
+                ->where('created_at', $stockIn->created_at)
+                ->whereHas('item', function ($query) use ($stockIn) {
+                    $query->where('name', $stockIn->item->name)
+                          ->where('master_location', Item::MASTER_GUDANG_UTAMA);
+                })
+                ->first();
+
+            if ($matchingStockOut) {
+                $matchingStockOut->delete();
+            }
+        });
+    }
 }

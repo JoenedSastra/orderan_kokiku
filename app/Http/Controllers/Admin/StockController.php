@@ -109,7 +109,7 @@ class StockController extends Controller
             'item_id'     => 'required|exists:items,id',
             'destination' => 'required|in:gudang_resto,kasir,kitchen',
             'quantity'    => 'required|integer|min:1',
-            'keterangan'  => 'required|in:Kirim di Gudang Resto,Kirim di Kasir,Kirim di Kitchen',
+            'keterangan'  => 'required|string|max:255',
         ]);
 
         $sourceItem = Item::findOrFail($request->item_id);
@@ -132,11 +132,8 @@ class StockController extends Controller
             'kitchen'      => 'Kitchen',
         ][$request->destination];
 
-        // Teks Keterangan yang benar-benar tersimpan — selalu "Kirim di
-        // <Divisi>", diturunkan dari "Kirim ke" (bukan dari nilai mentah
-        // dropdown Keterangan), supaya selalu konsisten dengan divisi tujuan
-        // yang sesungguhnya menerima barang ini.
-        $keteranganTersimpan = 'Kirim di ' . $labelTujuan;
+        // Teks Keterangan yang disimpan adalah input manual dari user
+        $keteranganTersimpan = $request->keterangan;
 
         $targetLocation = match ($request->destination) {
             'kasir'        => StockIn::LOCATION_KASIR,
@@ -276,13 +273,19 @@ class StockController extends Controller
      */
     public function riwayatTerkirim(Request $request): View
     {
-        $tanggal = $request->input('tanggal');
+        $tanggal = $request->input('tanggal', now()->toDateString());
 
         $riwayat = StockOut::with(['item', 'user.role'])
-            ->where('location', StockOut::LOCATION_GUDANG_UTAMA)
-            ->whereHas('item', fn ($q) => $q->where('master_location', Item::MASTER_GUDANG_UTAMA))
-            ->when($tanggal, fn ($q) => $q->whereDate('created_at', $tanggal))
-            ->latest()
+            ->select('stock_outs.*')
+            ->join('items', 'stock_outs.item_id', '=', 'items.id')
+            ->where('stock_outs.location', StockOut::LOCATION_GUDANG_UTAMA)
+            ->where('items.master_location', Item::MASTER_GUDANG_UTAMA)
+            ->where(function ($q) {
+                $q->whereNull('stock_outs.keterangan')
+                  ->orWhere('stock_outs.keterangan', 'not like', '%Penyesuaian stok manual%');
+            })
+            ->when($tanggal, fn ($q) => $q->whereDate('stock_outs.created_at', $tanggal))
+            ->orderBy('items.name', 'asc')
             ->paginate(15)
             ->withQueryString();
 

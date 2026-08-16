@@ -23,6 +23,10 @@ trait HasReportData
         return match ($type) {
             'barang_masuk' => StockIn::with(['item', 'user', 'supplier'])
                 ->whereBetween('tanggal', [$startDate, $endDate])
+                ->where(function ($q) {
+                    $q->whereNull('keterangan')
+                      ->orWhere('keterangan', 'not like', '%Penyesuaian stok manual%');
+                })
                 ->orderBy('tanggal')
                 ->get()
                 ->map(fn ($s) => [
@@ -31,52 +35,55 @@ trait HasReportData
                     'jumlah'     => $s->quantity,
                     'satuan'     => $s->item->unit,
                     'lokasi'     => ucfirst($s->location),
-                    'supplier'   => $s->supplier?->name ?? '-',
                     'oleh'       => $s->user->name,
                     'keterangan' => $s->keterangan ?? '-',
                 ]),
 
-            'barang_keluar' => StockOut::with(['item', 'user'])
+
+
+
+
+            'barang_keluar_kitchen' => \App\Models\StockOut::with(['item', 'user.role'])
+                ->where('location', \App\Models\StockOut::LOCATION_KITCHEN)
                 ->whereBetween('tanggal', [$startDate, $endDate])
-                ->orderBy('tanggal')
+                ->where(function ($q) {
+                    $q->whereNull('keterangan')
+                      ->orWhere('keterangan', 'not like', '%Penyesuaian stok manual%');
+                })
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
                 ->get()
-                ->map(fn ($s) => [
-                    'tanggal'    => $s->tanggal->format('d-m-Y'),
-                    'barang'     => $s->item->name,
-                    'jumlah'     => $s->quantity,
-                    'satuan'     => $s->item->unit,
-                    'lokasi'     => ucfirst($s->location),
-                    'oleh'       => $s->user->name,
-                    'keterangan' => $s->keterangan ?? '-',
-                ]),
+                ->map(function ($stockOut) {
+                    return [
+                        'tanggal'      => $stockOut->created_at->translatedFormat('l, H:i, d-m-Y'),
+                        'barang'       => $stockOut->item->name,
+                        'jumlah'       => $stockOut->quantity,
+                        'satuan'       => $stockOut->item->unit,
+                        'keterangan'   => $stockOut->keterangan ?? '-',
+                        'dicatat_oleh' => 'Kitchen',
+                    ];
+                }),
 
-            'permintaan' => Order::with(['item', 'user', 'approvedBy'])
-                ->whereDate('created_at', '>=', $startDate)
-                ->whereDate('created_at', '<=', $endDate)
-                ->orderBy('created_at')
+            'barang_keluar_kasir' => \App\Models\StockOut::with(['item', 'user.role'])
+                ->where('location', \App\Models\StockOut::LOCATION_KASIR)
+                ->whereBetween('tanggal', [$startDate, $endDate])
+                ->where(function ($q) {
+                    $q->whereNull('keterangan')
+                      ->orWhere('keterangan', 'not like', '%Penyesuaian stok manual%');
+                })
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
                 ->get()
-                ->map(fn ($o) => [
-                    'tanggal'  => $o->created_at->format('d-m-Y'),
-                    'dari'     => $o->user->name . ' (' . $o->user->role?->name . ')',
-                    'barang'   => $o->item->name,
-                    'jumlah'   => $o->quantity,
-                    'satuan'   => $o->item->unit,
-                    'status'   => strtoupper($o->status),
-                    'diproses' => $o->approvedBy?->name ?? '-',
-                ]),
-
-            'stock_kitchen' => collect($this->buildStockKitchenReport($startDate, $endDate)['categories'])
-                ->flatMap(fn ($cat) => collect($cat['items'])->flatMap(
-                    fn ($itemReport) => collect($itemReport['rows'])->map(fn ($row) => [
-                        'tanggal'  => \Carbon\Carbon::parse($row['tanggal'])->format('d-m-Y'),
-                        'kategori' => $cat['category']->name,
-                        'barang'   => $itemReport['item']->name,
-                        'satuan'   => $itemReport['item']->unit,
-                        'masuk'    => $row['masuk'],
-                        'keluar'   => $row['keluar'],
-                        'sisa'     => $row['sisa'],
-                    ])
-                )),
+                ->map(function ($stockOut) {
+                    return [
+                        'tanggal'      => $stockOut->created_at->translatedFormat('l, H:i, d-m-Y'),
+                        'barang'       => $stockOut->item->name,
+                        'jumlah'       => $stockOut->quantity,
+                        'satuan'       => $stockOut->item->unit,
+                        'keterangan'   => $stockOut->keterangan ?? '-',
+                        'dicatat_oleh' => 'Kasir',
+                    ];
+                }),
 
             default => collect(),
         };
@@ -85,10 +92,11 @@ trait HasReportData
     protected function reportLabel(string $type): string
     {
         return match ($type) {
-            'barang_masuk'  => 'Laporan Barang Masuk',
-            'barang_keluar' => 'Laporan Barang Keluar',
-            'permintaan'    => 'Laporan Permintaan',
-            'stock_kitchen' => 'Laporan Stock Kitchen',
+            'barang_masuk'  => 'Laporan Barang Masuk Harian',
+
+
+            'barang_keluar_kitchen' => 'Laporan Barang Keluar Kitchen',
+            'barang_keluar_kasir'   => 'Laporan Barang Keluar Kasir',
             default         => 'Laporan',
         };
     }
@@ -99,10 +107,11 @@ trait HasReportData
     protected function reportHeadings(string $type): array
     {
         return match ($type) {
-            'barang_masuk'  => ['Tanggal', 'Barang', 'Jumlah', 'Satuan', 'Lokasi', 'Supplier', 'Oleh', 'Keterangan'],
-            'barang_keluar' => ['Tanggal', 'Barang', 'Jumlah', 'Satuan', 'Lokasi', 'Oleh', 'Keterangan'],
-            'permintaan'    => ['Tanggal', 'Dari', 'Barang', 'Jumlah', 'Satuan', 'Status', 'Diproses Oleh'],
-            'stock_kitchen' => ['Tanggal', 'Kategori', 'Barang', 'Satuan', 'Masuk', 'Keluar', 'Sisa'],
+            'barang_masuk'  => ['Tanggal', 'Barang', 'Jumlah', 'Satuan', 'Devisi', 'Oleh', 'Keterangan'],
+
+
+            'barang_keluar_kitchen' => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
+            'barang_keluar_kasir'   => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
             default         => [],
         };
     }

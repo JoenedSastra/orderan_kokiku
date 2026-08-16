@@ -8,7 +8,7 @@
             <input type="hidden" name="kk_search" value="{{ request('kk_search') }}">
             <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white text-dark"><i class="bi bi-calendar-date"></i></span>
-                <input type="date" name="tanggal" class="form-control border-start-0 ps-0" value="{{ request('tanggal') }}" onchange="this.form.submit()" style="max-width: 130px;" title="Filter berdasarkan tanggal">
+                <input type="date" name="tanggal" class="form-control border-start-0 ps-0" value="{{ request('tanggal', now()->toDateString()) }}" onchange="this.form.submit()" style="max-width: 130px;" title="Filter berdasarkan tanggal">
             </div>
         </form>
         <button type="button" class="btn btn-sm text-white text-nowrap" style="background:#0ea5e9;" data-bs-toggle="modal" data-bs-target="#modalAturStok">
@@ -78,10 +78,11 @@
 
 {{-- Modal Atur Jumlah Stok (Kitchen) --}}
 <div class="modal fade" id="modalAturStok" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 720px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
             <form action="{{ route('kitchen.stock.adjust') }}" method="POST">
                 @csrf
+                <input type="hidden" name="tanggal" value="{{ request('tanggal', now()->toDateString()) }}">
                 <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%);padding:1.4rem 1.5rem 2.5rem;">
                     <div>
                         <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Atur Jumlah Stock</h5>
@@ -101,9 +102,9 @@
                             <thead class="table-light sticky-top" style="z-index: 1;">
                                 <tr>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:150px;">Stok Saat Ini</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;">Jumlah Stok Baru</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stok Saat Ini</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:140px;">Jumlah Stok Baru</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -118,8 +119,8 @@
                                         </span>
                                     </td>
                                     <td class="pe-3 align-middle">
-                                        <div class="input-group input-group-sm mx-auto" style="max-width: 160px;">
-                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px;">
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 160px;">
+                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px; min-width: 60px;">
                                             <span class="input-group-text bg-light text-dark" style="border-radius:0 6px 6px 0; font-size: .75rem; min-width: 60px; justify-content: center; border: 1px solid #ced4da;">{{ $item->unit }}</span>
                                         </div>
                                     </td>

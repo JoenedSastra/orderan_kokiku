@@ -76,11 +76,13 @@ class StockInController extends Controller
         $lokasiFilter = $request->input('lokasi'); // null = semua
 
         $query = StockIn::with(['item', 'user'])
-            ->whereDate('tanggal', $tanggal->toDateString())
-            ->latest();
+            ->select('stock_ins.*')
+            ->join('items', 'stock_ins.item_id', '=', 'items.id')
+            ->whereDate('stock_ins.tanggal', $tanggal->toDateString())
+            ->orderBy('items.name', 'asc');
 
         if ($lokasiFilter) {
-            $query->whereHas('item', fn ($q) => $q->where('master_location', $lokasiFilter));
+            $query->where('items.master_location', $lokasiFilter);
         }
 
         $stockIns = $query->paginate(15)->withQueryString();

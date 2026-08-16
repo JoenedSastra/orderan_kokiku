@@ -33,36 +33,40 @@
 
 <div class="kk-stat-card p-0">
     <div class="table-responsive">
-        <table class="table table-hover mb-0 text-center">
+        <table class="table table-hover mb-0 text-center align-middle table-sm">
             <thead class="table-light">
                 <tr>
-                    <th class="text-center">No</th>
-                    <th class="text-center">Hari, Jam, &amp; Tanggal</th>
-                    <th class="text-center">Nama Barang</th>
-                    <th class="text-center">Jumlah</th>
-                    <th class="text-center">Satuan</th>
-                    <th class="text-center">Master</th>
-                    <th class="text-center">Keterangan</th>
-                    <th class="text-center">Dicatat Oleh</th>
+                    <th class="text-center align-middle">No</th>
+                    <th class="text-center align-middle">Hari, Jam, &amp; Tanggal</th>
+                    <th class="text-center align-middle">Nama Barang</th>
+                    <th class="text-center align-middle" style="color:#059669;">Masuk</th>
+                    <th class="text-center align-middle" style="color:#dc2626;">Keluar</th>
+                    <th class="text-center align-middle" style="color:#0284c7;">Sisa</th>
+                    <th class="text-center align-middle">Satuan</th>
+                    <th class="text-center align-middle">Master</th>
+                    <th class="text-center align-middle">Keterangan</th>
+                    <th class="text-center align-middle">Dicatat Oleh</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($items as $item)
-                @php $aktivitas = $item->latestMasukActivity(); @endphp
+                @php $aktivitas = $item->latestActivity(); @endphp
                 <tr>
-                    <td class="text-center"><strong>{{ $loop->iteration }}</strong></td>
-                    <td class="text-center">{{ $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-' }}</td>
-                    <td class="text-center fw-bold" data-search="nama-barang">{{ $item->name }}</td>
-                    <td class="text-center">{{ $item->totalStock() }}</td>
-                    <td class="text-center">{{ $item->unit }}</td>
-                    <td class="text-center"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $item->masterLocationLabel() }}</span></td>
-                    <td class="text-center">{{ $aktivitas?->keterangan ?? '-' }}</td>
-                    <td class="text-center">
+                    <td class="text-center align-middle"><strong>{{ $loop->iteration }}</strong></td>
+                    <td class="text-center align-middle">{{ $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-' }}</td>
+                    <td class="text-center fw-bold align-middle" data-search="nama-barang">{{ $item->name }}</td>
+                    <td class="text-center text-success fw-semibold align-middle">{{ $item->masukByLocation($item->master_location) }}</td>
+                    <td class="text-center text-danger fw-semibold align-middle">{{ $item->keluarByLocation($item->master_location) }}</td>
+                    <td class="text-center text-primary fw-bold align-middle">{{ $item->stokByLocation($item->master_location) }}</td>
+                    <td class="text-center align-middle">{{ $item->unit }}</td>
+                    <td class="text-center align-middle"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $item->masterLocationLabel() }}</span></td>
+                    <td class="text-center align-middle">{{ $aktivitas?->keterangan ?? '-' }}</td>
+                    <td class="text-center align-middle">
                         <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $aktivitas?->user?->role?->name ?? '-' }}</span>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center text-muted py-3">Belum ada data.</td></tr>
+                <tr><td colspan="10" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -157,14 +161,10 @@
                             <label class="form-label fw-semibold" style="font-size:.85rem;color:#374151;">
                                 <i class="bi bi-tag me-1" style="color:#2563eb;"></i>Keterangan
                             </label>
-                            <select name="keterangan" id="selectKeterangan"
-                                    class="form-select @error('keterangan') is-invalid @enderror"
-                                    style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required>
-                                <option value="">Pilih Keterangan</option>
-                                <option value="Kirim di Gudang Resto">Kirim di Gudang Resto</option>
-                                <option value="Kirim di Kasir">Kirim di Kasir</option>
-                                <option value="Kirim di Kitchen">Kirim di Kitchen</option>
-                            </select>
+                            <input type="text" name="keterangan" id="inputKeterangan"
+                                   class="form-control @error('keterangan') is-invalid @enderror"
+                                   placeholder="Masukkan keterangan pengiriman..."
+                                   style="border-radius:10px;border-color:#d1d5db;font-size:.875rem;" required autocomplete="off">
                             @error('keterangan')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -207,23 +207,6 @@
             }
         });
     }
-
-    // Auto-sync "Keterangan" mengikuti pilihan "Kirim ke", supaya keterangan
-    // yang tersimpan di divisi tujuan selalu sesuai divisi yang sesungguhnya
-    // dipilih (server tetap jadi penjamin akhir lewat $labelTujuan).
-    const selectKirimKe    = document.getElementById('selectKirimKe');
-    const selectKeterangan = document.getElementById('selectKeterangan');
-    const kirimKeToKeterangan = {
-        gudang_resto: 'Kirim di Gudang Resto',
-        kasir: 'Kirim di Kasir',
-        kitchen: 'Kirim di Kitchen',
-    };
-
-    if (selectKirimKe && selectKeterangan) {
-        selectKirimKe.addEventListener('change', function () {
-            selectKeterangan.value = kirimKeToKeterangan[this.value] || '';
-        });
-    }
 })();
 </script>
 @endpush
@@ -231,7 +214,7 @@
 
 {{-- Modal Atur Jumlah Stok (Semua Divisi) --}}
 <div class="modal fade" id="modalAturStok" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 720px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
             <form action="{{ route('admin.stock.adjust') }}" method="POST">
                 @csrf
@@ -254,9 +237,9 @@
                             <thead class="table-light sticky-top" style="z-index: 1;">
                                 <tr>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:150px;">Stok Saat Ini</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;">Jumlah Stok Baru</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stok Saat Ini</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:140px;">Jumlah Stok Baru</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -270,8 +253,8 @@
                                         </span>
                                     </td>
                                     <td class="pe-3 align-middle">
-                                        <div class="input-group input-group-sm mx-auto" style="max-width: 160px;">
-                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px;">
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 160px;">
+                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px; min-width: 60px;">
                                             <span class="input-group-text bg-light text-dark" style="border-radius:0 6px 6px 0; font-size: .75rem; min-width: 60px; justify-content: center;">{{ $item->unit }}</span>
                                         </div>
                                     </td>
@@ -296,7 +279,7 @@
 
 {{-- Modal Hapus Barang (Semua Divisi) --}}
 <div class="modal fade" id="modalHapusBarang" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 720px;">
         <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
             <form action="{{ route('admin.stock.delete_items') }}" method="POST">
                 @csrf
@@ -322,8 +305,8 @@
                                     <th class="text-center" style="width: 50px;">
                                         <input class="form-check-input" type="checkbox" id="checkAllHapus">
                                     </th>
-                                    <th style="font-size:.85rem;color:#374151;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:150px;">Stok Saat Ini</th>
+                                    <th style="font-size:.85rem;color:#374151;white-space:nowrap;width:35%;">Nama Barang</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stok Saat Ini</th>
                                 </tr>
                             </thead>
                             <tbody>

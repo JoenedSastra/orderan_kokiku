@@ -16,8 +16,10 @@ class StockOutController extends Controller
     public function index(Request $request): View
     {
         $query = StockOut::with(['item', 'user.role'])
-            ->where('user_id', Auth::id())
-            ->latest();
+            ->select('stock_outs.*')
+            ->join('items', 'stock_outs.item_id', '=', 'items.id')
+            ->where('stock_outs.location', StockOut::LOCATION_KASIR)
+            ->orderBy('items.name', 'asc');
 
         if ($request->has('trashed')) {
             $query->onlyTrashed();

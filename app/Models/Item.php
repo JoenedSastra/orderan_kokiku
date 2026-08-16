@@ -73,6 +73,47 @@ class Item extends Model
         };
     }
 
+    public function masukByLocation(string $locationKey): int
+    {
+        $location = match ($locationKey) {
+            'gudang_utama', 'gudang_resto', 'gudang' => StockIn::LOCATION_GUDANG_UTAMA,
+            'kasir'   => StockIn::LOCATION_KASIR,
+            'kitchen' => StockIn::LOCATION_KITCHEN,
+            default   => StockIn::LOCATION_GUDANG_UTAMA,
+        };
+        
+        // Untuk SEMUA divisi, kolom Masuk hanya menghitung barang masuk yang sebenarnya
+        // (tidak termasuk penyesuaian stok manual)
+        return $this->stockIns()
+                    ->where('location', $location)
+                    ->where('keterangan', 'not like', 'Penyesuaian stok manual%')
+                    ->sum('quantity');
+    }
+
+    public function keluarByLocation(string $locationKey): int
+    {
+        $location = match ($locationKey) {
+            'gudang_utama', 'gudang_resto', 'gudang' => StockOut::LOCATION_GUDANG_UTAMA,
+            'kasir'   => StockOut::LOCATION_KASIR,
+            'kitchen' => StockOut::LOCATION_KITCHEN,
+            default   => StockOut::LOCATION_GUDANG_UTAMA,
+        };
+        
+        // Khusus Kasir dan Kitchen, "Keluar" dianggap sebagai selisih antara
+        // total Masuk aktual dengan Sisa stok saat ini.
+        if (in_array($location, [StockOut::LOCATION_KASIR, StockOut::LOCATION_KITCHEN])) {
+            $masukAktual = $this->masukByLocation($locationKey);
+            $sisaAktual  = $this->stokByLocation($locationKey);
+            return $masukAktual - $sisaAktual;
+        }
+        
+        // Untuk Gudang Utama, Keluar hanya menghitung pengiriman aktual
+        return $this->stockOuts()
+                    ->where('location', $location)
+                    ->where('keterangan', 'not like', 'Penyesuaian stok manual%')
+                    ->sum('quantity');
+    }
+
     public function totalStock(): int
     {
         return $this->stokGudangUtama() + $this->stokKasir() + $this->stokKitchen();

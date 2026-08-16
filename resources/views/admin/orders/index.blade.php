@@ -26,8 +26,8 @@
                         @if($order->status === 'menunggu')
                         <form action="{{ route('admin.orders.approve', $order) }}" method="POST" class="d-inline">
                             @csrf
-                            <button class="btn btn-sm btn-success" onclick="return confirm('Setujui permintaan ini?')">
-                                <i class="bi bi-check-lg"></i> Setujui
+                            <button class="btn btn-sm btn-success" onclick="return confirm('Konfirmasi bahwa permintaan ini telah diserahkan/diterima?')">
+                                <i class="bi bi-check-lg"></i> Konfirmasi
                             </button>
                         </form>
                         <form action="{{ route('admin.orders.reject', $order) }}" method="POST" class="d-inline">

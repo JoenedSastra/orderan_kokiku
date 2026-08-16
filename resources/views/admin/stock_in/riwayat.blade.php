@@ -114,7 +114,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 
     <div class="kk-stat-card p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0 text-center">
+            <table class="table table-hover mb-0 text-center align-middle">
                 <thead class="table-light">
                     <tr>
                         {{-- Kolom checkbox — hanya muncul di mode hapus --}}
@@ -126,7 +126,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
                         <th class="text-center">Nama Barang</th>
                         <th class="text-center">Jumlah</th>
                         <th class="text-center">Satuan</th>
-                        <th class="text-center">Master</th>
+                        <th class="text-center align-middle">Devisi</th>
                         <th class="text-center">Keterangan</th>
                         <th class="text-center">Dicatat Oleh</th>
                     </tr>

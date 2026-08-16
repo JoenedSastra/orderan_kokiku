@@ -15,36 +15,40 @@
 
 <div class="kk-stat-card p-0">
     <div class="table-responsive">
-        <table class="table table-hover mb-0 text-center">
+        <table class="table table-hover mb-0 text-center align-middle table-sm">
             <thead class="table-light">
                 <tr>
-                    <th class="text-center">No</th>
-                    <th class="text-center">Hari, Jam, &amp; Tanggal</th>
-                    <th class="text-center">Nama Barang</th>
-                    <th class="text-center">Jumlah</th>
-                    <th class="text-center">Satuan</th>
-                    <th class="text-center">Master</th>
-                    <th class="text-center">Keterangan</th>
-                    <th class="text-center">Dicatat Oleh</th>
+                    <th class="text-center align-middle">No</th>
+                    <th class="text-center align-middle">Hari, Jam, &amp; Tanggal</th>
+                    <th class="text-center align-middle">Nama Barang</th>
+                    <th class="text-center align-middle" style="color:#059669;">Masuk</th>
+                    <th class="text-center align-middle" style="color:#dc2626;">Keluar</th>
+                    <th class="text-center align-middle" style="color:#0284c7;">Sisa</th>
+                    <th class="text-center align-middle">Satuan</th>
+                    <th class="text-center align-middle">Master</th>
+                    <th class="text-center align-middle">Keterangan</th>
+                    <th class="text-center align-middle">Dicatat Oleh</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($items as $item)
-                @php $aktivitas = $item->latestMasukActivity(); @endphp
+                @php $aktivitas = $item->latestActivity(); @endphp
                 <tr>
-                    <td class="text-center"><strong>{{ $loop->iteration }}</strong></td>
-                    <td class="text-center">{{ $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-' }}</td>
-                    <td class="text-center fw-bold" data-search="nama-barang">{{ $item->name }}</td>
-                    <td class="text-center">{{ $item->stokByLocation($item->master_location) }}</td>
-                    <td class="text-center">{{ $item->unit }}</td>
-                    <td class="text-center"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $item->masterLocationLabel() }}</span></td>
-                    <td class="text-center">{{ $aktivitas?->keterangan ?? '-' }}</td>
-                    <td class="text-center">
+                    <td class="text-center align-middle"><strong>{{ $loop->iteration }}</strong></td>
+                    <td class="text-center align-middle">{{ $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-' }}</td>
+                    <td class="text-center fw-bold align-middle" data-search="nama-barang">{{ $item->name }}</td>
+                    <td class="text-center text-success fw-semibold align-middle">{{ $item->masukByLocation($item->master_location) }}</td>
+                    <td class="text-center text-danger fw-semibold align-middle">{{ $item->keluarByLocation($item->master_location) }}</td>
+                    <td class="text-center text-primary fw-bold align-middle">{{ $item->stokByLocation($item->master_location) }}</td>
+                    <td class="text-center align-middle">{{ $item->unit }}</td>
+                    <td class="text-center align-middle"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $item->masterLocationLabel() }}</span></td>
+                    <td class="text-center align-middle">{{ $aktivitas?->keterangan ?? '-' }}</td>
+                    <td class="text-center align-middle">
                         <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $aktivitas?->user?->role?->name ?? '-' }}</span>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="8" class="text-center text-muted py-3">Belum ada data.</td></tr>
+                <tr><td colspan="10" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -52,5 +56,73 @@
     @if($items->hasPages())
     <div class="p-3">{{ $items->appends(request()->query())->links() }}</div>
     @endif
+</div>
+</div>
+
+{{-- Modal Lapor Stock Total (Kitchen) --}}
+<div class="modal fade" id="modalLaporStok" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 720px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+            <form action="{{ route('kitchen.stock.adjust') }}" method="POST">
+                @csrf
+                <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%);padding:1.4rem 1.5rem 2.5rem;">
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Lapor Stock Total</h5>
+                        <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Laporan stok manual secara massal untuk Kitchen</small>
+                    </div>
+                </div>
+                <div class="modal-body px-4" style="margin-top:-1.2rem;padding-top:0;">
+                    <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3" style="background:#e0f2fe;border:1px solid #bae6fd;">
+                        <i class="bi bi-info-circle-fill" style="color:#0284c7;font-size:1rem;flex-shrink:0;"></i>
+                        <small style="color:#0369a1;line-height:1.4;">
+                            Masukkan jumlah stok yang sebenarnya. Sistem akan mencatat penyesuaian ini sebagai laporan stok.
+                        </small>
+                    </div>
+                    
+                    <div class="table-responsive border rounded-3" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light sticky-top" style="z-index: 1;">
+                                <tr>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stok Saat Ini</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:150px;">Lapor Jumlah Stok</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(isset($allItemsForAdjust))
+                                @forelse($allItemsForAdjust as $item)
+                                <tr>
+                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $loop->iteration }}</td>
+                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1 fw-normal" style="font-size:.8rem;">
+                                            {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
+                                        </span>
+                                    </td>
+                                    <td class="pe-3 align-middle">
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 160px;">
+                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px; min-width: 60px;">
+                                            <span class="input-group-text bg-light text-dark" style="border-radius:0 6px 6px 0; font-size: .75rem; min-width: 60px; justify-content: center; border: 1px solid #ced4da;">{{ $item->unit }}</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">Belum ada barang untuk disesuaikan.</td>
+                                </tr>
+                                @endforelse
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4 pt-3 gap-2">
+                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal" style="border-radius:10px;font-size:.875rem;border:1px solid #e5e7eb;">Batal</button>
+                    <button type="submit" class="btn text-white fw-semibold px-4 flex-grow-1" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:10px;font-size:.875rem;">Simpan Laporan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection

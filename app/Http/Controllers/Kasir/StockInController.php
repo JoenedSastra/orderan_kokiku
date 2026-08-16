@@ -17,14 +17,15 @@ class StockInController extends Controller
         // sinkron dengan yang diinput Admin lewat "Barang Masuk Harian" dan
         // diklasifikasikan ke Kasir. Kasir tidak lagi input manual di sini.
         $query = StockIn::with(['item', 'user.role'])
-            ->whereHas('item', fn ($q) => $q->where('master_location', Item::MASTER_KASIR))
-            ->where('created_at', '>=', now()->subDays(45));
+            ->select('stock_ins.*')
+            ->join('items', 'stock_ins.item_id', '=', 'items.id')
+            ->where('items.master_location', Item::MASTER_KASIR)
+            ->where('stock_ins.created_at', '>=', now()->subDays(45));
 
-        if ($request->filled('tanggal')) {
-            $query->whereDate('tanggal', $request->tanggal);
-        }
+        $tanggal = $request->input('tanggal', now()->toDateString());
+        $query->whereDate('stock_ins.tanggal', $tanggal);
 
-        $stockIns = $query->latest()->paginate(15);
+        $stockIns = $query->orderBy('items.name', 'asc')->paginate(15)->withQueryString();
             
         $allItemsForAdjust = Item::where('master_location', Item::MASTER_KASIR)
             ->whereHas('stockIns', function($q) {
@@ -59,15 +60,33 @@ class StockInController extends Controller
         $request->validate([
             'new_stock' => 'required|array',
             'new_stock.*' => 'required|integer|min:0',
+            'tanggal' => 'nullable|date',
         ]);
 
         $userId = \Illuminate\Support\Facades\Auth::id();
         $changedCount = 0;
+        $tanggal = $request->input('tanggal', today()->toDateString());
 
         foreach ($request->new_stock as $itemId => $newStock) {
             $item = Item::find($itemId);
             if (!$item || $item->master_location !== Item::MASTER_KASIR) continue;
             
+            $keterangan = 'Penyesuaian stok manual oleh Kasir';
+            $location = StockIn::LOCATION_KASIR;
+
+            // Hapus penyesuaian sebelumnya pada tanggal yang sama untuk item ini
+            StockIn::where('item_id', $item->id)
+                ->where('location', $location)
+                ->whereDate('tanggal', $tanggal)
+                ->where('keterangan', $keterangan)
+                ->forceDelete();
+
+            StockOut::where('item_id', $item->id)
+                ->where('location', $location)
+                ->whereDate('tanggal', $tanggal)
+                ->where('keterangan', $keterangan)
+                ->forceDelete();
+
             $currentStock = $item->stokByLocation(Item::MASTER_KASIR);
             $newStockInt = (int) $newStock;
             
@@ -76,8 +95,6 @@ class StockInController extends Controller
             }
 
             $difference = $newStockInt - $currentStock;
-            $location = StockIn::LOCATION_KASIR;
-            $keterangan = 'Penyesuaian stok manual oleh Kasir';
 
             if ($difference > 0) {
                 StockIn::create([
@@ -86,7 +103,7 @@ class StockInController extends Controller
                     'quantity'     => $difference,
                     'location'     => $location,
                     'keterangan'   => $keterangan,
-                    'tanggal'      => today(),
+                    'tanggal'      => $tanggal,
                     'is_completed' => true,
                 ]);
             } else {
@@ -96,7 +113,7 @@ class StockInController extends Controller
                     'quantity'   => abs($difference),
                     'location'   => $location,
                     'keterangan' => $keterangan,
-                    'tanggal'    => today(),
+                    'tanggal'    => $tanggal,
                 ]);
             }
             
