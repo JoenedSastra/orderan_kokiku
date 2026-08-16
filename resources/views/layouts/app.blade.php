@@ -256,8 +256,8 @@
             state.inputs['kk_search'] = el.value;
         });
 
-        // Input date & select di dalam form GET (filter tanggal / lokasi)
-        document.querySelectorAll('form:not([method="POST"]) input[type="date"][name], form:not([method="POST"]) select[name]').forEach(function (el) {
+        // Input select di dalam form GET (filter lokasi). Date tidak disimpan karena backend sudah merender value dari URL.
+        document.querySelectorAll('form:not([method="POST"]) select[name]').forEach(function (el) {
             state.inputs[el.name] = el.value;
         });
 
