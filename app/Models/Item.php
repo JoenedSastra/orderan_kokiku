@@ -42,38 +42,50 @@ class Item extends Model
         return $this->hasMany(Order::class);
     }
 
-    public function stokGudangUtama(): int
+    public function stokGudangUtama(?string $endDate = null): int
     {
-        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_GUDANG_UTAMA)->sum('quantity');
-        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_GUDANG_UTAMA)->sum('quantity');
-        return max(0, $masuk - $keluar);
+        $masukQuery  = $this->stockIns()->where('location', StockIn::LOCATION_GUDANG_UTAMA);
+        $keluarQuery = $this->stockOuts()->where('location', StockOut::LOCATION_GUDANG_UTAMA);
+        if ($endDate) {
+            $masukQuery->where('tanggal', '<=', $endDate);
+            $keluarQuery->where('tanggal', '<=', $endDate);
+        }
+        return max(0, $masukQuery->sum('quantity') - $keluarQuery->sum('quantity'));
     }
 
-    public function stokKasir(): int
+    public function stokKasir(?string $endDate = null): int
     {
-        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_KASIR)->sum('quantity');
-        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_KASIR)->sum('quantity');
-        return max(0, $masuk - $keluar);
+        $masukQuery  = $this->stockIns()->where('location', StockIn::LOCATION_KASIR);
+        $keluarQuery = $this->stockOuts()->where('location', StockOut::LOCATION_KASIR);
+        if ($endDate) {
+            $masukQuery->where('tanggal', '<=', $endDate);
+            $keluarQuery->where('tanggal', '<=', $endDate);
+        }
+        return max(0, $masukQuery->sum('quantity') - $keluarQuery->sum('quantity'));
     }
 
-    public function stokKitchen(): int
+    public function stokKitchen(?string $endDate = null): int
     {
-        $masuk  = $this->stockIns()->where('location', StockIn::LOCATION_KITCHEN)->sum('quantity');
-        $keluar = $this->stockOuts()->where('location', StockOut::LOCATION_KITCHEN)->sum('quantity');
-        return max(0, $masuk - $keluar);
+        $masukQuery  = $this->stockIns()->where('location', StockIn::LOCATION_KITCHEN);
+        $keluarQuery = $this->stockOuts()->where('location', StockOut::LOCATION_KITCHEN);
+        if ($endDate) {
+            $masukQuery->where('tanggal', '<=', $endDate);
+            $keluarQuery->where('tanggal', '<=', $endDate);
+        }
+        return max(0, $masukQuery->sum('quantity') - $keluarQuery->sum('quantity'));
     }
 
-    public function stokByLocation(string $locationKey): int
+    public function stokByLocation(string $locationKey, ?string $endDate = null): int
     {
         return match ($locationKey) {
-            'gudang_utama', 'gudang_resto', 'gudang'  => $this->stokGudangUtama(),
-            'kasir'   => $this->stokKasir(),
-            'kitchen' => $this->stokKitchen(),
+            'gudang_utama', 'gudang_resto', 'gudang'  => $this->stokGudangUtama($endDate),
+            'kasir'   => $this->stokKasir($endDate),
+            'kitchen' => $this->stokKitchen($endDate),
             default   => 0,
         };
     }
 
-    public function masukByLocation(string $locationKey): int
+    public function masukByLocation(string $locationKey, ?string $startDate = null, ?string $endDate = null): int
     {
         $location = match ($locationKey) {
             'gudang_utama', 'gudang_resto', 'gudang' => StockIn::LOCATION_GUDANG_UTAMA,
@@ -82,14 +94,16 @@ class Item extends Model
             default   => StockIn::LOCATION_GUDANG_UTAMA,
         };
         
-        // Untuk SEMUA divisi, kolom Masuk menghitung semua barang masuk
-        // termasuk penyesuaian stok manual yang menambah stok
-        return $this->stockIns()
-                    ->where('location', $location)
-                    ->sum('quantity');
+        $query = $this->stockIns()->where('location', $location);
+        
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal', [$startDate, $endDate]);
+        }
+        
+        return (int) $query->sum('quantity');
     }
 
-    public function keluarByLocation(string $locationKey): int
+    public function keluarByLocation(string $locationKey, ?string $startDate = null, ?string $endDate = null): int
     {
         $location = match ($locationKey) {
             'gudang_utama', 'gudang_resto', 'gudang' => StockOut::LOCATION_GUDANG_UTAMA,
@@ -98,12 +112,13 @@ class Item extends Model
             default   => StockOut::LOCATION_GUDANG_UTAMA,
         };
         
-        // Untuk SEMUA divisi, kolom Keluar menghitung semua barang keluar
-        // termasuk pengiriman barang maupun penyesuaian stok manual yang mengurangi stok
-        // sehingga Masuk - Keluar = Sisa akan selalu seimbang.
-        return $this->stockOuts()
-                    ->where('location', $location)
-                    ->sum('quantity');
+        $query = $this->stockOuts()->where('location', $location);
+        
+        if ($startDate && $endDate) {
+            $query->whereBetween('tanggal', [$startDate, $endDate]);
+        }
+        
+        return (int) $query->sum('quantity');
     }
 
     public function totalStock(): int

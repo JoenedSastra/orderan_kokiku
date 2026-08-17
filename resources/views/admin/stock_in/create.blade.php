@@ -28,7 +28,7 @@
                         <th class="text-center" style="width:90px;">Jumlah</th>
                         <th class="text-center" style="width:110px;">Satuan</th>
                         <th class="text-center" style="width:200px;">Keterangan</th>
-                        <th class="text-center" style="width:130px;">Master</th>
+                        <th class="text-center" style="width:130px;">Devisi</th>
                     </tr>
                 </thead>
                 <tbody>

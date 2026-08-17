@@ -18,16 +18,16 @@
         <table class="table table-hover mb-0 text-center align-middle table-sm">
             <thead class="table-light">
                 <tr>
-                    <th class="text-center align-middle">No</th>
-                    <th class="text-center align-middle">Hari, Jam, &amp; Tanggal</th>
-                    <th class="text-center align-middle">Nama Barang</th>
-                    <th class="text-center align-middle" style="color:#059669;">Masuk</th>
-                    <th class="text-center align-middle" style="color:#dc2626;">Keluar</th>
-                    <th class="text-center align-middle" style="color:#0284c7;">Sisa</th>
-                    <th class="text-center align-middle">Satuan</th>
-                    <th class="text-center align-middle">Master</th>
-                    <th class="text-center align-middle">Keterangan</th>
-                    <th class="text-center align-middle">Dicatat Oleh</th>
+                    <th class="text-center align-middle" style="width: 4%;">No</th>
+                    <th class="text-center align-middle" style="width: 16%;">Hari, Jam, &amp; Tanggal</th>
+                    <th class="text-center align-middle" style="width: 14%;">Nama Barang</th>
+                    <th class="text-center align-middle" style="color:#059669; width: 6%;">Masuk</th>
+                    <th class="text-center align-middle" style="color:#dc2626; width: 6%;">Keluar</th>
+                    <th class="text-center align-middle" style="color:#0284c7; width: 6%;">Sisa</th>
+                    <th class="text-center align-middle" style="width: 8%;">Satuan</th>
+                    <th class="text-center align-middle" style="width: 12%;">Devisi</th>
+                    <th class="text-center align-middle" style="width: 18%;">Keterangan</th>
+                    <th class="text-center align-middle" style="width: 10%;">Dicatat Oleh</th>
                 </tr>
             </thead>
             <tbody>

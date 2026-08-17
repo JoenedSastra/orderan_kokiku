@@ -4,22 +4,27 @@
 
 <div class="kk-stat-card mb-3">
     <form method="GET" action="{{ route('admin.reports.index') }}" class="row g-2 align-items-end" autocomplete="off">
-        <div class="col-md-6 mb-md-0 mb-2">
+        <div class="col-12 mb-2">
             <label class="form-label d-block text-muted" style="font-size:0.85rem;">Jenis Laporan</label>
             <div class="btn-group w-100" role="group">
-                <input type="radio" class="btn-check" name="type" id="type_masuk" value="barang_masuk" autocomplete="off" onchange="this.form.submit()" {{ $type === 'barang_masuk' ? 'checked' : '' }}>
-                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_masuk">
-                    <i class="bi bi-box-arrow-in-down"></i> Masuk Harian
+                <input type="radio" class="btn-check" name="type" id="type_stock_gudang_utama" value="stock_gudang_utama" autocomplete="off" onchange="this.form.submit()" {{ $type === 'stock_gudang_utama' ? 'checked' : '' }}>
+                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_stock_gudang_utama">
+                    <i class="bi bi-box-seam"></i> Stock Gudang Utama
                 </label>
-
-                <input type="radio" class="btn-check" name="type" id="type_keluar_kasir" value="barang_keluar_kasir" autocomplete="off" onchange="this.form.submit()" {{ $type === 'barang_keluar_kasir' ? 'checked' : '' }}>
-                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_keluar_kasir">
-                    <i class="bi bi-cart-dash"></i> Keluar Kasir
+                
+                <input type="radio" class="btn-check" name="type" id="type_stock_gudang_resto" value="stock_gudang_resto" autocomplete="off" onchange="this.form.submit()" {{ $type === 'stock_gudang_resto' ? 'checked' : '' }}>
+                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_stock_gudang_resto">
+                    <i class="bi bi-shop"></i> Stock Gudang Resto
                 </label>
-
-                <input type="radio" class="btn-check" name="type" id="type_keluar_kitchen" value="barang_keluar_kitchen" autocomplete="off" onchange="this.form.submit()" {{ $type === 'barang_keluar_kitchen' ? 'checked' : '' }}>
-                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_keluar_kitchen">
-                    <i class="bi bi-cup-hot"></i> Keluar Kitchen
+                
+                <input type="radio" class="btn-check" name="type" id="type_stock_kasir" value="stock_kasir" autocomplete="off" onchange="this.form.submit()" {{ $type === 'stock_kasir' ? 'checked' : '' }}>
+                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_stock_kasir">
+                    <i class="bi bi-calculator"></i> Stock Kasir
+                </label>
+                
+                <input type="radio" class="btn-check" name="type" id="type_stock_kitchen" value="stock_kitchen" autocomplete="off" onchange="this.form.submit()" {{ $type === 'stock_kitchen' ? 'checked' : '' }}>
+                <label class="btn btn-sm btn-outline-primary shadow-none text-nowrap" for="type_stock_kitchen">
+                    <i class="bi bi-egg-fried"></i> Stock Kitchen
                 </label>
             </div>
         </div>
@@ -53,15 +58,46 @@
 
 @php
     $isBarangKeluarDivisi = in_array($type, ['barang_keluar_kitchen', 'barang_keluar_kasir']);
+    $isStockReport = str_starts_with($type, 'stock_');
+    $tableClasses = 'table-hover';
+    $theadClasses = 'table-light';
+    
+    if ($type === 'barang_masuk') {
+        $tableClasses = 'table-success table-hover';
+        $theadClasses = 'table-success';
+    } elseif ($type === 'barang_keluar_kasir') {
+        $tableClasses = 'table-info table-bordered table-striped';
+        $theadClasses = 'table-info';
+    } elseif ($type === 'barang_keluar_kitchen') {
+        $tableClasses = 'table-danger table-bordered table-striped';
+        $theadClasses = 'table-danger';
+    }
 @endphp
 <div class="{{ $isBarangKeluarDivisi ? '' : 'kk-stat-card' }}">
     <div class="table-responsive">
-        <table class="table table-sm text-center align-middle {{ $type === 'barang_masuk' ? 'table-success table-hover' : ($type === 'barang_keluar_kasir' ? 'table-info table-bordered table-striped' : 'table-danger table-bordered table-striped') }} mb-0">
-            <thead class="{{ $type === 'barang_masuk' ? 'table-success' : ($type === 'barang_keluar_kasir' ? 'table-info' : 'table-danger') }}">
+        <table class="table table-sm text-center align-middle {{ $tableClasses }} mb-0">
+            <thead class="{{ $theadClasses }}">
                 <tr>
-                    <th class="text-center align-middle" style="width: 50px;">No</th>
+                    <th class="text-center align-middle" style="{{ $isStockReport ? 'width: 4%;' : 'width: 50px;' }}">No</th>
                     @foreach($headings as $h)
-                    <th class="text-center align-middle text-nowrap">{{ $h }}</th>
+                        @php
+                            $width = '';
+                            if ($isStockReport) {
+                                $width = match($h) {
+                                    'Hari, Jam & Tanggal' => 'width: 16%;',
+                                    'Nama Barang' => 'width: 14%;',
+                                    'Masuk' => 'width: 6%;',
+                                    'Keluar' => 'width: 6%;',
+                                    'Sisa' => 'width: 6%;',
+                                    'Satuan' => 'width: 8%;',
+                                    'Devisi' => 'width: 12%;',
+                                    'Keterangan' => 'width: 18%;',
+                                    'Dicatat Oleh' => 'width: 10%;',
+                                    default => ''
+                                };
+                            }
+                        @endphp
+                    <th class="text-center align-middle" style="{{ $width }} {!! !$isStockReport ? 'white-space: nowrap;' : '' !!}">{{ $h }}</th>
                     @endforeach
                 </tr>
             </thead>
@@ -70,14 +106,11 @@
                 <tr>
                     <td class="text-center align-middle fw-bold">{{ $index + 1 }}</td>
                     @foreach($row as $key => $value)
-                    <td class="text-center align-middle text-nowrap">
-                        @if($isBarangKeluarDivisi && $key === 'dicatat_oleh')
-                            @php
-                                // Extra formatting to match the badge look in the Kasir/Kitchen view
-                                $badgeColor = $type === 'barang_keluar_kitchen' ? '#bfdbfe' : '#bfdbfe'; // Assuming Kasir uses similar or same badge
-                                $textColor = $type === 'barang_keluar_kitchen' ? '#1d4ed8' : '#1d4ed8';
-                            @endphp
-                            <span class="badge" style="background:{{ $badgeColor }};color:{{ $textColor }};font-weight:600;">{{ $value }}</span>
+                    <td class="text-center align-middle {{ $key === 'masuk' ? 'text-success fw-semibold' : ($key === 'keluar' ? 'text-danger fw-semibold' : ($key === 'sisa' ? 'text-primary fw-bold' : ($key === 'barang' ? 'fw-bold' : ''))) }} {{ in_array($key, ['barang', 'keterangan']) ? 'text-wrap' : 'text-nowrap' }}">
+                        @if($key === 'master')
+                            <span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $value }}</span>
+                        @elseif($key === 'dicatat_oleh' && ($isBarangKeluarDivisi || $isStockReport))
+                            <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $value }}</span>
                         @else
                             {{ $value }}
                         @endif

@@ -85,6 +85,110 @@ trait HasReportData
                     ];
                 }),
 
+            'stock_gudang_utama' => \App\Models\Item::with(['stockIns.user.role', 'stockOuts.user.role'])
+                ->where('master_location', \App\Models\Item::MASTER_GUDANG_UTAMA)
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereHas('stockIns', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    })->orWhereHas('stockOuts', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    });
+                })
+                ->orderBy('name')
+                ->get()
+                ->map(function ($item) use ($startDate, $endDate) {
+                    $aktivitas = $item->latestActivity();
+                    return [
+                        'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
+                        'barang'       => $item->name,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
+                        'satuan'       => $item->unit,
+                        'master'       => $item->masterLocationLabel(),
+                        'keterangan'   => $aktivitas?->keterangan ?? '-',
+                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                    ];
+                }),
+
+            'stock_gudang_resto' => \App\Models\Item::with(['stockIns.user.role', 'stockOuts.user.role'])
+                ->where('master_location', \App\Models\Item::MASTER_GUDANG_RESTO)
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereHas('stockIns', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    })->orWhereHas('stockOuts', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    });
+                })
+                ->orderBy('name')
+                ->get()
+                ->map(function ($item) use ($startDate, $endDate) {
+                    $aktivitas = $item->latestActivity();
+                    return [
+                        'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
+                        'barang'       => $item->name,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
+                        'satuan'       => $item->unit,
+                        'master'       => $item->masterLocationLabel(),
+                        'keterangan'   => $aktivitas?->keterangan ?? '-',
+                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                    ];
+                }),
+
+            'stock_kasir' => \App\Models\Item::with(['stockIns.user.role', 'stockOuts.user.role'])
+                ->where('master_location', \App\Models\Item::MASTER_KASIR)
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereHas('stockIns', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    })->orWhereHas('stockOuts', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    });
+                })
+                ->orderBy('name')
+                ->get()
+                ->map(function ($item) use ($startDate, $endDate) {
+                    $aktivitas = $item->latestActivity();
+                    return [
+                        'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
+                        'barang'       => $item->name,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
+                        'satuan'       => $item->unit,
+                        'master'       => $item->masterLocationLabel(),
+                        'keterangan'   => $aktivitas?->keterangan ?? '-',
+                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                    ];
+                }),
+
+            'stock_kitchen' => \App\Models\Item::with(['stockIns.user.role', 'stockOuts.user.role'])
+                ->where('master_location', \App\Models\Item::MASTER_KITCHEN)
+                ->where(function ($query) use ($startDate, $endDate) {
+                    $query->whereHas('stockIns', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    })->orWhereHas('stockOuts', function($q) use ($startDate, $endDate) {
+                        $q->whereBetween('tanggal', [$startDate, $endDate]);
+                    });
+                })
+                ->orderBy('name')
+                ->get()
+                ->map(function ($item) use ($startDate, $endDate) {
+                    $aktivitas = $item->latestActivity();
+                    return [
+                        'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
+                        'barang'       => $item->name,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
+                        'satuan'       => $item->unit,
+                        'master'       => $item->masterLocationLabel(),
+                        'keterangan'   => $aktivitas?->keterangan ?? '-',
+                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                    ];
+                }),
+
             default => collect(),
         };
     }
@@ -97,6 +201,10 @@ trait HasReportData
 
             'barang_keluar_kitchen' => 'Laporan Barang Keluar Kitchen',
             'barang_keluar_kasir'   => 'Laporan Barang Keluar Kasir',
+            'stock_gudang_utama'    => 'Laporan Stock Gudang Utama',
+            'stock_gudang_resto'    => 'Laporan Stock Gudang Resto',
+            'stock_kasir'           => 'Laporan Stock Kasir',
+            'stock_kitchen'         => 'Laporan Stock Kitchen',
             default         => 'Laporan',
         };
     }
@@ -112,6 +220,10 @@ trait HasReportData
 
             'barang_keluar_kitchen' => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
             'barang_keluar_kasir'   => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
+            'stock_gudang_utama'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_gudang_resto'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_kasir'           => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_kitchen'         => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
             default         => [],
         };
     }

@@ -64,7 +64,7 @@ class ReportController extends Controller
      */
     private function resolveFilters(Request $request): array
     {
-        $type      = $request->input('type', 'barang_masuk');
+        $type      = $request->input('type', 'stock_gudang_utama');
         
         // Backward compatibility for old URLs
         if ($type === 'total_stock_kitchen') {

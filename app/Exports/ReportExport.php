@@ -21,8 +21,15 @@ class ReportExport implements FromCollection, WithHeadings, WithTitle, ShouldAut
 
     public function collection()
     {
-        return $this->fetchReportRows($this->type, $this->startDate, $this->endDate)
-            ->map(fn ($row) => array_values($row));
+        $rows = $this->fetchReportRows($this->type, $this->startDate, $this->endDate);
+        
+        $mappedRows = [];
+        $i = 1;
+        foreach ($rows as $row) {
+            $mappedRows[] = array_merge([$i++], array_values($row));
+        }
+        
+        return collect($mappedRows);
     }
 
     /**
@@ -30,7 +37,7 @@ class ReportExport implements FromCollection, WithHeadings, WithTitle, ShouldAut
      */
     public function headings(): array
     {
-        return $this->reportHeadings($this->type);
+        return array_merge(['No'], $this->reportHeadings($this->type));
     }
 
     public function title(): string
