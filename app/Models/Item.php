@@ -82,11 +82,10 @@ class Item extends Model
             default   => StockIn::LOCATION_GUDANG_UTAMA,
         };
         
-        // Untuk SEMUA divisi, kolom Masuk hanya menghitung barang masuk yang sebenarnya
-        // (tidak termasuk penyesuaian stok manual)
+        // Untuk SEMUA divisi, kolom Masuk menghitung semua barang masuk
+        // termasuk penyesuaian stok manual yang menambah stok
         return $this->stockIns()
                     ->where('location', $location)
-                    ->where('keterangan', 'not like', 'Penyesuaian stok manual%')
                     ->sum('quantity');
     }
 
@@ -99,18 +98,11 @@ class Item extends Model
             default   => StockOut::LOCATION_GUDANG_UTAMA,
         };
         
-        // Khusus Kasir dan Kitchen, "Keluar" dianggap sebagai selisih antara
-        // total Masuk aktual dengan Sisa stok saat ini.
-        if (in_array($location, [StockOut::LOCATION_KASIR, StockOut::LOCATION_KITCHEN])) {
-            $masukAktual = $this->masukByLocation($locationKey);
-            $sisaAktual  = $this->stokByLocation($locationKey);
-            return $masukAktual - $sisaAktual;
-        }
-        
-        // Untuk Gudang Utama, Keluar hanya menghitung pengiriman aktual
+        // Untuk SEMUA divisi, kolom Keluar menghitung semua barang keluar
+        // termasuk pengiriman barang maupun penyesuaian stok manual yang mengurangi stok
+        // sehingga Masuk - Keluar = Sisa akan selalu seimbang.
         return $this->stockOuts()
                     ->where('location', $location)
-                    ->where('keterangan', 'not like', 'Penyesuaian stok manual%')
                     ->sum('quantity');
     }
 

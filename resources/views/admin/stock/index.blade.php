@@ -238,8 +238,9 @@
                                 <tr>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stok Saat Ini</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:140px;">Jumlah Stok Baru</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#059669;white-space:nowrap;min-width:100px;">Masuk</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#dc2626;white-space:nowrap;min-width:100px;">Keluar</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#0284c7;white-space:nowrap;min-width:100px;">Sisa</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -247,21 +248,21 @@
                                 <tr>
                                     <td class="text-center fw-bold" style="font-size:.875rem;">{{ $loop->iteration }}</td>
                                     <td class="text-center fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
-                                    <td class="text-center">
-                                        <span class="badge bg-light text-dark border px-2 py-1 fw-normal" style="font-size:.8rem;">
+                                    <td class="align-middle">
+                                        <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control form-control-sm text-center input-masuk text-success fw-bold mx-auto" min="0" value="{{ $item->masukByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#10b981;">
+                                    </td>
+                                    <td class="align-middle">
+                                        <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control form-control-sm text-center input-keluar text-danger fw-bold mx-auto" min="0" value="{{ $item->keluarByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#ef4444;">
+                                    </td>
+                                    <td class="text-center text-primary fw-bold align-middle">
+                                        <span id="sisa-{{ $item->id }}" class="badge bg-light text-dark border px-3 py-2 fw-bold" style="font-size:.85rem;">
                                             {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
                                         </span>
-                                    </td>
-                                    <td class="pe-3 align-middle">
-                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 160px;">
-                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px; min-width: 60px;">
-                                            <span class="input-group-text bg-light text-dark" style="border-radius:0 6px 6px 0; font-size: .75rem; min-width: 60px; justify-content: center;">{{ $item->unit }}</span>
-                                        </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">Belum ada barang untuk disesuaikan.</td>
+                                    <td colspan="5" class="text-center text-muted py-4">Belum ada barang untuk disesuaikan.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -362,6 +363,24 @@
                 });
             });
         }
+
+        // Live update Sisa on Masuk/Keluar change
+        document.querySelectorAll('.input-masuk, .input-keluar').forEach(input => {
+            input.addEventListener('input', function() {
+                const id = this.dataset.id;
+                const masuk = parseInt(document.querySelector(`.input-masuk[data-id="${id}"]`).value) || 0;
+                const keluar = parseInt(document.querySelector(`.input-keluar[data-id="${id}"]`).value) || 0;
+                const sisa = Math.max(0, masuk - keluar);
+                
+                const sisaEl = document.getElementById(`sisa-${id}`);
+                if (sisaEl) {
+                    // Keep the unit text by replacing only the number part
+                    const text = sisaEl.textContent.trim();
+                    const unit = text.replace(/^[0-9]+/, '').trim();
+                    sisaEl.textContent = sisa + (unit ? ' ' + unit : '');
+                }
+            });
+        });
     });
 </script>
 @endpush

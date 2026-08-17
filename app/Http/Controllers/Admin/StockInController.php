@@ -196,14 +196,15 @@ class StockInController extends Controller
         }
 
         // Barang yang riwayat masuknya baru saja dihapus, kalau ternyata
-        // sekarang sudah tidak punya riwayat masuk MAUPUN keluar sama sekali
-        // (stok 0, tidak ada aktivitas lain), ikut dihapus juga datanya —
-        // supaya tidak nyangkut jadi baris kosong di halaman Stock manapun.
+        // sekarang sudah tidak punya riwayat masuk sama sekali (karena dihapus oleh admin),
+        // maka hapus item ini secara keseluruhan.
+        // Karena ada cascadeOnDelete di database, semua riwayat barang keluar (StockOut) 
+        // di Kasir/Kitchen yang terkait dengan item ini akan otomatis ikut terhapus.
         foreach (array_unique($itemIdsKena) as $itemId) {
             $item = Item::find($itemId);
             if (!$item) continue;
 
-            if (!$item->stockIns()->exists() && !$item->stockOuts()->exists()) {
+            if (!$item->stockIns()->exists()) {
                 $item->delete();
             }
         }

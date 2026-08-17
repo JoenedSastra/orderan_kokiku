@@ -328,5 +328,53 @@
         }, 3000);
     });
 </script>
+<!-- Modal Notifikasi (ditempatkan di luar topbar agar z-index tidak tertutup backdrop) -->
+<div class="modal fade" id="notifMessageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background-color: var(--kk-surface); color: var(--kk-text); border: 1px solid var(--kk-border);">
+      <div class="modal-header border-bottom-0">
+        <h5 class="modal-title" id="notifMessageTitle" style="font-weight: 600; font-size:1.1rem;"></h5>
+      </div>
+      <div class="modal-body pt-0">
+        <p id="notifMessageContent" style="white-space: pre-wrap; font-size: 0.9rem; color: var(--kk-text-light); margin-bottom: 0;"></p>
+      </div>
+      <div class="modal-footer border-top-0 pt-0">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:var(--kk-radius-sm);">Tutup</button>
+        <form id="notifMessageForm" method="POST" action="" class="mb-0">
+            @csrf
+            <button type="submit" class="btn btn-sm text-white" style="background-color: var(--kk-orange); border: none; border-radius:var(--kk-radius-sm);">Tandai Dibaca</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notifButtons = document.querySelectorAll('.kk-notif-modal-btn');
+    const notifTitle = document.getElementById('notifMessageTitle');
+    const notifContent = document.getElementById('notifMessageContent');
+    const notifForm = document.getElementById('notifMessageForm');
+    
+    if (notifButtons.length > 0 && typeof bootstrap !== 'undefined') {
+        notifButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const title = this.getAttribute('data-title');
+                const message = this.getAttribute('data-message');
+                const url = this.getAttribute('data-action');
+                
+                notifTitle.textContent = title;
+                notifContent.textContent = message;
+                notifForm.action = url;
+                
+                const modal = new bootstrap.Modal(document.getElementById('notifMessageModal'));
+                modal.show();
+            });
+        });
+    }
+});
+</script>
+
 </body>
 </html>

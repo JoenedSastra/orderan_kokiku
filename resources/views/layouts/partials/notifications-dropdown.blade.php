@@ -1,6 +1,7 @@
 @php
     $unreadCount   = auth()->user()->unreadNotifications->count();
     $notifications = auth()->user()->notifications()->latest()->limit(8)->get();
+    $hasRead       = auth()->user()->notifications()->whereNotNull('read_at')->exists();
 @endphp
 
 <div class="dropdown kk-notif-dropdown">
@@ -28,22 +29,38 @@
                         <span class="kk-notif-count">{{ $unreadCount }} baru</span>
                     @endif
                 </div>
-                @if($unreadCount > 0)
-                    <form method="POST" action="{{ route('notifications.read-all') }}" class="mb-0">
-                        @csrf
-                        <button class="btn btn-link p-0" style="font-size:0.72rem; color:rgba(255,255,255,0.55);">
-                            Tandai semua dibaca
-                        </button>
-                    </form>
+                @if($notifications->count() > 0)
+                    <div class="d-flex justify-content-end gap-2">
+                        @if($unreadCount > 0)
+                            <form method="POST" action="{{ route('notifications.read-all') }}" class="mb-0">
+                                @csrf
+                                <button class="btn text-white" style="background-color: darkblue; font-size:0.72rem; padding: 0.3rem 0.6rem; border-radius: 4px; border: none; width: auto; height: auto;">
+                                    Tandai semua dibaca
+                                </button>
+                            </form>
+                        @endif
+                        @if($hasRead)
+                            <form method="POST" action="{{ route('notifications.destroy-all-read') }}" class="mb-0">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-danger text-white" style="font-size:0.72rem; padding: 0.3rem 0.6rem; border-radius: 4px; border: none; width: auto; height: auto;">
+                                    Hapus Semua
+                                </button>
+                            </form>
+                        @endif
+                    </div>
                 @endif
             </div>
         </div>
 
         {{-- Notification Items --}}
         @forelse($notifications as $notif)
-        <form method="POST" action="{{ route('notifications.read', $notif->id) }}">
-            @csrf
-            <button type="submit" class="dropdown-item {{ $notif->read_at ? '' : 'kk-notif-unread' }}">
+        <div class="dropdown-item position-relative d-flex align-items-center p-0 {{ $notif->read_at ? '' : 'kk-notif-unread' }}" style="padding-right: 2.5rem !important;">
+            <button type="button" class="kk-notif-modal-btn w-100 text-start bg-transparent border-0 p-3"
+                    data-title="{{ $notif->data['title'] ?? '-' }}"
+                    data-message="{{ $notif->data['message'] ?? '' }}"
+                    data-action="{{ route('notifications.read', $notif->id) }}"
+                    style="outline: none;">
                 <div class="d-flex gap-2 align-items-start">
                     <div style="width:30px; height:30px; border-radius:50%; background:var(--kk-orange-soft); color:var(--kk-orange); display:flex; align-items:center; justify-content:center; font-size:0.8rem; flex-shrink:0; margin-top:1px;">
                         <i class="bi bi-bell"></i>
@@ -60,7 +77,17 @@
                     @endif
                 </div>
             </button>
-        </form>
+
+            @if($notif->read_at)
+                <form method="POST" action="{{ route('notifications.destroy', $notif->id) }}" class="position-absolute m-0" style="right: 15px; top: 50%; transform: translateY(-50%); z-index: 10;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn text-danger p-1" title="Hapus Notifikasi" style="background:transparent; border:none; width:auto; height:auto; border-radius:4px;">
+                        <i class="bi bi-trash" style="font-size: 1.1rem;"></i>
+                    </button>
+                </form>
+            @endif
+        </div>
         @empty
         <div class="px-3 py-5 text-center">
             <div style="font-size:2rem; color:var(--kk-border); margin-bottom:0.5rem;"><i class="bi bi-bell-slash"></i></div>
@@ -69,3 +96,5 @@
         @endforelse
     </div>
 </div>
+
+

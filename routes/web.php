@@ -42,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::delete('/notifications/destroy-all-read', [NotificationController::class, 'destroyAllRead'])->name('notifications.destroy-all-read');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     // ---- Admin ----
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {

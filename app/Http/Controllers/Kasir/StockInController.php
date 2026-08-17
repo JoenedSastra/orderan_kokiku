@@ -58,8 +58,10 @@ class StockInController extends Controller
     public function adjustStock(Request $request): \Illuminate\Http\RedirectResponse
     {
         $request->validate([
-            'new_stock' => 'required|array',
-            'new_stock.*' => 'required|integer|min:0',
+            'new_masuk' => 'required|array',
+            'new_masuk.*' => 'nullable|integer|min:0',
+            'new_keluar' => 'required|array',
+            'new_keluar.*' => 'nullable|integer|min:0',
             'tanggal' => 'nullable|date',
         ]);
 
@@ -67,61 +69,88 @@ class StockInController extends Controller
         $changedCount = 0;
         $tanggal = $request->input('tanggal', today()->toDateString());
 
-        foreach ($request->new_stock as $itemId => $newStock) {
+        foreach ($request->new_masuk as $itemId => $newMasuk) {
             $item = Item::find($itemId);
             if (!$item || $item->master_location !== Item::MASTER_KASIR) continue;
             
-            $keterangan = 'Penyesuaian stok manual oleh Kasir';
-            $location = StockIn::LOCATION_KASIR;
-
-            // Hapus penyesuaian sebelumnya pada tanggal yang sama untuk item ini
-            StockIn::where('item_id', $item->id)
-                ->where('location', $location)
-                ->whereDate('tanggal', $tanggal)
-                ->where('keterangan', $keterangan)
-                ->forceDelete();
-
-            StockOut::where('item_id', $item->id)
-                ->where('location', $location)
-                ->whereDate('tanggal', $tanggal)
-                ->where('keterangan', $keterangan)
-                ->forceDelete();
-
-            $currentStock = $item->stokByLocation(Item::MASTER_KASIR);
-            $newStockInt = (int) $newStock;
+            $newMasukInt = (int) $newMasuk;
+            $newKeluarInt = (int) ($request->new_keluar[$itemId] ?? 0);
             
-            if ($newStockInt === $currentStock) {
+            $currentMasuk = $item->masukByLocation(Item::MASTER_KASIR);
+            $currentKeluar = $item->keluarByLocation(Item::MASTER_KASIR);
+
+            $diffMasuk = $newMasukInt - $currentMasuk;
+            $diffKeluar = $newKeluarInt - $currentKeluar;
+
+            if ($diffMasuk === 0 && $diffKeluar === 0) {
                 continue;
             }
 
-            $difference = $newStockInt - $currentStock;
+            $locationIn = StockIn::LOCATION_KASIR;
+            $locationOut = StockOut::LOCATION_KASIR;
+            $keterangan = 'Penyesuaian stok manual oleh Kasir';
 
-            if ($difference > 0) {
-                StockIn::create([
-                    'item_id'      => $item->id,
-                    'user_id'      => $userId,
-                    'quantity'     => $difference,
-                    'location'     => $location,
-                    'keterangan'   => $keterangan,
-                    'tanggal'      => $tanggal,
-                    'is_completed' => true,
-                ]);
-            } else {
-                StockOut::create([
-                    'item_id'    => $item->id,
-                    'user_id'    => $userId,
-                    'quantity'   => abs($difference),
-                    'location'   => $location,
-                    'keterangan' => $keterangan,
-                    'tanggal'    => $tanggal,
-                ]);
-            }
-            
+            \Illuminate\Support\Facades\DB::transaction(function () use ($item, $userId, $locationIn, $locationOut, $keterangan, $diffMasuk, $diffKeluar, $tanggal) {
+                
+                // --- Handle Masuk diff ---
+                if ($diffMasuk > 0) {
+                    StockIn::create([
+                        'item_id'      => $item->id,
+                        'user_id'      => $userId,
+                        'quantity'     => $diffMasuk,
+                        'location'     => $locationIn,
+                        'keterangan'   => $keterangan,
+                        'tanggal'      => $tanggal,
+                        'is_completed' => true,
+                    ]);
+                } elseif ($diffMasuk < 0) {
+                    $toReduce = abs($diffMasuk);
+                    $stockIns = StockIn::where('item_id', $item->id)->where('location', $locationIn)->orderBy('id', 'desc')->get();
+                    foreach ($stockIns as $si) {
+                        if ($toReduce <= 0) break;
+                        if ($si->quantity <= $toReduce) {
+                            $toReduce -= $si->quantity;
+                            $si->delete();
+                        } else {
+                            $si->quantity -= $toReduce;
+                            $si->save();
+                            $toReduce = 0;
+                        }
+                    }
+                }
+
+                // --- Handle Keluar diff ---
+                if ($diffKeluar > 0) {
+                    StockOut::create([
+                        'item_id'    => $item->id,
+                        'user_id'    => $userId,
+                        'quantity'   => $diffKeluar,
+                        'location'   => $locationOut,
+                        'keterangan' => $keterangan,
+                        'tanggal'    => $tanggal,
+                    ]);
+                } elseif ($diffKeluar < 0) {
+                    $toReduce = abs($diffKeluar);
+                    $stockOuts = StockOut::where('item_id', $item->id)->where('location', $locationOut)->orderBy('id', 'desc')->get();
+                    foreach ($stockOuts as $so) {
+                        if ($toReduce <= 0) break;
+                        if ($so->quantity <= $toReduce) {
+                            $toReduce -= $so->quantity;
+                            $so->delete();
+                        } else {
+                            $so->quantity -= $toReduce;
+                            $so->save();
+                            $toReduce = 0;
+                        }
+                    }
+                }
+            });
+
             $changedCount++;
         }
 
         if ($changedCount > 0) {
-            return back()->with('success', $changedCount . ' barang berhasil disesuaikan stoknya.');
+            return back()->with('success', $changedCount . ' barang berhasil disesuaikan sinkronisasi Masuk/Keluarnya.');
         }
 
         return back()->with('info', 'Tidak ada perubahan stok yang dilakukan.');

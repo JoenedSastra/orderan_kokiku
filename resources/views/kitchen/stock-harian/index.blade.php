@@ -85,26 +85,36 @@
                                 <tr>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stok Saat Ini</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:150px;">Lapor Jumlah Stok</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Masuk</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Keluar</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Sisa</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if(isset($allItemsForAdjust))
                                 @forelse($allItemsForAdjust as $item)
+                                @php
+                                    $currentMasuk = $item->masukByLocation($item->master_location);
+                                    $currentKeluar = $item->keluarByLocation($item->master_location);
+                                    $currentSisa = $item->stokByLocation($item->master_location);
+                                @endphp
                                 <tr>
-                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $loop->iteration }}</td>
-                                    <td class="text-center fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
-                                    <td class="text-center">
-                                        <span class="badge bg-light text-dark border px-2 py-1 fw-normal" style="font-size:.8rem;">
-                                            {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
-                                        </span>
-                                    </td>
-                                    <td class="pe-3 align-middle">
-                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 160px;">
-                                            <input type="number" name="new_stock[{{ $item->id }}]" class="form-control text-center" min="0" value="{{ $item->stokByLocation($item->master_location) }}" style="border-radius:6px 0 0 6px; min-width: 60px;">
-                                            <span class="input-group-text bg-light text-dark" style="border-radius:0 6px 6px 0; font-size: .75rem; min-width: 60px; justify-content: center; border: 1px solid #ced4da;">{{ $item->unit }}</span>
+                                    <td class="text-center fw-bold align-middle" style="font-size:.875rem;">{{ $loop->iteration }}</td>
+                                    <td class="text-center fw-bold align-middle" style="font-size:.875rem;">{{ $item->name }}</td>
+                                    <td class="align-middle">
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 120px;">
+                                            <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control text-center new-masuk-input" min="0" value="{{ $currentMasuk }}" style="border-radius:6px; min-width: 60px; color:#059669; font-weight:600;" data-item-id="{{ $item->id }}">
                                         </div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 120px;">
+                                            <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control text-center new-keluar-input" min="0" value="{{ $currentKeluar }}" style="border-radius:6px; min-width: 60px; color:#dc2626; font-weight:600;" data-item-id="{{ $item->id }}">
+                                        </div>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        <span class="badge bg-light text-dark border px-3 py-2 fw-bold sisa-badge-{{ $item->id }}" style="font-size:.9rem; color:#0284c7 !important;">
+                                            {{ $currentSisa }} {{ $item->unit }}
+                                        </span>
                                     </td>
                                 </tr>
                                 @empty
@@ -126,3 +136,42 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const masukInputs = document.querySelectorAll('.new-masuk-input');
+        const keluarInputs = document.querySelectorAll('.new-keluar-input');
+
+        function updateSisa(itemId) {
+            const masukInput = document.querySelector(`.new-masuk-input[data-item-id="${itemId}"]`);
+            const keluarInput = document.querySelector(`.new-keluar-input[data-item-id="${itemId}"]`);
+            const sisaBadge = document.querySelector(`.sisa-badge-${itemId}`);
+            
+            if (masukInput && keluarInput && sisaBadge) {
+                const masukVal = parseInt(masukInput.value) || 0;
+                const keluarVal = parseInt(keluarInput.value) || 0;
+                const sisa = Math.max(0, masukVal - keluarVal);
+                
+                // Get the unit from the existing text
+                const unitMatch = sisaBadge.textContent.match(/[a-zA-Z]+/);
+                const unit = unitMatch ? unitMatch[0] : '';
+                
+                sisaBadge.textContent = `${sisa} ${unit}`;
+            }
+        }
+
+        masukInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                updateSisa(this.getAttribute('data-item-id'));
+            });
+        });
+
+        keluarInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                updateSisa(this.getAttribute('data-item-id'));
+            });
+        });
+    });
+</script>
+@endpush

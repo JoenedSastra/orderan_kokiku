@@ -19,8 +19,25 @@ trait HasStockKitchenReport
     /**
      * @return array{categories: array, startDate: string, endDate: string}
      */
-    protected function buildStockKitchenReport(string $startDate, string $endDate): array
+    protected function buildStockKitchenReport(?string $startDate, ?string $endDate): array
     {
+        $start = empty($startDate) ? now()->subDays(6) : \Carbon\Carbon::parse($startDate);
+        $end   = empty($endDate) ? now() : \Carbon\Carbon::parse($endDate);
+
+        if ($start->gt($end)) {
+            $temp = $start;
+            $start = $end;
+            $end = $temp;
+        }
+
+        // Limit range to max 1 year (365 days) to prevent extreme DB load / execution time
+        if ($start->diffInDays($end) > 365) {
+            $start = $end->copy()->subDays(365);
+        }
+
+        $startDate = $start->toDateString();
+        $endDate   = $end->toDateString();
+
         $categories = Category::whereIn('name', ['Sayur', 'Daging', 'Saos'])
             ->with(['items' => fn ($q) => $q->orderBy('name')])
             ->orderBy('name')

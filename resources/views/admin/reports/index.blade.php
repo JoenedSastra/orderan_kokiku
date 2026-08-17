@@ -56,8 +56,8 @@
 @endphp
 <div class="{{ $isBarangKeluarDivisi ? '' : 'kk-stat-card' }}">
     <div class="table-responsive">
-        <table class="table table-sm text-center align-middle {{ $isBarangKeluarDivisi ? 'table-bordered table-striped' : 'table-hover' }} mb-0">
-            <thead class="{{ $isBarangKeluarDivisi ? 'table-warning' : 'table-light' }}">
+        <table class="table table-sm text-center align-middle {{ $type === 'barang_masuk' ? 'table-success table-hover' : ($type === 'barang_keluar_kasir' ? 'table-info table-bordered table-striped' : 'table-danger table-bordered table-striped') }} mb-0">
+            <thead class="{{ $type === 'barang_masuk' ? 'table-success' : ($type === 'barang_keluar_kasir' ? 'table-info' : 'table-danger') }}">
                 <tr>
                     <th class="text-center align-middle" style="width: 50px;">No</th>
                     @foreach($headings as $h)

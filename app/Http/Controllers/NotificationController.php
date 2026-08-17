@@ -29,4 +29,23 @@ class NotificationController extends Controller
 
         return back();
     }
+    /**
+     * Hapus notifikasi
+     */
+    public function destroy(Request $request, string $id): RedirectResponse
+    {
+        $notification = $request->user()->notifications()->findOrFail($id);
+        $notification->delete();
+
+        return back()->with('success', 'Notifikasi berhasil dihapus');
+    }
+    /**
+     * Hapus semua notifikasi yang sudah dibaca
+     */
+    public function destroyAllRead(Request $request): RedirectResponse
+    {
+        $request->user()->notifications()->whereNotNull('read_at')->delete();
+
+        return back()->with('success', 'Semua notifikasi yang sudah dibaca berhasil dihapus');
+    }
 }
