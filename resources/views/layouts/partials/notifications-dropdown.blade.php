@@ -19,31 +19,31 @@
         @endif
     </button>
 
-    <div class="dropdown-menu dropdown-menu-end kk-notif-menu">
+    <div class="dropdown-menu dropdown-menu-end kk-notif-menu" style="min-width: 320px; max-width: 100vw;">
         {{-- Header --}}
         <div class="kk-notif-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
                     <span class="kk-notif-title">Notifikasi</span>
                     @if($unreadCount > 0)
-                        <span class="kk-notif-count">{{ $unreadCount }} baru</span>
+                        <span class="badge rounded-pill bg-primary" style="font-size: 0.75rem; font-weight: 500; padding: 0.35em 0.65em;">{{ $unreadCount }} baru</span>
                     @endif
                 </div>
                 @if($notifications->count() > 0)
-                    <div class="d-flex justify-content-end gap-2">
+                    <div class="d-flex justify-content-end gap-1 flex-wrap">
                         @if($unreadCount > 0)
-                            <form method="POST" action="{{ route('notifications.read-all') }}" class="mb-0">
+                            <form method="POST" action="{{ route('notifications.read-all') }}" class="m-0 d-inline-block">
                                 @csrf
-                                <button class="btn text-white" style="background-color: darkblue; font-size:0.72rem; padding: 0.3rem 0.6rem; border-radius: 4px; border: none; width: auto; height: auto;">
-                                    Tandai semua dibaca
+                                <button type="submit" class="btn text-white px-2 py-1" style="background-color: #1e40af; font-size:0.75rem; border-radius: 4px; border: none; white-space: nowrap; width: max-content !important; display: inline-block;">
+                                    Tandai dibaca
                                 </button>
                             </form>
                         @endif
                         @if($hasRead)
-                            <form method="POST" action="{{ route('notifications.destroy-all-read') }}" class="mb-0">
+                            <form method="POST" action="{{ route('notifications.destroy-all-read') }}" class="m-0 d-inline-block">
                                 @csrf
                                 @method('DELETE')
-                                <button class="btn btn-danger text-white" style="font-size:0.72rem; padding: 0.3rem 0.6rem; border-radius: 4px; border: none; width: auto; height: auto;">
+                                <button type="submit" class="btn btn-danger text-white px-2 py-1" style="font-size:0.75rem; border-radius: 4px; border: none; white-space: nowrap; width: max-content !important; display: inline-block;">
                                     Hapus Semua
                                 </button>
                             </form>

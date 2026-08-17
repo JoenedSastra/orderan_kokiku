@@ -18,6 +18,4 @@
 <a href="{{ route('kitchen.orders.create') }}" class="nav-link {{ request()->routeIs('kitchen.orders.create') ? 'active' : '' }}">
     <i class="bi bi-cart-plus"></i> Order Barang
 </a>
-<a href="{{ route('kitchen.orders.index') }}" class="nav-link {{ request()->routeIs('kitchen.orders.index') ? 'active' : '' }}">
-    <i class="bi bi-list-check"></i> Permintaan Barang
-</a>
+

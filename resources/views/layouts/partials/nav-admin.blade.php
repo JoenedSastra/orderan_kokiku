@@ -7,7 +7,7 @@
     <i class="bi bi-box-arrow-in-down-right"></i> Barang Masuk Harian
 </a>
 
-<div class="kk-sidebar-section-label">Stock</div>
+<div class="kk-sidebar-section-label">Devisi</div>
 <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="nav-link {{ request()->routeIs('admin.stock.index') && request('filter') === 'gudang_utama' ? 'active' : '' }}">
     <i class="bi bi-building"></i> Stock Gudang Utama
 </a>
@@ -25,13 +25,7 @@
 </a>
 
 <div class="kk-sidebar-section-label">Laporan</div>
-<a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-    <i class="bi bi-clipboard2-check-fill"></i> Permintaan Barang
-    @php $pending = \App\Models\Order::where('status','menunggu')->count(); @endphp
-    @if($pending > 0)
-        <span class="badge ms-auto rounded-pill" style="background:var(--kk-orange); font-size:0.65rem;">{{ $pending }}</span>
-    @endif
-</a>
+
 
 <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
     <i class="bi bi-bar-chart-fill"></i> Laporan

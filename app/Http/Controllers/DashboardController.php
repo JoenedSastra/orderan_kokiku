@@ -409,7 +409,7 @@ class DashboardController extends Controller
         // Barang stok rendah di Kasir (berdasarkan master_location)
         $stokRendah = Item::where('master_location', Item::MASTER_KASIR)
             ->get()
-            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokKasir() <= $item->min_stock)
+            ->filter(fn ($item) => $item->stokKasir() <= 10)
             ->count();
 
         $ordersRecent = Order::with('item')
@@ -435,7 +435,7 @@ class DashboardController extends Controller
         // Barang stok rendah di Kitchen (berdasarkan master_location)
         $stokRendah = Item::where('master_location', Item::MASTER_KITCHEN)
             ->get()
-            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokKitchen() <= $item->min_stock)
+            ->filter(fn ($item) => $item->stokKitchen() <= 10)
             ->count();
 
         $ordersRecent = Order::with('item')

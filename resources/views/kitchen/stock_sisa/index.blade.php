@@ -21,7 +21,7 @@
                     <th class="text-center">Nama Barang</th>
                     <th class="text-center">Barang Masuk</th>
                     <th class="text-center">Barang Keluar</th>
-                    <th class="text-center">Sisa Stok</th>
+                    <th class="text-center">Stock</th>
                     <th class="text-center">Satuan</th>
                 </tr>
             </thead>

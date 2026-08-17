@@ -23,7 +23,7 @@
                     <th class="text-center align-middle" style="width: 14%;">Nama Barang</th>
                     <th class="text-center align-middle" style="color:#059669; width: 6%;">Masuk</th>
                     <th class="text-center align-middle" style="color:#dc2626; width: 6%;">Keluar</th>
-                    <th class="text-center align-middle" style="color:#0284c7; width: 6%;">Sisa</th>
+                    <th class="text-center align-middle" style="color:#0284c7; width: 6%;">Stock</th>
                     <th class="text-center align-middle" style="width: 8%;">Satuan</th>
                     <th class="text-center align-middle" style="width: 12%;">Devisi</th>
                     <th class="text-center align-middle" style="width: 18%;">Keterangan</th>
@@ -87,7 +87,7 @@
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Masuk</th>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Keluar</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Sisa</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stock</th>
                                 </tr>
                             </thead>
                             <tbody>

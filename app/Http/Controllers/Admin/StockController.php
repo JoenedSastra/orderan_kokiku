@@ -141,7 +141,9 @@ class StockController extends Controller
             default        => StockIn::LOCATION_GUDANG_UTAMA, // Gudang Resto uses gudang_utama location for stock pooling
         };
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $sourceItem, $labelTujuan, $keteranganTersimpan, $targetLocation) {
+        $stockInModel = null;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($request, $sourceItem, $labelTujuan, $keteranganTersimpan, $targetLocation, &$stockInModel) {
             $userId = \Illuminate\Support\Facades\Auth::id();
 
             // Kurangi stok Gudang Utama pada barang sumber.
@@ -162,7 +164,7 @@ class StockController extends Controller
 
             // Stok divisi tujuan bertambah otomatis, dengan keterangan yang
             // sama persis ("Kirim di <Divisi>").
-            StockIn::create([
+            $stockInModel = StockIn::create([
                 'item_id'      => $targetItem->id,
                 'user_id'      => $userId,
                 'quantity'     => $request->quantity,
@@ -172,6 +174,13 @@ class StockController extends Controller
                 'is_completed' => true,
             ]);
         });
+
+        if ($stockInModel) {
+            $recipients = \App\Models\User::whereHas('role', fn ($q) => $q->whereIn('slug', [\App\Models\Role::KASIR, \App\Models\Role::KITCHEN]))->get();
+            if ($recipients->isNotEmpty()) {
+                \Illuminate\Support\Facades\Notification::send($recipients, new \App\Notifications\StockInNotification($stockInModel));
+            }
+        }
 
         return back()->with('success', $sourceItem->name . ' berhasil dikirim ke ' . $labelTujuan . '.');
     }

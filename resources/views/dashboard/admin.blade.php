@@ -22,9 +22,37 @@
 </div>
 
 
-{{-- Stat Cards Row 1 --}}
+{{-- Aksi Cepat --}}
+<div class="kk-stat-card mb-4">
+    <div class="kk-section-header mb-3">
+        <div class="kk-section-title">
+            <i class="bi bi-lightning-charge"></i> Aksi Cepat
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-lg-4">
+            <a href="{{ route('admin.stock_in.index') }}" class="kk-quick-action">
+                <i class="bi bi-box-arrow-in-down"></i>
+                <span>Barang Masuk</span>
+            </a>
+        </div>
+        <div class="col-12 col-lg-4">
+            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
+                <i class="bi bi-box-arrow-up"></i>
+                <span>Kirim Barang</span>
+            </a>
+        </div>
+        <div class="col-12 col-lg-4">
+            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
+                <i class="bi bi-box-seam"></i>
+                <span>Data Stock</span>
+            </a>
+        </div>
+    </div>
+</div>
+
 <div class="row g-3 mb-3">
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-lg-4">
         <div class="kk-stat-card gradient-orange">
             <div class="d-flex align-items-start justify-content-between mb-2">
                 <div class="kk-stat-icon"><i class="bi bi-box-seam-fill"></i></div>
@@ -33,7 +61,7 @@
             <div class="kk-stat-label">Total Jenis Barang</div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-lg-4">
         <div class="kk-stat-card gradient-green">
             <div class="d-flex align-items-start justify-content-between mb-2">
                 <div class="kk-stat-icon"><i class="bi bi-box-arrow-in-down-right"></i></div>
@@ -42,22 +70,13 @@
             <div class="kk-stat-label">Barang Masuk Hari Ini</div>
         </div>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-lg-4">
         <div class="kk-stat-card gradient-red">
             <div class="d-flex align-items-start justify-content-between mb-2">
                 <div class="kk-stat-icon"><i class="bi bi-box-arrow-up-right"></i></div>
             </div>
             <div class="kk-stat-value">{{ $keluarHariIni }}</div>
             <div class="kk-stat-label">Barang Keluar Hari Ini</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="kk-stat-card gradient-amber">
-            <div class="d-flex align-items-start justify-content-between mb-2">
-                <div class="kk-stat-icon"><i class="bi bi-hourglass-split"></i></div>
-            </div>
-            <div class="kk-stat-value">{{ $permintaanMenunggu }}</div>
-            <div class="kk-stat-label">Permintaan Menunggu</div>
         </div>
     </div>
 </div>
@@ -129,88 +148,10 @@
     </div>
 </div>
 
-{{-- Baris 3: Aksi Cepat (Terpisah agar lebih rapi memanjang) --}}
-<div class="kk-stat-card mb-4">
-    <div class="kk-section-header mb-3">
-        <div class="kk-section-title">
-            <i class="bi bi-lightning-charge"></i> Aksi Cepat
-        </div>
-    </div>
-    <div class="row g-3">
-        <div class="col-6 col-lg-3">
-            <a href="{{ route('admin.stock_in.create', ['lokasi' => 'gudang_utama']) }}" class="kk-quick-action">
-                <i class="bi bi-box-arrow-in-down"></i>
-                <span>Barang Masuk</span>
-            </a>
-        </div>
-        <div class="col-6 col-lg-3">
-            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
-                <i class="bi bi-box-arrow-up"></i>
-                <span>Kirim Barang</span>
-            </a>
-        </div>
-        <div class="col-6 col-lg-3">
-            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
-                <i class="bi bi-box-seam"></i>
-                <span>Data Stock</span>
-            </a>
-        </div>
-        <div class="col-6 col-lg-3">
-            <a href="{{ route('admin.orders.index') }}" class="kk-quick-action">
-                <i class="bi bi-ui-checks"></i>
-                <span>Permintaan</span>
-            </a>
-        </div>
-    </div>
-</div>
 
-{{-- Baris 4: Permintaan Terbaru & Peringatan Stok Rendah --}}
+{{-- Baris 4: Peringatan Stok Rendah --}}
 <div class="row g-3 mb-4">
-    {{-- Kiri: Recent Orders --}}
-    <div class="col-lg-8">
-        <div class="kk-stat-card h-100">
-            <div class="kk-section-header">
-                <div class="kk-section-title">
-                    <i class="bi bi-clock-history"></i>
-                    Permintaan Barang Terbaru
-                </div>
-                <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary">
-                    Lihat Semua <i class="bi bi-arrow-right"></i>
-                </a>
-            </div>
-            @if($ordersRecent->isEmpty())
-                <div class="text-center py-4">
-                    <div style="font-size:2.5rem; color:var(--kk-border);"><i class="bi bi-inbox"></i></div>
-                    <div class="text-muted mt-2" style="font-size:0.875rem;">Belum ada permintaan barang.</div>
-                </div>
-            @else
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th><th>Dari</th><th>Barang</th><th>Jumlah</th><th>Status</th><th>Tanggal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($ordersRecent as $order)
-                            <tr>
-                                <td class="text-muted" style="font-size:0.8rem;">#{{ $order->id }}</td>
-                                <td class="fw-semibold" style="font-size:0.875rem;">{{ $order->user->name }}</td>
-                                <td style="font-size:0.875rem;">{{ $order->item->name }}</td>
-                                <td style="font-size:0.875rem;">{{ $order->quantity }} {{ $order->item->unit }}</td>
-                                <td><span class="kk-badge-{{ $order->status }}">{{ strtoupper($order->status) }}</span></td>
-                                <td class="text-muted" style="font-size:0.8rem;">{{ $order->created_at->format('d M Y') }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Kanan: Stok Rendah --}}
-    <div class="col-lg-4">
+    <div class="col-12">
         <div class="kk-stat-card h-100 flex-fill">
             <div class="kk-section-header mb-3">
                 <div class="kk-section-title text-danger">
@@ -219,20 +160,20 @@
                 <span class="badge bg-danger rounded-pill">{{ $stokRendah }}</span>
             </div>
             @if($stokRendah > 0)
-                <div class="d-flex flex-column gap-2">
+                <div class="d-flex flex-column flex-md-row gap-3 flex-wrap">
                     @foreach(\App\Models\Item::where('min_stock', '>', 0)->whereIn('master_location', [\App\Models\Item::MASTER_GUDANG_UTAMA, \App\Models\Item::MASTER_GUDANG_RESTO])->get()->filter(fn($i) => $i->stokGudangUtama() <= $i->min_stock)->take(5) as $item)
-                        <div class="d-flex align-items-center justify-content-between p-2 rounded" style="background: var(--kk-danger-soft); border: 1px solid rgba(239, 68, 68, 0.2);">
+                        <div class="d-flex align-items-center justify-content-between p-3 rounded flex-fill" style="background: var(--kk-danger-soft); border: 1px solid rgba(239, 68, 68, 0.2);">
                             <div>
-                                <div class="fw-semibold" style="font-size:0.85rem; color:var(--kk-text);">{{ $item->name }}</div>
-                                <div style="font-size:0.75rem; color:var(--kk-danger);">Sisa: {{ $item->stokGudangUtama() }} {{ $item->unit }}</div>
+                                <div class="fw-semibold" style="font-size:0.95rem; color:var(--kk-text);">{{ $item->name }}</div>
+                                <div style="font-size:0.85rem; color:var(--kk-danger);">Sisa: {{ $item->stokGudangUtama() }} {{ $item->unit }}</div>
                             </div>
-                            <a href="{{ route('admin.stock_in.create', ['lokasi' => 'gudang_utama', 'item_id' => $item->id]) }}" class="btn btn-sm btn-outline-danger" style="font-size:0.7rem; padding:0.2rem 0.5rem;">Restock</a>
+                            <a href="{{ route('admin.stock_in.create', ['lokasi' => 'gudang_utama', 'item_id' => $item->id]) }}" class="btn btn-outline-danger btn-sm" style="font-weight: 500;">Restock</a>
                         </div>
                     @endforeach
                 </div>
             @else
-                <div class="text-center py-3 text-muted" style="font-size:0.875rem;">
-                    <i class="bi bi-check-circle text-success fs-3 d-block mb-2"></i>
+                <div class="text-center py-4 text-muted" style="font-size:0.95rem;">
+                    <i class="bi bi-check-circle text-success fs-2 d-block mb-2"></i>
                     Stok gudang aman.
                 </div>
             @endif

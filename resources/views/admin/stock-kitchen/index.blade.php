@@ -43,7 +43,7 @@
             <div class="table-responsive">
                 <table class="table table-sm table-hover mb-0">
                     <thead class="table-light">
-                        <tr><th>Tanggal</th><th>Masuk</th><th>Keluar</th><th>Sisa</th></tr>
+                        <tr><th>Tanggal</th><th>Masuk</th><th>Keluar</th><th>Stock</th></tr>
                     </thead>
                     <tbody>
                         @foreach($itemReport['rows'] as $row)
