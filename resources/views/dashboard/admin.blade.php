@@ -43,7 +43,7 @@
             </a>
         </div>
         <div class="col-12 col-lg-4">
-            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
+            <a href="{{ route('admin.data_stock.index') }}" class="kk-quick-action">
                 <i class="bi bi-box-seam"></i>
                 <span>Data Stock</span>
             </a>
@@ -160,21 +160,59 @@
                 <span class="badge bg-danger rounded-pill">{{ $stokRendah }}</span>
             </div>
             @if($stokRendah > 0)
-                <div class="d-flex flex-column flex-md-row gap-3 flex-wrap">
-                    @foreach(\App\Models\Item::where('min_stock', '>', 0)->whereIn('master_location', [\App\Models\Item::MASTER_GUDANG_UTAMA, \App\Models\Item::MASTER_GUDANG_RESTO])->get()->filter(fn($i) => $i->stokGudangUtama() <= $i->min_stock)->take(5) as $item)
-                        <div class="d-flex align-items-center justify-content-between p-3 rounded flex-fill" style="background: var(--kk-danger-soft); border: 1px solid rgba(239, 68, 68, 0.2);">
-                            <div>
-                                <div class="fw-semibold" style="font-size:0.95rem; color:var(--kk-text);">{{ $item->name }}</div>
-                                <div style="font-size:0.85rem; color:var(--kk-danger);">Sisa: {{ $item->stokGudangUtama() }} {{ $item->unit }}</div>
+                @php
+                    $divisions = [
+                        \App\Models\Item::MASTER_GUDANG_UTAMA => 'Gudang Utama',
+                        \App\Models\Item::MASTER_GUDANG_RESTO => 'Gudang Resto',
+                        \App\Models\Item::MASTER_KASIR => 'Kasir',
+                        \App\Models\Item::MASTER_KITCHEN => 'Kitchen',
+                    ];
+                @endphp
+                <div class="row g-3">
+                    @foreach($divisions as $key => $label)
+                        @php
+                            $divItems = \App\Models\Item::get()->filter(fn($i) => $i->master_location === $key && $i->stokByLocation($key) <= 10);
+                        @endphp
+                        <div class="col-md-6">
+                            <div class="card h-100 kk-card border" style="border-radius: 10px;">
+                                <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background-color: transparent; border-bottom: 1px solid rgba(128,128,128,0.1) !important;">
+                                    <h6 class="mb-0 fw-bold" style="color:var(--kk-text);">{{ $label }}</h6>
+                                    @if($divItems->count() > 0)
+                                        <span class="badge bg-danger rounded-pill">{{ $divItems->count() }}</span>
+                                    @else
+                                        <span class="badge bg-success rounded-pill">Aman</span>
+                                    @endif
+                                </div>
+                                <div class="card-body p-3">
+                                    @if($divItems->count() > 0)
+                                        <div class="d-flex flex-column gap-2">
+                                            @foreach($divItems as $item)
+                                                <div class="d-flex align-items-center justify-content-between p-2 rounded" style="background: var(--kk-danger-soft); border: 1px solid rgba(239, 68, 68, 0.2);">
+                                                    <div>
+                                                        <div class="fw-semibold" style="font-size:0.9rem; color:var(--kk-text);">
+                                                            {{ $item->name }} 
+                                                        </div>
+                                                        <div style="font-size:0.8rem; color:var(--kk-danger);">Stock: {{ $item->stokByLocation($key) }} {{ $item->unit }}</div>
+                                                    </div>
+                                                    <a href="{{ route('admin.data_stock.index') }}" class="btn btn-outline-danger btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; font-weight: 500;">Lihat Data</a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="text-muted text-center py-3" style="font-size: 0.85rem;">
+                                            <i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>
+                                            Stok aman
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                            <a href="{{ route('admin.stock_in.create', ['lokasi' => 'gudang_utama', 'item_id' => $item->id]) }}" class="btn btn-outline-danger btn-sm" style="font-weight: 500;">Restock</a>
                         </div>
                     @endforeach
                 </div>
             @else
                 <div class="text-center py-4 text-muted" style="font-size:0.95rem;">
                     <i class="bi bi-check-circle text-success fs-2 d-block mb-2"></i>
-                    Stok gudang aman.
+                    Stok semua divisi aman (di atas 10).
                 </div>
             @endif
         </div>

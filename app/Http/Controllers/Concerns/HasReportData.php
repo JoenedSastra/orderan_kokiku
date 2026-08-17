@@ -220,10 +220,10 @@ trait HasReportData
 
             'barang_keluar_kitchen' => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
             'barang_keluar_kasir'   => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
-            'stock_gudang_utama'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
-            'stock_gudang_resto'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
-            'stock_kasir'           => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
-            'stock_kitchen'         => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Sisa', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_gudang_utama'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_gudang_resto'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_kasir'           => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_kitchen'         => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
             default         => [],
         };
     }

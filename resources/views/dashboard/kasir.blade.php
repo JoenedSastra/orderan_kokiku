@@ -53,22 +53,28 @@
                 </div>
             </div>
             <div class="row g-2">
-                <div class="col-12 col-md-4">
+                <div class="col-6">
                     <a href="{{ route('kasir.orders.create') }}" class="kk-quick-action">
                         <i class="bi bi-plus-circle-fill"></i>
                         <span>Buat Order</span>
                     </a>
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-6">
                     <a href="{{ route('kasir.stock_in.index') }}" class="kk-quick-action">
                         <i class="bi bi-box-arrow-in-down-right"></i>
                         <span>Barang Masuk</span>
                     </a>
                 </div>
-                <div class="col-12 col-md-4">
+                <div class="col-6">
                     <a href="{{ route('kasir.stock_out.index') }}" class="kk-quick-action">
                         <i class="bi bi-box-arrow-up-right"></i>
                         <span>Barang Keluar</span>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ route('kasir.stock_harian.index') }}" class="kk-quick-action">
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                        <span>Total Stock Barang</span>
                     </a>
                 </div>
             </div>

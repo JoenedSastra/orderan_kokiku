@@ -121,10 +121,9 @@ class DashboardController extends Controller
         $masukHariIni  = (int) $this->baseMasukQuery()->whereDate('tanggal', today())->sum('quantity');
         $keluarHariIni = (int) $this->baseKeluarQuery()->whereDate('tanggal', today())->sum('quantity');
 
-        // Barang stok rendah = saldo Gudang Utama <= min_stock, HANYA untuk barang Gudang Utama & Gudang Resto
-        $stokRendah = Item::whereIn('master_location', [Item::MASTER_GUDANG_UTAMA, Item::MASTER_GUDANG_RESTO])
-            ->get()
-            ->filter(fn ($item) => $item->min_stock > 0 && $item->stokGudangUtama() <= $item->min_stock)
+        // Barang stok rendah = saldo divisi <= 10 untuk ke 4 divisi
+        $stokRendah = Item::get()
+            ->filter(fn ($item) => $item->stokByLocation($item->master_location) <= 10)
             ->count();
 
         // Gabungkan order dari semua role (kasir + kitchen + admin), latest 10

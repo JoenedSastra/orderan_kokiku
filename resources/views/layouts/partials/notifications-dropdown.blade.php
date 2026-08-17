@@ -24,7 +24,7 @@
         <div class="kk-notif-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                    <span class="kk-notif-title">Notifikasi</span>
+                    <span class="kk-notif-title" style="color:var(--kk-text);">Notifikasi</span>
                     @if($unreadCount > 0)
                         <span class="badge rounded-pill bg-primary" style="font-size: 0.75rem; font-weight: 500; padding: 0.35em 0.65em;">{{ $unreadCount }} baru</span>
                     @endif
@@ -67,7 +67,7 @@
                     </div>
                     <div style="min-width:0; flex:1;">
                         <div class="fw-semibold text-truncate" style="font-size:0.82rem; color:var(--kk-text);">{{ $notif->data['title'] ?? '-' }}</div>
-                        <div class="text-muted" style="font-size:0.76rem; white-space:normal; margin-top:1px;">{{ $notif->data['message'] ?? '' }}</div>
+                        <div style="color:var(--kk-text-light); font-size:0.76rem; white-space:normal; margin-top:1px;">{{ $notif->data['message'] ?? '' }}</div>
                         <div style="font-size:0.68rem; color:var(--kk-orange); margin-top:3px; font-weight:600;">
                             <i class="bi bi-clock me-1"></i>{{ $notif->created_at->diffForHumans() }}
                         </div>

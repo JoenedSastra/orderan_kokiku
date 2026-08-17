@@ -88,7 +88,7 @@
                                     'Nama Barang' => 'width: 14%;',
                                     'Masuk' => 'width: 6%;',
                                     'Keluar' => 'width: 6%;',
-                                    'Sisa' => 'width: 6%;',
+                                    'Stock' => 'width: 6%;',
                                     'Satuan' => 'width: 8%;',
                                     'Devisi' => 'width: 12%;',
                                     'Keterangan' => 'width: 18%;',

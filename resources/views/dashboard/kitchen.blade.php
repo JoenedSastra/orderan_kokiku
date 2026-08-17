@@ -73,8 +73,8 @@
                 </div>
                 <div class="col-6">
                     <a href="{{ route('kitchen.stock_harian.index') }}" class="kk-quick-action">
-                        <i class="bi bi-calendar-week-fill"></i>
-                        <span>Stock Harian</span>
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                        <span>Total Stock Barang</span>
                     </a>
                 </div>
             </div>

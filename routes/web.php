@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
 
         // Stock & Permintaan
         Route::get('/stock', [StockController::class, 'index'])->name('stock.index');
+        Route::get('/data-stock', [StockController::class, 'dataStock'])->name('data_stock.index');
         Route::post('/stock/kirim-barang', [StockController::class, 'kirimBarang'])->name('stock.kirim');
         Route::post('/stock/adjust', [StockController::class, 'adjustStock'])->name('stock.adjust');
         Route::delete('/stock/delete-items', [StockController::class, 'deleteItems'])->name('stock.delete_items');

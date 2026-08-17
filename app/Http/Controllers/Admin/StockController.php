@@ -98,6 +98,19 @@ class StockController extends Controller
     }
 
     /**
+     * Tampilkan data stock dari 4 devisi dalam 1 halaman.
+     */
+    public function dataStock(): View
+    {
+        $gudangUtama = Item::where('master_location', Item::MASTER_GUDANG_UTAMA)->orderBy('name')->get();
+        $gudangResto = Item::where('master_location', Item::MASTER_GUDANG_RESTO)->orderBy('name')->get();
+        $kasir       = Item::where('master_location', Item::MASTER_KASIR)->orderBy('name')->get();
+        $kitchen     = Item::where('master_location', Item::MASTER_KITCHEN)->orderBy('name')->get();
+
+        return view('admin.stock.data_stock', compact('gudangUtama', 'gudangResto', 'kasir', 'kitchen'));
+    }
+
+    /**
      * Kirim barang dari Gudang Utama ke Gudang Resto / Kasir / Kitchen.
      * Stok Gudang Utama berkurang (StockOut ledger "gudang"), dan otomatis
      * ditambahkan ke Master Barang tujuan (StockIn ledger "restoran") dengan
@@ -176,9 +189,18 @@ class StockController extends Controller
         });
 
         if ($stockInModel) {
-            $recipients = \App\Models\User::whereHas('role', fn ($q) => $q->whereIn('slug', [\App\Models\Role::KASIR, \App\Models\Role::KITCHEN]))->get();
-            if ($recipients->isNotEmpty()) {
-                \Illuminate\Support\Facades\Notification::send($recipients, new \App\Notifications\StockInNotification($stockInModel));
+            $roleSlug = null;
+            if ($stockInModel->location === \App\Models\Item::MASTER_KASIR) {
+                $roleSlug = \App\Models\Role::KASIR;
+            } elseif ($stockInModel->location === \App\Models\Item::MASTER_KITCHEN) {
+                $roleSlug = \App\Models\Role::KITCHEN;
+            }
+
+            if ($roleSlug) {
+                $recipients = \App\Models\User::whereHas('role', fn ($q) => $q->where('slug', $roleSlug))->get();
+                if ($recipients->isNotEmpty()) {
+                    \Illuminate\Support\Facades\Notification::send($recipients, new \App\Notifications\StockInNotification($stockInModel));
+                }
             }
         }
 
@@ -313,12 +335,13 @@ class StockController extends Controller
         foreach ($itemIds as $id) {
             $item = Item::find($id);
             if ($item) {
-                $item->delete(); // Automatically cascades to stock_ins, stock_outs, and orders
+                // Hapus item ini beserta duplikatnya di divisi lain (berdasarkan nama yang sama)
+                Item::where('name', $item->name)->delete(); // Automatically cascades to stock_ins, stock_outs, and orders
                 $deletedCount++;
             }
         }
 
-        return back()->with('success', $deletedCount . ' barang berhasil dihapus permanen beserta seluruh riwayatnya.');
+        return back()->with('success', $deletedCount . ' barang berhasil dihapus permanen beserta seluruh riwayatnya di semua divisi.');
     }
 
     /**

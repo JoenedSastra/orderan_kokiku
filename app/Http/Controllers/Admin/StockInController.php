@@ -224,9 +224,18 @@ class StockInController extends Controller
 
     private function notifyStockIn(Item $item, StockIn $stockIn): void
     {
-        $recipients = User::whereHas('role', fn ($q) => $q->whereIn('slug', [Role::KASIR, Role::KITCHEN]))->get();
-        if ($recipients->isNotEmpty()) {
-            Notification::send($recipients, new StockInNotification($stockIn));
+        $roleSlug = null;
+        if ($stockIn->location === Item::MASTER_KASIR) {
+            $roleSlug = Role::KASIR;
+        } elseif ($stockIn->location === Item::MASTER_KITCHEN) {
+            $roleSlug = Role::KITCHEN;
+        }
+
+        if ($roleSlug) {
+            $recipients = User::whereHas('role', fn ($q) => $q->where('slug', $roleSlug))->get();
+            if ($recipients->isNotEmpty()) {
+                Notification::send($recipients, new StockInNotification($stockIn));
+            }
         }
     }
 }

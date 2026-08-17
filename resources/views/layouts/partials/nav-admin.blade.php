@@ -30,6 +30,10 @@
 <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
     <i class="bi bi-bar-chart-fill"></i> Laporan
 </a>
+
+<a href="{{ route('admin.data_stock.index') }}" class="nav-link {{ request()->routeIs('admin.data_stock.*') ? 'active' : '' }}">
+    <i class="bi bi-box-seam"></i> Data Stock
+</a>
 <div class="kk-sidebar-section-label">Pengguna</div>
 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
     <i class="bi bi-people-fill"></i> User
