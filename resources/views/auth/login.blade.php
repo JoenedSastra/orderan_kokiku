@@ -2,88 +2,74 @@
 @section('title', 'Masuk')
 
 @section('content')
-<div class="kk-auth-wrapper">
+<div class="kk-auth-wrapper glass-theme">
+    
 
-    {{-- LEFT PANEL --}}
-    <div class="kk-auth-left">
-        {{-- Brand --}}
-        <div class="kk-auth-brand">
-            <div class="kk-auth-brand-icon">
+
+    {{-- Center Glass Card --}}
+    <div class="kk-auth-glass-card">
+        
+        {{-- Brand / Logo --}}
+        <div class="kk-glass-brand">
+            <div class="kk-glass-brand-icon">
                 <img src="{{ asset('images/logo-kokiku.jpeg') }}" alt="Logo Kokiku">
             </div>
             <div>
-                <div class="kk-auth-brand-name">Myhub Kokiku</div>
-                <div class="kk-auth-brand-sub">Inventory System</div>
+                <h1 class="kk-glass-title">Myhub Kokiku</h1>
+                <p class="kk-glass-subtitle">Inventory System</p>
             </div>
         </div>
 
-        {{-- Headline --}}
-        <h1 class="kk-auth-headline">
-            Kelola Semua<br>
-            <span>Stock Anda</span><br>
-            Dengan Mudah
-        </h1>
+        <div class="kk-glass-welcome">
+            <h2>Welcome Back</h2>
+            <p>Silakan masuk ke akun Anda</p>
+        </div>
 
-        <p class="kk-auth-sub">
-            Platform manajemen inventaris operasional resto
-            — real-time, cepat, dan andal.
-        </p>
-    </div>
-
-    {{-- RIGHT PANEL (Form) --}}
-    <div class="kk-auth-right">
-        <div class="kk-auth-form-wrap">
-
-            <div class="kk-auth-form-title">Selamat Datang 👋</div>
-            <div class="kk-auth-form-sub">Masuk ke akun Anda untuk melanjutkan</div>
-
-            @if ($errors->any())
-                <div class="alert alert-danger py-2 mb-4" style="font-size:0.85rem;">
-                    <i class="bi bi-exclamation-circle me-1"></i>
+        @if ($errors->any())
+            <div class="kk-glass-alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <div>
                     @foreach ($errors->all() as $error)
                         <div>{{ $error }}</div>
                     @endforeach
                 </div>
-            @endif
+            </div>
+        @endif
 
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
+        <form method="POST" action="{{ route('login') }}" class="kk-glass-form">
+            @csrf
 
-                <div class="kk-form-group">
-                    <label for="email">Alamat Email</label>
+            <div class="kk-glass-form-group">
+                <label for="email">Alamat Email</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-envelope-fill input-icon"></i>
                     <input type="email" id="email" name="email"
                            value="{{ old('email') }}"
-                           class="form-control @error('email') is-invalid @enderror"
-                           required autofocus>
+                           class="glass-input @error('email') is-invalid @enderror"
+                           placeholder="Email@kokiku.com" required autofocus>
                 </div>
-
-                <div class="kk-form-group">
-                    <label for="password">Password</label>
-                    <div class="kk-pw-wrap">
-                        <input type="password" id="password" name="password"
-                               class="form-control @error('password') is-invalid @enderror"
-                               required>
-                        <button type="button" class="kk-pw-toggle" id="pwToggle" aria-label="Tampilkan password">
-                            <i class="bi bi-eye" id="pwToggleIcon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="d-flex align-items-center justify-content-between mb-4" style="font-size:0.84rem;">
-                    <div class="form-check mb-0">
-                        <input type="checkbox" name="remember" id="remember" class="form-check-input">
-                        <label for="remember" class="form-check-label text-muted">Ingat saya</label>
-                    </div>
-                </div>
-
-                <button type="submit" class="kk-btn-login" id="loginBtn">
-                    <i class="bi bi-box-arrow-in-right me-2"></i>Masuk
-                </button>
-            </form>
-
-            <div class="text-center mt-4" style="font-size:0.78rem; color:var(--kk-text-light);">
-                Myhub Kokiku Sistem Inventory Internal
             </div>
+
+            <div class="kk-glass-form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <i class="bi bi-lock-fill input-icon"></i>
+                    <input type="password" id="password" name="password"
+                           class="glass-input @error('password') is-invalid @enderror"
+                           placeholder="••••••••" required>
+                    <button type="button" class="glass-pw-toggle" id="pwToggle" aria-label="Tampilkan password">
+                        <i class="bi bi-eye" id="pwToggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="glass-btn-submit" id="loginBtn">
+                <span>Masuk</span>
+            </button>
+        </form>
+
+        <div class="kk-glass-footer">
+            Myhub Kokiku Sistem Inventory Internal
         </div>
     </div>
 </div>

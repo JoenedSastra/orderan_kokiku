@@ -90,7 +90,6 @@ class StockController extends Controller
 
         // Fetch all items for the selected filter to be used in the Adjust Stock modal dropdown
         $allItemsForAdjust = Item::whereIn('master_location', $activeLocations)
-            ->whereHas('stockIns')
             ->orderBy('name')
             ->get();
 
@@ -335,8 +334,8 @@ class StockController extends Controller
         foreach ($itemIds as $id) {
             $item = Item::find($id);
             if ($item) {
-                // Hapus item ini beserta duplikatnya di divisi lain (berdasarkan nama yang sama)
-                Item::where('name', $item->name)->delete(); // Automatically cascades to stock_ins, stock_outs, and orders
+                // Hanya hapus item yang dipilih (tidak menghapus item dengan nama sama di divisi lain)
+                $item->delete(); // Automatically cascades to stock_ins, stock_outs, and orders
                 $deletedCount++;
             }
         }

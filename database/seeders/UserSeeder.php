@@ -22,19 +22,19 @@ class UserSeeder extends Seeder
         $users = [
             [
                 'name'      => 'Administrator',
-                'email'     => 'admin@kokiku.test',
+                'email'     => 'admin@kokiku.com',
                 'role_slug' => Role::ADMIN,
                 'password'  => 'kokiku12',
             ],
             [
                 'name'      => 'Kasir Depan',
-                'email'     => 'kasir@kokiku.test',
+                'email'     => 'kasir@kokiku.com',
                 'role_slug' => Role::KASIR,
                 'password'  => 'kokiku08',
             ],
             [
                 'name'      => 'Staff Dapur',
-                'email'     => 'kitchen@kokiku.test',
+                'email'     => 'kitchen@kokiku.com',
                 'role_slug' => Role::KITCHEN,
                 'password'  => 'kokiku05',
             ],

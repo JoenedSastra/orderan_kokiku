@@ -19,11 +19,7 @@
             <i class="bi bi-sliders"></i> Atur Jumlah Stock
         </button>
         @endif
-        @if(in_array($title, ['Gudang Utama', 'Gudang Resto']))
-        <button type="button" class="btn btn-sm text-white text-nowrap" style="background:#ef4444;" data-bs-toggle="modal" data-bs-target="#modalHapusBarang">
-            <i class="bi bi-trash"></i> Hapus Barang
-        </button>
-        @endif
+
         <div class="kk-search-box" style="min-width:180px;">
             <i class="bi bi-search"></i>
             <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
@@ -44,8 +40,9 @@
                     <th class="text-center align-middle" style="color:#0284c7; width: 6%;">Stock</th>
                     <th class="text-center align-middle" style="width: 8%;">Satuan</th>
                     <th class="text-center align-middle" style="width: 12%;">Devisi</th>
-                    <th class="text-center align-middle" style="width: 18%;">Keterangan</th>
+                    <th class="text-center align-middle" style="width: 14%;">Keterangan</th>
                     <th class="text-center align-middle" style="width: 10%;">Dicatat Oleh</th>
+                    <th class="text-center align-middle" style="width: 4%;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -64,9 +61,19 @@
                     <td class="text-center align-middle">
                         <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $aktivitas?->user?->role?->name ?? '-' }}</span>
                     </td>
+                    <td class="text-center align-middle">
+                        <form action="{{ route('admin.stock.delete_items') }}" method="POST" class="m-0 p-0 d-inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="item_ids[]" value="{{ $item->id }}">
+                            <button type="submit" class="btn btn-sm btn-danger py-1 px-2" style="font-size:0.75rem;" onclick="return confirm('Hapus permanen barang ini beserta riwayatnya?')" title="Hapus Barang">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 @empty
-                <tr><td colspan="10" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
+                <tr><td colspan="11" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -275,95 +282,12 @@
                 </div>
             </form>
         </div>
-    </div>
-</div>
-
-{{-- Modal Hapus Barang (Semua Divisi) --}}
-<div class="modal fade" id="modalHapusBarang" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 720px;">
-        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
-            <form action="{{ route('admin.stock.delete_items') }}" method="POST">
-                @csrf
-                @method('DELETE')
-                <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#ef4444 0%,#b91c1c 100%);padding:1.4rem 1.5rem 2.5rem;">
-                    <div>
-                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Hapus Barang</h5>
-                        <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Pilih barang yang ingin dihapus permanen dari {{ $title }}</small>
-                    </div>
-                </div>
-                <div class="modal-body px-4" style="margin-top:-1.2rem;padding-top:0;">
-                    <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3" style="background:#fef2f2;border:1px solid #fecaca;">
-                        <i class="bi bi-exclamation-triangle-fill" style="color:#dc2626;font-size:1rem;flex-shrink:0;"></i>
-                        <small style="color:#991b1b;line-height:1.4;">
-                            <strong>Peringatan:</strong> Menghapus barang akan menghapus secara permanen seluruh riwayat barang masuk, barang keluar, dan pesanan yang terkait dengan barang tersebut.
-                        </small>
-                    </div>
-                    
-                    <div class="table-responsive border rounded-3" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light sticky-top" style="z-index: 1;">
-                                <tr>
-                                    <th class="text-center" style="width: 50px;">
-                                        <input class="form-check-input" type="checkbox" id="checkAllHapus">
-                                    </th>
-                                    <th style="font-size:.85rem;color:#374151;white-space:nowrap;width:35%;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stok Saat Ini</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($allItemsForAdjust as $item)
-                                <tr>
-                                    <td class="text-center">
-                                        <input class="form-check-input check-item-hapus" type="checkbox" name="item_ids[]" value="{{ $item->id }}">
-                                    </td>
-                                    <td class="fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
-                                    <td class="text-center">
-                                        <span class="badge bg-light text-dark border px-2 py-1 fw-normal" style="font-size:.8rem;">
-                                            {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">Belum ada barang yang dapat dihapus.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer border-0 px-4 pb-4 pt-3 gap-2">
-                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal" style="border-radius:10px;font-size:.875rem;border:1px solid #e5e7eb;">Batal</button>
-                    <button type="submit" class="btn text-white fw-semibold px-4 flex-grow-1" style="background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;border-radius:10px;font-size:.875rem;" onclick="return confirm('Apakah Anda yakin ingin menghapus barang terpilih secara permanen beserta riwayatnya?')">Hapus Barang Terpilih</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    </div>>
 </div>
 
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const checkAll = document.getElementById('checkAllHapus');
-        const checkItems = document.querySelectorAll('.check-item-hapus');
-
-        if (checkAll) {
-            checkAll.addEventListener('change', function () {
-                checkItems.forEach(item => {
-                    item.checked = this.checked;
-                });
-            });
-
-            checkItems.forEach(item => {
-                item.addEventListener('change', function () {
-                    const allChecked = Array.from(checkItems).every(i => i.checked);
-                    const someChecked = Array.from(checkItems).some(i => i.checked);
-                    checkAll.checked = allChecked;
-                    checkAll.indeterminate = someChecked && !allChecked;
-                });
-            });
-        }
-
         // Live update Sisa on Masuk/Keluar change
         document.querySelectorAll('.input-masuk, .input-keluar').forEach(input => {
             input.addEventListener('input', function() {

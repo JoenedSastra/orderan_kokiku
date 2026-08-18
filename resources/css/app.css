@@ -10,12 +10,12 @@
    CSS Custom Properties (Design Tokens)
    ========================================================================== */
 :root {
-    /* Brand Colors */
-    --kk-orange:        #ff6b35;
-    --kk-orange-dark:   #e85520;
-    --kk-orange-light:  #ff8c5a;
-    --kk-orange-soft:   rgba(255, 107, 53, 0.12);
-    --kk-orange-glow:   rgba(255, 107, 53, 0.25);
+    /* Brand Colors (Gold) */
+    --kk-orange:        #eab308;
+    --kk-orange-dark:   #ca8a04;
+    --kk-orange-light:  #fef08a;
+    --kk-orange-soft:   rgba(234, 179, 8, 0.12);
+    --kk-orange-glow:   rgba(234, 179, 8, 0.25);
 
     /* Sidebar */
     --kk-sidebar-bg:        #0f1117;
@@ -34,7 +34,7 @@
     --kk-bg:            #f0f2f7;
     --kk-surface:       #ffffff;
     --kk-surface-2:     #f8f9fc;
-    --kk-border:        #e4e7ef;
+    --kk-border:        #000000;
 
     /* Text */
     --kk-text:          #1a1d2e;
@@ -72,18 +72,78 @@
 }
 
 [data-bs-theme="dark"] {
-    --kk-bg:            #212529;
-    --kk-surface:       #2b3035;
-    --kk-surface-2:     #343a40;
-    --kk-border:        #495057;
+    --kk-bg:            #000000;
+    --kk-surface:       #000000;
+    --kk-surface-2:     #0a0a0a;
+    --kk-border:        #1f1f1f;
     
     --kk-text:          #f3f4f6;
     --kk-text-muted:    #9ca3af;
     --kk-text-light:    #6b7280;
 
-    --kk-topbar-bg:     #161922;
-    --kk-topbar-border: rgba(255,255,255,0.06);
+    --kk-topbar-bg:     #000000;
+    --kk-topbar-border: rgba(255,255,255,0.08);
+
+    /* Force Bootstrap tables and cards to also be true black */
+    --bs-body-bg:       #000000;
+    --bs-table-bg:      #000000;
+    --bs-card-bg:       #000000;
 }
+
+/* Memaksa body menjadi hitam pekat di mode gelap */
+html[data-bs-theme="dark"] body,
+[data-bs-theme="dark"] body {
+    background-color: #000000 !important;
+}
+
+/* ==========================================================================
+   Universal Table Overrides (Light & Dark Mode)
+   ========================================================================== */
+.table,
+.table-light,
+.table-light td,
+.table td,
+.table input,
+.table select {
+    background-color: #ffffff !important;
+    border-color: #000000 !important;
+    color: #000000 !important;
+    --bs-table-border-color: #000000;
+    --bs-border-color: #000000;
+}
+
+.table tr,
+.table tbody,
+.table td,
+.table th {
+    border: 1px solid #000000 !important;
+}
+
+/* Tetap menimpa tabel di mode gelap agar tidak tertimpa bawaan Bootstrap */
+[data-bs-theme="dark"] .table,
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .table-light td,
+[data-bs-theme="dark"] .table td,
+[data-bs-theme="dark"] .table input,
+[data-bs-theme="dark"] .table select {
+    background-color: #ffffff !important;
+    border-color: #000000 !important;
+    color: #000000 !important;
+    --bs-table-border-color: #000000;
+    --bs-border-color: #000000;
+}
+
+[data-bs-theme="dark"] .table tr,
+[data-bs-theme="dark"] .table tbody,
+[data-bs-theme="dark"] .table td,
+[data-bs-theme="dark"] .table th {
+    border: 1px solid #000000 !important;
+}
+
+/* Biarkan warna khusus untuk angka Stok, Masuk, Keluar tetap menyala di tabel putih */
+.table td.text-success, [data-bs-theme="dark"] .table td.text-success { color: #059669 !important; }
+.table td.text-danger, [data-bs-theme="dark"] .table td.text-danger { color: #dc2626 !important; }
+.table td.text-primary, [data-bs-theme="dark"] .table td.text-primary { color: #0284c7 !important; }
 
 body.theme-kasir {
     --kk-orange:        #3b82f6;
@@ -137,7 +197,7 @@ body {
 .kk-sidebar {
     width: var(--kk-sidebar-width);
     flex-shrink: 0;
-    background: linear-gradient(180deg, var(--kk-sidebar-bg) 0%, var(--kk-sidebar-bg2) 100%);
+    background-color: #0f172a; /* Deep Navy Blue */
     color: var(--kk-sidebar-text);
     display: flex;
     flex-direction: column;
@@ -165,12 +225,7 @@ body {
 }
 
 .kk-sidebar-brand::after {
-    content: '';
-    position: absolute;
-    top: -30px; right: -30px;
-    width: 100px; height: 100px;
-    background: radial-gradient(circle, var(--kk-orange-glow) 0%, transparent 70%);
-    pointer-events: none;
+    display: none;
 }
 
 .kk-sidebar-logo {
@@ -235,18 +290,18 @@ body {
 }
 
 .kk-sidebar-nav .nav-link {
-    color: var(--kk-sidebar-text);
+    color: #94a3b8; /* Brighter default color */
     padding: 0.6rem 0.9rem;
     border-radius: var(--kk-radius-sm);
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     font-weight: 500;
     display: flex;
     align-items: center;
     gap: 0.7rem;
-    margin-bottom: 0.1rem;
+    margin-bottom: 0.2rem;
     text-decoration: none;
     white-space: nowrap;
-    transition: all var(--kk-transition);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
 }
@@ -271,14 +326,22 @@ body {
 
 .kk-sidebar-nav .nav-link:hover {
     background: rgba(255,255,255,0.06);
-    color: #fff;
-    transform: translateX(3px);
+    color: #ffffff;
+    transform: translateX(4px);
+    text-shadow: 0 0 12px rgba(255,255,255,0.6);
 }
 
 .kk-sidebar-nav .nav-link.active {
-    background: linear-gradient(135deg, rgba(255,107,53,0.18) 0%, rgba(255,107,53,0.08) 100%);
-    color: var(--kk-orange-light);
-    font-weight: 600;
+    background: linear-gradient(135deg, rgba(234,179,8,0.2) 0%, rgba(234,179,8,0.02) 100%);
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 0 0 12px rgba(255,255,255,0.5);
+    box-shadow: inset 0 0 15px rgba(234,179,8,0.1);
+}
+
+.kk-sidebar-nav .nav-link.active i {
+    color: var(--kk-orange);
+    text-shadow: 0 0 15px var(--kk-orange);
 }
 
 .kk-sidebar-nav .nav-link.active::before {
@@ -295,12 +358,13 @@ body {
     align-items: center;
     gap: 0.6rem;
     text-transform: uppercase;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
     color: var(--kk-orange);
+    text-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
     white-space: nowrap;
-    padding: 1rem 0.9rem 0.6rem;
+    padding: 1.2rem 0.9rem 0.6rem;
     margin-top: 0.25rem;
 }
 
@@ -330,6 +394,29 @@ body {
 .kk-search-box input.form-control {
     padding-left: 2.1rem;
     border-radius: var(--kk-radius-sm);
+}
+
+/* Border jelas di mode terang untuk pencarian dan tanggal */
+.kk-search-box input.form-control,
+input[type="date"].form-control,
+input[type="month"].form-control,
+.input-group-text {
+    border: 1px solid #000000 !important; /* Jelas di mode terang */
+}
+
+/* Border samar di mode gelap */
+[data-bs-theme="dark"] .kk-search-box input.form-control,
+[data-bs-theme="dark"] input[type="date"].form-control,
+[data-bs-theme="dark"] input[type="month"].form-control,
+[data-bs-theme="dark"] .input-group-text {
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Garis samar di mode gelap */
+}
+
+.kk-search-box input.form-control:focus,
+input[type="date"].form-control:focus,
+input[type="month"].form-control:focus {
+    border-color: var(--kk-orange) !important;
+    box-shadow: 0 0 0 0.2rem var(--kk-orange-soft);
 }
 
 /* Sidebar footer (user info) */
@@ -734,267 +821,216 @@ body {
 
 .kk-badge-menunggu { animation: kkPulse 2.5s ease infinite; }
 
-/* ==========================================================================
-   Auth Page
+/* =======================================================================    Auth Page — Soft Red Theme
    ========================================================================== */
-.kk-auth-wrapper {
+.kk-auth-wrapper.glass-theme {
     min-height: 100vh;
     display: flex;
-    align-items: stretch;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     overflow: hidden;
+    background: #ffffff; /* Plain white background */
 }
 
-/* Left Panel */
-.kk-auth-left {
-    flex: 1;
-    background: linear-gradient(135deg, #0f1117 0%, #1a1d2e 40%, #2d1520 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
+/* Glassmorphism Card (Soft Red) */
+.kk-auth-glass-card {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 440px;
+    background: #fff1f2; /* Soft red (Rose 50) */
+    border: 1px solid #fecdd3; /* Rose 200 */
+    border-radius: 24px;
     padding: 3rem;
-    position: relative;
-    overflow: hidden;
-}
-
-.kk-auth-left::before {
-    content: '';
-    position: absolute;
-    top: -100px; right: -100px;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(255,107,53,0.25) 0%, transparent 70%);
-    animation: kkOrb1 8s ease-in-out infinite;
-}
-
-.kk-auth-left::after {
-    content: '';
-    position: absolute;
-    bottom: -80px; left: -80px;
-    width: 300px; height: 300px;
-    background: radial-gradient(circle, rgba(255,107,53,0.15) 0%, transparent 70%);
-    animation: kkOrb2 6s ease-in-out infinite;
-}
-
-@keyframes kkOrb1 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%       { transform: translate(-30px, 30px) scale(1.1); }
-}
-@keyframes kkOrb2 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50%       { transform: translate(20px, -20px) scale(1.05); }
-}
-
-.kk-auth-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
-    margin-bottom: 3rem;
-    position: relative;
-    z-index: 1;
-}
-
-.kk-auth-brand-icon {
-    width: 60px; height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 2px solid rgba(255,255,255,0.2);
-}
-
-.kk-auth-brand-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.kk-auth-brand-name {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #fff;
-    letter-spacing: -0.02em;
-}
-
-.kk-auth-brand-sub {
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.45);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.kk-auth-headline {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1.15;
-    letter-spacing: -0.03em;
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 1;
-}
-
-.kk-auth-headline span {
-    background: linear-gradient(90deg, var(--kk-orange) 0%, var(--kk-orange-light) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.kk-auth-sub {
-    font-size: 0.95rem;
-    color: rgba(255,255,255,0.5);
-    line-height: 1.7;
-    max-width: 380px;
-    position: relative;
-    z-index: 1;
-    margin-bottom: 2.5rem;
-}
-
-.kk-auth-features {
+    box-shadow: 0 20px 40px rgba(225, 29, 72, 0.08), 0 1px 3px rgba(225, 29, 72, 0.05);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    position: relative;
-    z-index: 1;
+    gap: 2rem;
+    animation: kkFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.kk-auth-feature {
+/* Brand Section */
+.kk-glass-brand {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    font-size: 0.875rem;
-    color: rgba(255,255,255,0.7);
+    gap: 1rem;
 }
 
-.kk-auth-feature-icon {
-    width: 28px; height: 28px;
-    background: rgba(255,107,53,0.15);
-    border: 1px solid rgba(255,107,53,0.25);
-    border-radius: 0.4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    color: var(--kk-orange-light);
-    flex-shrink: 0;
+.kk-glass-brand-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(225, 29, 72, 0.15);
+    border: 2px solid #ffffff;
 }
 
-/* Right Panel (Form) */
-.kk-auth-right {
-    width: 480px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 2.5rem;
-    position: relative;
+.kk-glass-brand-icon img {
+    width: 100%; height: 100%;
+    object-fit: cover;
 }
 
-.kk-auth-form-wrap {
-    width: 100%;
-    max-width: 360px;
-}
-
-.kk-auth-form-title {
-    font-size: 1.6rem;
+.kk-glass-title {
+    font-size: 1.4rem;
     font-weight: 800;
-    color: var(--kk-text);
+    color: #111827; /* Gray 900 */
+    margin: 0;
     letter-spacing: -0.02em;
-    margin-bottom: 0.4rem;
 }
 
-.kk-auth-form-sub {
-    font-size: 0.875rem;
-    color: var(--kk-text-muted);
-    margin-bottom: 2rem;
+.kk-glass-subtitle {
+    font-size: 0.75rem;
+    color: #4b5563; /* Gray 600 */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0;
+    margin-top: 2px;
 }
 
-/* Form Inputs — Enhanced */
-.kk-form-group {
-    margin-bottom: 1.25rem;
+/* Welcome Text */
+.kk-glass-welcome h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.25rem;
 }
 
-.kk-form-group label {
-    display: block;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--kk-text);
-    margin-bottom: 0.45rem;
-    letter-spacing: 0.01em;
-}
-
-.kk-form-group .form-control,
-.kk-form-group .form-select {
-    border: 1.5px solid var(--kk-border);
-    border-radius: var(--kk-radius-sm);
-    padding: 0.65rem 0.9rem;
+.kk-glass-welcome p {
     font-size: 0.9rem;
-    font-family: inherit;
-    color: var(--kk-text);
-    background: var(--kk-surface);
-    transition: all var(--kk-transition);
-    box-shadow: none;
+    color: #374151; /* Gray 700 */
+    margin: 0;
 }
 
-.kk-form-group .form-control:focus,
-.kk-form-group .form-select:focus {
-    border-color: var(--kk-orange);
-    box-shadow: 0 0 0 3px var(--kk-orange-soft);
-    outline: none;
+/* Alert */
+.kk-glass-alert {
+    background: #ffe4e6;
+    border: 1px solid #fda4af;
+    border-radius: 12px;
+    padding: 1rem;
+    color: #be123c;
+    font-size: 0.85rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+.kk-glass-alert i {
+    font-size: 1.1rem;
+    margin-top: -2px;
 }
 
-/* Password Input Wrapper */
-.kk-pw-wrap {
+/* Form Styles */
+.kk-glass-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.kk-glass-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.kk-glass-form-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151; /* Gray 700 */
+    letter-spacing: 0.02em;
+}
+
+.input-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.kk-pw-wrap .form-control {
-    padding-right: 2.75rem;
-}
-
-.kk-pw-toggle {
+.input-wrapper .input-icon {
     position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 1rem;
+    color: #fb7185;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.glass-input {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #fda4af; /* Rose 300 */
+    border-radius: 12px;
+    padding: 0.8rem 1rem 0.8rem 2.75rem;
+    color: #111827; /* Gray 900 */
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(225, 29, 72, 0.03);
+}
+
+.glass-input::placeholder {
+    color: #fba1b1;
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: #e11d48; /* Rose 600 */
+    box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.15), inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.glass-input:focus + .input-icon,
+.input-wrapper:focus-within .input-icon {
+    color: #e11d48;
+}
+
+.glass-pw-toggle {
+    position: absolute;
+    right: 1rem;
     background: none;
     border: none;
+    color: #fb7185;
     cursor: pointer;
-    color: var(--kk-text-muted);
-    font-size: 1rem;
     padding: 0;
-    transition: color var(--kk-transition);
+    transition: color 0.3s ease;
 }
-.kk-pw-toggle:hover { color: var(--kk-orange); }
 
-/* Auth Submit Button */
-.kk-btn-login {
+.glass-pw-toggle:hover {
+    color: #e11d48;
+}
+
+/* Submit Button */
+.glass-btn-submit {
+    margin-top: 0.5rem;
     width: 100%;
-    padding: 0.75rem;
-    background: linear-gradient(135deg, var(--kk-orange) 0%, var(--kk-orange-dark) 100%);
-    color: #fff;
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+    color: #ffffff;
     border: none;
-    border-radius: var(--kk-radius-sm);
-    font-size: 0.95rem;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1rem;
     font-weight: 700;
-    font-family: inherit;
     cursor: pointer;
-    transition: all var(--kk-transition);
-    box-shadow: 0 4px 16px rgba(255,107,53,0.35);
-    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 24px rgba(225, 29, 72, 0.25);
 }
 
-.kk-btn-login:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(255,107,53,0.45);
-    background: linear-gradient(135deg, var(--kk-orange-light) 0%, var(--kk-orange) 100%);
+.glass-btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(225, 29, 72, 0.35);
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
 }
 
-.kk-btn-login:active { transform: translateY(0); }
+.glass-btn-submit:active {
+    transform: translateY(0);
+}
+
+/* Footer */
+.kk-glass-footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #9f1239;
+    margin-top: 1rem;
+}
 
 /* ==========================================================================
    Table Styling
@@ -1203,27 +1239,37 @@ body {
     color: var(--kk-orange);
 }
 
+.kk-notif-dropdown .btn:focus,
+.kk-notif-dropdown .btn.show,
+.kk-notif-dropdown .btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
 .kk-notif-dropdown .dropdown-menu {
     width: 340px;
     max-height: 440px;
     overflow-y: auto;
+    background-color: var(--kk-surface);
     border: 1px solid var(--kk-border);
     border-radius: var(--kk-radius);
     box-shadow: var(--kk-shadow-lg);
     padding: 0;
+    z-index: 1050 !important;
+    margin-top: 8px !important;
 }
 
 .kk-notif-header {
     padding: 1rem 1.125rem 0.75rem;
     border-bottom: 1px solid var(--kk-border);
-    background: linear-gradient(135deg, #0f1117 0%, #1a1d2e 100%);
+    background-color: var(--kk-surface-2);
     border-radius: var(--kk-radius) var(--kk-radius) 0 0;
 }
 
 .kk-notif-title {
     font-size: 0.88rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--kk-text);
 }
 
 .kk-notif-count {
@@ -1248,7 +1294,7 @@ body {
     white-space: normal;
     border: none;
     background: none;
-    border-bottom: 1px solid rgba(0,0,0,0.04);
+    border-bottom: 1px solid var(--kk-border);
     padding: 0.75rem 1rem;
     transition: background var(--kk-transition);
 }
@@ -1461,5 +1507,30 @@ body {
     .kk-chart-tabs { width: 100%; }
     .kk-chart-tab { flex: 1; justify-content: center; font-size: 0.72rem; padding: 0.28rem 0.5rem; }
     .kk-chart-date-badge { font-size: 0.72rem; }
+}
+
+/* ==========================================================================
+   Table Header Universal Override
+   ========================================================================== */
+.table thead,
+.table thead th,
+.table-light,
+.table-light th,
+th[style*="background"] {
+    background-color: var(--kk-orange) !important;
+    background-image: none !important;
+    color: #000000 !important;
+    border-bottom: none !important;
+}
+
+[data-bs-theme="dark"] .table thead,
+[data-bs-theme="dark"] .table thead th,
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .table-light th,
+[data-bs-theme="dark"] th[style*="background"] {
+    background-color: var(--kk-orange) !important;
+    background-image: none !important;
+    color: #000000 !important;
+    border-bottom: none !important;
 }
 

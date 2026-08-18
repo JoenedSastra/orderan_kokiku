@@ -44,18 +44,7 @@
             </button>
         </div>
 
-        {{-- Role badge --}}
-        @auth
-        <div style="padding: 0.75rem 1.25rem 0.25rem;">
-            @if(auth()->user()->isAdmin())
-                <span class="kk-role-badge admin"><i class="bi bi-shield-check"></i> Administrator</span>
-            @elseif(auth()->user()->isKasir())
-                <span class="kk-role-badge kasir"><i class="bi bi-cash-coin"></i> Kasir</span>
-            @elseif(auth()->user()->isKitchen())
-                <span class="kk-role-badge kitchen"><i class="bi bi-cup-hot"></i> Kitchen</span>
-            @endif
-        </div>
-        @endauth
+
 
         {{-- Nav --}}
         <nav class="kk-sidebar-nav">
