@@ -709,7 +709,7 @@ input[type="month"].form-control:focus {
     color: #fff;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(255,107,53,0.2);
+    border: none;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15);
 }
 
@@ -774,7 +774,7 @@ input[type="month"].form-control:focus {
     justify-content: center;
     gap: 0.5rem;
     padding: 1.1rem 0.75rem;
-    background: var(--kk-surface);
+    background: var(--kk-surface-2);
     border: 1.5px solid var(--kk-border);
     border-radius: var(--kk-radius);
     text-decoration: none;
@@ -797,6 +797,16 @@ input[type="month"].form-control:focus {
 .kk-quick-action i {
     font-size: 1.4rem;
 }
+
+.kk-quick-action.kk-action-green { background: #10b981; border-color: #059669; color: #fff; }
+.kk-quick-action.kk-action-green:hover { background: #059669; color: #fff; border-color: #047857; transform: translateY(-3px); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+
+.kk-quick-action.kk-action-red { background: #ef4444; border-color: #dc2626; color: #fff; }
+.kk-quick-action.kk-action-red:hover { background: #dc2626; color: #fff; border-color: #b91c1c; transform: translateY(-3px); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+
+.kk-quick-action.kk-action-orange { background: #f97316; border-color: #ea580c; color: #fff; }
+.kk-quick-action.kk-action-orange:hover { background: #ea580c; color: #fff; border-color: #c2410c; transform: translateY(-3px); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4); }
+
 
 /* ==========================================================================
    Badge Status

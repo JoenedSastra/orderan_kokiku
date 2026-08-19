@@ -27,10 +27,18 @@
     </div>
 </div>
 
-<div class="kk-stat-card p-0">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 text-center align-middle table-sm">
-            <thead class="table-light">
+<style>
+    /* Hilangkan border bawaan dari cell pinggir agar menempel rata dengan navy card */
+    #tabelDataStock { border: none !important; }
+    #tabelDataStock thead th { border-top: none !important; }
+    #tabelDataStock th:first-child, #tabelDataStock td:first-child { border-left: none !important; }
+    #tabelDataStock th:last-child, #tabelDataStock td:last-child { border-right: none !important; }
+    #tabelDataStock tbody tr:last-child td { border-bottom: none !important; }
+</style>
+<div class="kk-stat-card mb-4 rounded-0" style="background-color: #dc2626; padding: 2px; border: none;">
+    <div class="table-responsive" style="background-color: var(--kk-surface);">
+        <table class="table table-hover mb-0 text-center align-middle table-sm" id="tabelDataStock" style="border: none; border-top: none;">
+            <thead class="table-light" style="border-top: none;">
                 <tr>
                     <th class="text-center align-middle" style="width: 4%;">No</th>
                     <th class="text-center align-middle" style="width: 16%;">Hari, Jam, &amp; Tanggal</th>

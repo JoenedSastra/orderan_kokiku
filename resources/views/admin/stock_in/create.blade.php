@@ -18,8 +18,16 @@
 <form action="{{ route('admin.stock_in.store', ['lokasi' => $lokasi]) }}" method="POST" id="formBarangMasukMassal">
     @csrf
 
-    <div class="kk-stat-card p-0">
-        <div class="table-responsive" style="max-height:70vh;">
+    <style>
+        /* Hilangkan border bawaan dari cell pinggir agar menempel rata dengan navy card */
+        #tabelBarangMasuk { border: none !important; }
+        #tabelBarangMasuk thead th { border-top: none !important; }
+        #tabelBarangMasuk th:first-child, #tabelBarangMasuk td:first-child { border-left: none !important; }
+        #tabelBarangMasuk th:last-child, #tabelBarangMasuk td:last-child { border-right: none !important; }
+        #tabelBarangMasuk tbody tr:last-child td { border-bottom: none !important; }
+    </style>
+    <div class="kk-stat-card mb-4 rounded-0" style="background-color: #dc2626; padding: 2px; border: none;">
+        <div class="table-responsive" style="max-height:70vh; background-color: var(--kk-surface);">
             <table class="table table-bordered table-sm mb-0 align-middle" id="tabelBarangMasuk">
                 <thead class="table-light" style="position:sticky; top:0; z-index:1;">
                     <tr>

@@ -4,10 +4,13 @@
 @section('content')
 
 {{-- Hero Greeting Card --}}
-<div class="kk-hero-card mb-4">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <div class="kk-hero-greeting">🔥 Panel Administrator</div>
+<div class="kk-hero-card mb-4 position-relative" id="heroBgContainer" onclick="document.getElementById('heroBgInput').click()" style="cursor: pointer; background-size: cover; background-position: center; transition: background-image 0.3s ease-in-out;" title="Klik untuk mengganti gambar latar">
+    {{-- Overlay to ensure text readability if background is bright --}}
+    <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.6) 100%); border-radius: inherit; z-index: 0; pointer-events: none;"></div>
+    
+    <div class="row align-items-center position-relative" style="z-index: 1;">
+        <div class="col-12">
+            <div class="kk-hero-greeting">PANEL ADMINISTRATOR</div>
             <div class="kk-hero-name">Halo, {{ $user->name }}!</div>
             <div class="kk-hero-sub">Selamat datang di pusat kendali inventaris Kokiku.</div>
             <div class="kk-hero-badge">
@@ -15,15 +18,13 @@
                 {{ now()->translatedFormat('l, d F Y') }}
             </div>
         </div>
-        <div class="col-md-4 d-none d-md-flex justify-content-end align-items-center">
-            <div style="font-size:5rem; opacity:0.12; line-height:1; position:relative; z-index:1;">🔥</div>
-        </div>
     </div>
 </div>
+<input type="file" class="d-none" id="heroBgInput" accept="image/*">
 
 
 {{-- Aksi Cepat --}}
-<div class="kk-stat-card mb-4">
+<div class="kk-stat-card mb-4" style="background-color: var(--kk-surface-2);">
     <div class="kk-section-header mb-3">
         <div class="kk-section-title">
             <i class="bi bi-lightning-charge"></i> Aksi Cepat
@@ -31,55 +32,26 @@
     </div>
     <div class="row g-3">
         <div class="col-12 col-lg-4">
-            <a href="{{ route('admin.stock_in.index') }}" class="kk-quick-action">
+            <a href="{{ route('admin.stock_in.index') }}" class="kk-quick-action kk-action-green">
                 <i class="bi bi-box-arrow-in-down"></i>
-                <span>Barang Masuk</span>
+                <span>Barang Masuk Harian</span>
             </a>
         </div>
         <div class="col-12 col-lg-4">
-            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action">
+            <a href="{{ route('admin.stock.index', ['filter' => 'gudang_utama']) }}" class="kk-quick-action kk-action-red">
                 <i class="bi bi-box-arrow-up"></i>
-                <span>Kirim Barang</span>
+                <span>Kirim Barang Gudang</span>
             </a>
         </div>
         <div class="col-12 col-lg-4">
-            <a href="{{ route('admin.data_stock.index') }}" class="kk-quick-action">
+            <a href="{{ route('admin.data_stock.index') }}" class="kk-quick-action kk-action-orange">
                 <i class="bi bi-box-seam"></i>
-                <span>Data Stock</span>
+                <span>Data Stock Devisi</span>
             </a>
         </div>
     </div>
 </div>
 
-<div class="row g-3 mb-3">
-    <div class="col-6 col-lg-4">
-        <div class="kk-stat-card gradient-orange">
-            <div class="d-flex align-items-start justify-content-between mb-2">
-                <div class="kk-stat-icon"><i class="bi bi-box-seam-fill"></i></div>
-            </div>
-            <div class="kk-stat-value">{{ $totalBarang }}</div>
-            <div class="kk-stat-label">Total Jenis Barang</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4">
-        <div class="kk-stat-card gradient-green">
-            <div class="d-flex align-items-start justify-content-between mb-2">
-                <div class="kk-stat-icon"><i class="bi bi-box-arrow-in-down-right"></i></div>
-            </div>
-            <div class="kk-stat-value">{{ $masukHariIni }}</div>
-            <div class="kk-stat-label">Barang Masuk Hari Ini</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-4">
-        <div class="kk-stat-card gradient-red">
-            <div class="d-flex align-items-start justify-content-between mb-2">
-                <div class="kk-stat-icon"><i class="bi bi-box-arrow-up-right"></i></div>
-            </div>
-            <div class="kk-stat-value">{{ $keluarHariIni }}</div>
-            <div class="kk-stat-label">Barang Keluar Hari Ini</div>
-        </div>
-    </div>
-</div>
 
 
 
@@ -124,6 +96,7 @@
             <div class="row g-3">
                 <div class="col-12">
                     <div class="h-100 d-flex flex-column" style="background:var(--kk-surface-2); border-radius:var(--kk-radius-sm); padding:1rem; min-height: 250px;">
+                        <div id="custom-legend-aktivitas" class="d-flex justify-content-center gap-4 mb-3"></div>
                         <div class="flex-grow-1 position-relative" style="height: 250px;">
                             <canvas id="chartAktivitas"></canvas>
                         </div>
@@ -244,6 +217,12 @@ document.addEventListener('DOMContentLoaded', function () {
             chartAktivitas.destroy();
         }
         
+        let hiddenStates = [false, false, false];
+        try {
+            const saved = localStorage.getItem('chartAktivitas_hidden');
+            if (saved) hiddenStates = JSON.parse(saved);
+        } catch(e) {}
+        
         const ctx = document.getElementById('chartAktivitas');
         chartAktivitas = new window.Chart(ctx, {
             type: type,
@@ -253,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         label: 'Barang Masuk',
                         data: json.masuk,
+                        hidden: hiddenStates[0],
                         backgroundColor: type === 'line' ? '#10b98133' : '#10b981',
                         borderColor: '#10b981',
                         borderWidth: 2,
@@ -265,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         label: 'Barang Keluar',
                         data: json.keluar,
+                        hidden: hiddenStates[1],
                         backgroundColor: type === 'line' ? '#ef444433' : '#ef4444',
                         borderColor: '#ef4444',
                         borderWidth: 2,
@@ -277,6 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         label: 'Stock',
                         data: json.permintaan,
+                        hidden: hiddenStates[2],
                         backgroundColor: type === 'line' ? '#ff6b3533' : '#ff6b35',
                         borderColor: '#ff6b35',
                         borderWidth: 2,
@@ -297,9 +279,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 plugins: { 
                     legend: { 
-                        display: true,
-                        position: 'top',
-                        labels: { color: '#9ca3af', usePointStyle: true, boxWidth: 8, font: { size: 11 } }
+                        display: false
                     },
                     tooltip: {
                         mode: 'index',
@@ -312,7 +292,52 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
             },
         });
+        
+        updateCustomLegend();
     }
+
+    function updateCustomLegend() {
+        const legendContainer = document.getElementById('custom-legend-aktivitas');
+        if (!legendContainer || !chartAktivitas) return;
+        
+        let html = '';
+        const datasets = chartAktivitas.data.datasets;
+        datasets.forEach((dataset, index) => {
+            const isHidden = chartAktivitas.isDatasetVisible(index) === false;
+            const mainColor = dataset.borderColor; 
+            const bgColor = isHidden ? 'transparent' : mainColor;
+            const tick = isHidden ? '' : '<i class="bi bi-check2 text-white" style="font-size:0.9rem; line-height: 1; font-weight: 900;"></i>';
+            
+            html += `
+                <div class="d-flex align-items-center" style="cursor: pointer; user-select: none;" onclick="toggleAktivitasDataset(${index})">
+                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: ${bgColor}; border: 2px solid ${mainColor}; display: flex; align-items: center; justify-content: center; margin-right: 6px; transition: all 0.2s;">
+                        ${tick}
+                    </div>
+                    <span style="color: #9ca3af; font-size: 13px; text-decoration: none; opacity: ${isHidden ? '0.6' : '1'}; transition: all 0.2s;">${dataset.label}</span>
+                </div>
+            `;
+        });
+        legendContainer.innerHTML = html;
+    }
+
+    window.toggleAktivitasDataset = function(index) {
+        if (!chartAktivitas) return;
+        if (chartAktivitas.isDatasetVisible(index)) {
+            chartAktivitas.hide(index);
+        } else {
+            chartAktivitas.show(index);
+        }
+        
+        // Simpan ke localStorage
+        const states = [
+            !chartAktivitas.isDatasetVisible(0),
+            !chartAktivitas.isDatasetVisible(1),
+            !chartAktivitas.isDatasetVisible(2)
+        ];
+        localStorage.setItem('chartAktivitas_hidden', JSON.stringify(states));
+        
+        updateCustomLegend();
+    };
 
     // Donut Chart Devisi
     const ctxKategori = document.getElementById('chartKategori');
@@ -447,6 +472,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load default: hari ini
     loadHarian(currentDate);
+
+    /* ── Ganti Latar Belakang (Hero Card) ────────────────────── */
+    const heroBgInput = document.getElementById('heroBgInput');
+    const heroBgContainer = document.getElementById('heroBgContainer');
+    
+    // Muat dari localStorage jika ada
+    const savedBg = localStorage.getItem('heroBgImage');
+    if (savedBg) {
+        heroBgContainer.style.backgroundImage = `url(${savedBg})`;
+    }
+
+    if (heroBgInput) {
+        heroBgInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64Image = event.target.result;
+                    heroBgContainer.style.backgroundImage = `url(${base64Image})`;
+                    try {
+                        localStorage.setItem('heroBgImage', base64Image);
+                    } catch (err) {
+                        console.error("File terlalu besar untuk localStorage", err);
+                        alert("Gambar ini terlalu besar untuk disimpan di memori browser. Gambar akan hilang saat direfresh.");
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 });
 </script>
 @endpush

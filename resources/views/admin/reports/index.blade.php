@@ -73,9 +73,16 @@
         $theadClasses = 'table-danger';
     }
 @endphp
-<div class="{{ $isBarangKeluarDivisi ? '' : 'kk-stat-card' }}">
-    <div class="table-responsive">
-        <table class="table table-sm text-center align-middle {{ $tableClasses }} mb-0">
+<style>
+    #tabelLaporan { border: none !important; }
+    #tabelLaporan thead th { border-top: none !important; }
+    #tabelLaporan th:first-child, #tabelLaporan td:first-child { border-left: none !important; }
+    #tabelLaporan th:last-child, #tabelLaporan td:last-child { border-right: none !important; }
+    #tabelLaporan tbody tr:last-child td { border-bottom: none !important; }
+</style>
+<div class="{{ $isBarangKeluarDivisi ? '' : 'kk-stat-card' }} mb-4 rounded-0" style="background-color: #dc2626; padding: 2px; border: none;">
+    <div class="table-responsive" style="background-color: var(--kk-surface);">
+        <table class="table table-sm text-center align-middle {{ $tableClasses }} mb-0" id="tabelLaporan">
             <thead class="{{ $theadClasses }}">
                 <tr>
                     <th class="text-center align-middle" style="{{ $isStockReport ? 'width: 4%;' : 'width: 50px;' }}">No</th>

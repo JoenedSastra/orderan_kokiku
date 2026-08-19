@@ -29,7 +29,7 @@ class StockInController extends Controller
         Item::MASTER_GUDANG_UTAMA => 'bi-building',
         Item::MASTER_GUDANG_RESTO => 'bi-shop',
         Item::MASTER_KASIR        => 'bi-cash-coin',
-        Item::MASTER_KITCHEN      => 'bi-egg-fried',
+        Item::MASTER_KITCHEN      => 'bi-cup-hot-fill',
     ];
 
     private const LOKASI_GRADIENTS = [
