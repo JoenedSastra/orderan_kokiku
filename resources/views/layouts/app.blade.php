@@ -91,23 +91,45 @@
                 @auth
                     @include('layouts.partials.notifications-dropdown')
 
-                    {{-- User Info --}}
-                    <div class="d-flex align-items-center gap-2">
-                        <form id="avatarForm" action="{{ route('profile.avatar') }}" method="POST" enctype="multipart/form-data" class="d-none">
-                            @csrf
-                            <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
-                        </form>
-                        <label for="avatarInput" class="kk-user-avatar" style="cursor: pointer; overflow: hidden; padding: 0;" title="Ubah Foto Profil">
-                            @if(auth()->user()->avatar)
-                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
-                            @else
-                                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                            @endif
-                        </label>
-                        <div class="kk-user-info d-none d-sm-block">
-                            <div class="kk-user-name-text">{{ auth()->user()->name }}</div>
-                            <div class="kk-user-role-text">{{ auth()->user()->role?->name }}</div>
+                    {{-- User Info & Profile Card --}}
+                    <div class="dropdown">
+                        <div class="d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Lihat Profil">
+                            <div class="kk-user-avatar" style="overflow: hidden; padding: 0;">
+                                @if(auth()->user()->avatar)
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                                @else
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                                @endif
+                            </div>
+                            <div class="kk-user-info d-none d-sm-block">
+                                <div class="kk-user-name-text">{{ auth()->user()->name }}</div>
+                                <div class="kk-user-role-text">{{ auth()->user()->role?->name }}</div>
+                            </div>
                         </div>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2 p-0" style="min-width: 260px; border: 1px solid var(--kk-border); background-color: var(--kk-surface); border-radius: var(--kk-radius); overflow: hidden;">
+                            <li>
+                                <div class="px-4 py-4 text-center border-bottom" style="border-color: var(--kk-border) !important;">
+                                    <div class="kk-user-avatar mx-auto mb-3" style="width: 72px; height: 72px; overflow: hidden; padding: 0; font-size: 1.8rem;">
+                                        @if(auth()->user()->avatar)
+                                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                                        @else
+                                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                                        @endif
+                                    </div>
+                                    <div style="font-weight: 700; color: var(--kk-text); font-size: 1.15rem;">{{ auth()->user()->name }}</div>
+                                    <div style="font-size: 0.85rem; color: var(--kk-text-light); margin-bottom: 12px;" class="badge bg-secondary bg-opacity-25 text-secondary">{{ auth()->user()->role?->name }}</div>
+                                    
+                                    <form id="avatarForm" action="{{ route('profile.avatar') }}" method="POST" enctype="multipart/form-data" class="d-none">
+                                        @csrf
+                                        <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
+                                    </form>
+                                    <label for="avatarInput" class="btn btn-sm w-100 mb-0 transition-all" style="background-color: var(--kk-surface-hover); color: var(--kk-text); border: 1px solid var(--kk-border); border-radius: var(--kk-radius-sm); cursor: pointer;">
+                                        <i class="bi bi-camera me-1"></i> Ubah Foto Profil
+                                    </label>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
 
                     {{-- Logout --}}

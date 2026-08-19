@@ -10,8 +10,8 @@
     <div class="row g-4">
         <!-- Gudang Utama -->
         <div class="col-md-6">
-            <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
+            <div class="card kk-card" style="border-radius: 0;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #2563eb; border-radius: 0;">
                     Tabel Gudang Utama
                 </div>
                 <div class="card-body p-0">
@@ -46,8 +46,8 @@
 
         <!-- Gudang Resto -->
         <div class="col-md-6">
-            <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
+            <div class="card kk-card" style="border-radius: 0;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #2563eb; border-radius: 0;">
                     Tabel Gudang Resto
                 </div>
                 <div class="card-body p-0">
@@ -82,8 +82,8 @@
 
         <!-- Kasir -->
         <div class="col-md-6">
-            <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
+            <div class="card kk-card" style="border-radius: 0;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #2563eb; border-radius: 0;">
                     Tabel Kasir
                 </div>
                 <div class="card-body p-0">
@@ -118,8 +118,8 @@
 
         <!-- Kitchen -->
         <div class="col-md-6">
-            <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
+            <div class="card kk-card" style="border-radius: 0;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #2563eb; border-radius: 0;">
                     Tabel Kitchen
                 </div>
                 <div class="card-body p-0">

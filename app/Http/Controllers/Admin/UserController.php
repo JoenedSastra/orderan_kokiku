@@ -10,7 +10,11 @@ class UserController extends Controller
 {
     public function index(): View
     {
-        $users = User::with('role')->latest()->paginate(15);
+        $users = User::with('role')
+            ->where('email', 'not like', '%.test')
+            ->orderBy('role_id')
+            ->get();
+            
         return view('admin.users.index', compact('users'));
     }
 }

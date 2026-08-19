@@ -683,6 +683,24 @@ input[type="month"].form-control:focus {
 .kk-stat-card.gradient-amber .kk-stat-label { color: rgba(255,255,255,0.95); }
 .kk-stat-card.gradient-amber .kk-stat-icon { background: rgba(255,255,255,0.2); color: #fff; }
 
+.kk-stat-card.gradient-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: transparent;
+    color: #fff;
+}
+.kk-stat-card.gradient-blue h5,
+.kk-stat-card.gradient-blue span,
+.kk-stat-card.gradient-blue .kk-stat-value,
+.kk-stat-card.gradient-blue .kk-stat-label,
+.kk-stat-card.gradient-blue [style*="color: var(--kk-text)"],
+.kk-stat-card.gradient-blue [style*="color: var(--kk-text-light)"] {
+    color: rgba(255,255,255,0.95) !important;
+}
+.kk-stat-card.gradient-blue .kk-stat-icon { background: rgba(255,255,255,0.2); color: #fff; }
+.kk-stat-card.gradient-blue .border-bottom { border-color: rgba(255,255,255,0.2) !important; }
+.kk-stat-card.gradient-blue .badge { background-color: rgba(255,255,255,0.2) !important; color: #fff !important; }
+
+
 /* Hero/Greeting Card */
 .kk-hero-card {
     background: linear-gradient(135deg, #1a1d2e 0%, #2d1f3d 50%, #1a1d2e 100%);
