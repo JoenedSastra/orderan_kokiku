@@ -238,16 +238,27 @@
                             Masukkan jumlah stok yang sebenarnya. Sistem akan otomatis menyesuaikan jumlahnya.
                         </small>
                     </div>
-                    
-                    <div class="table-responsive border rounded-3" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover align-middle mb-0">
+                    <style>
+                        .table-rounded-inner th, 
+                        .table-rounded-inner td {
+                            border: 1px solid #000 !important;
+                        }
+                        .table-rounded-inner tr:first-child th { border-top: none !important; }
+                        .table-rounded-inner tr:last-child td { border-bottom: none !important; }
+                        .table-rounded-inner tr th:first-child, 
+                        .table-rounded-inner tr td:first-child { border-left: none !important; }
+                        .table-rounded-inner tr th:last-child, 
+                        .table-rounded-inner tr td:last-child { border-right: none !important; }
+                    </style>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; border: 1px solid #000;">
+                        <table class="table table-hover align-middle mb-0 table-rounded-inner" style="border-collapse: collapse;">
                             <thead class="table-light sticky-top" style="z-index: 1;">
                                 <tr>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#059669;white-space:nowrap;min-width:100px;">Masuk</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#dc2626;white-space:nowrap;min-width:100px;">Keluar</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#0284c7;white-space:nowrap;min-width:100px;">Stock</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Masuk</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Keluar</th>
+                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Stock</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -256,14 +267,15 @@
                                     <td class="text-center fw-bold" style="font-size:.875rem;">{{ $loop->iteration }}</td>
                                     <td class="text-center fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
                                     <td class="align-middle">
-                                        <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control form-control-sm text-center input-masuk text-success fw-bold mx-auto" min="0" value="{{ $item->masukByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#10b981;">
+                                        <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control form-control-sm text-center input-masuk text-success fw-bold mx-auto" min="0" value="{{ $item->masukByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#10b981;color:#059669 !important;">
                                     </td>
                                     <td class="align-middle">
-                                        <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control form-control-sm text-center input-keluar text-danger fw-bold mx-auto" min="0" value="{{ $item->keluarByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#ef4444;">
+                                        <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control form-control-sm text-center input-keluar text-danger fw-bold mx-auto" min="0" value="{{ $item->keluarByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#ef4444;color:#dc2626 !important;">
                                     </td>
-                                    <td class="text-center text-primary fw-bold align-middle">
-                                        <span id="sisa-{{ $item->id }}" class="badge bg-light text-dark border px-3 py-2 fw-bold" style="font-size:.85rem;">
-                                            {{ $item->stokByLocation($item->master_location) }} {{ $item->unit }}
+                                    <td class="text-center align-middle">
+                                        <span class="badge bg-light border px-3 py-2 fw-bold" style="font-size:.85rem;">
+                                            <span id="sisa-val-{{ $item->id }}" style="color:#0284c7 !important;">{{ $item->stokByLocation($item->master_location) }}</span>
+                                            <span style="color:#000000 !important; margin-left:3px;">{{ $item->unit }}</span>
                                         </span>
                                     </td>
                                 </tr>
@@ -282,7 +294,7 @@
                 </div>
             </form>
         </div>
-    </div>>
+    </div>
 </div>
 
 @push('scripts')
@@ -296,12 +308,9 @@
                 const keluar = parseInt(document.querySelector(`.input-keluar[data-id="${id}"]`).value) || 0;
                 const sisa = Math.max(0, masuk - keluar);
                 
-                const sisaEl = document.getElementById(`sisa-${id}`);
-                if (sisaEl) {
-                    // Keep the unit text by replacing only the number part
-                    const text = sisaEl.textContent.trim();
-                    const unit = text.replace(/^[0-9]+/, '').trim();
-                    sisaEl.textContent = sisa + (unit ? ' ' + unit : '');
+                const sisaValEl = document.getElementById(`sisa-val-${id}`);
+                if (sisaValEl) {
+                    sisaValEl.textContent = sisa;
                 }
             });
         });

@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/notifications/destroy-all-read', [NotificationController::class, 'destroyAllRead'])->name('notifications.destroy-all-read');
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
+    Route::post('/profile/avatar', [App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+
     // ---- Admin ----
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');

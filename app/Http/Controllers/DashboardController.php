@@ -132,10 +132,6 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
-        $itemsPerDivision = Item::selectRaw('master_location, count(*) as total')
-            ->groupBy('master_location')
-            ->pluck('total', 'master_location');
-
         $divisionMap = [
             Item::MASTER_GUDANG_UTAMA => 'Gudang Utama',
             Item::MASTER_GUDANG_RESTO => 'Gudang Resto',
@@ -143,11 +139,29 @@ class DashboardController extends Controller
             Item::MASTER_KITCHEN      => 'Kitchen',
         ];
 
+        $stockInMap = StockIn::selectRaw('location, sum(quantity) as total')->groupBy('location')->pluck('total', 'location');
+        $stockOutMap = StockOut::selectRaw('location, sum(quantity) as total')->groupBy('location')->pluck('total', 'location');
+
         $donutLabels = [];
         $donutData   = [];
         foreach ($divisionMap as $key => $label) {
+            $locationKey = match($key) {
+                Item::MASTER_GUDANG_UTAMA, Item::MASTER_GUDANG_RESTO => StockIn::LOCATION_GUDANG_UTAMA, // Note: gudang_resto actually maps to gudang_utama based on Item.php location logic, but we'll leave it distinct if they use different keys, wait, StockIn only has gudang_utama, kasir, kitchen
+                Item::MASTER_KASIR => StockIn::LOCATION_KASIR,
+                Item::MASTER_KITCHEN => StockIn::LOCATION_KITCHEN,
+                default => $key
+            };
+            
+            // To be accurate with Item.php, Gudang Resto doesn't have a separate StockIn location, it uses GUDANG_UTAMA
+            // If they want to separate Gudang Resto and Gudang Utama, we should just sum the item's totalStock.
+            $items = Item::where('master_location', $key)->get();
+            $totalStock = 0;
+            foreach ($items as $item) {
+                $totalStock += $item->stokByLocation($key);
+            }
+            
             $donutLabels[] = $label;
-            $donutData[]   = $itemsPerDivision[$key] ?? 0;
+            $donutData[]   = $totalStock;
         }
 
         return view('dashboard.admin', compact(
@@ -191,18 +205,27 @@ class DashboardController extends Controller
             ->groupBy('bulan')
             ->pluck('total', 'bulan');
 
-        $permintaanPerBulan = $this->basePermintaanQuery()
-            ->whereYear('created_at', $year)
-            ->selectRaw("{$bulanExprCreated} as bulan, COUNT(*) as total")
-            ->groupBy('bulan')
-            ->pluck('total', 'bulan');
+        $initialMasuk = StockIn::where(DB::raw($tahunExpr), '<', $year)->sum('quantity');
+        $initialKeluar = StockOut::where(DB::raw($tahunExpr), '<', $year)->sum('quantity');
+        $cumulativeStock = (int) ($initialMasuk - $initialKeluar);
+
+        $masukBulanIni = StockIn::where(DB::raw($tahunExpr), $year)
+             ->selectRaw("{$bulanExpr} as bulan, SUM(quantity) as total")
+             ->groupBy('bulan')->pluck('total', 'bulan');
+        $keluarBulanIni = StockOut::where(DB::raw($tahunExpr), $year)
+             ->selectRaw("{$bulanExpr} as bulan, SUM(quantity) as total")
+             ->groupBy('bulan')->pluck('total', 'bulan');
 
         $masuk = $keluar = $permintaan = [];
 
         for ($bulan = 1; $bulan <= 12; $bulan++) {
             $masuk[]      = (int) ($masukPerBulan[$bulan] ?? 0);
             $keluar[]     = (int) ($keluarPerBulan[$bulan] ?? 0);
-            $permintaan[] = (int) ($permintaanPerBulan[$bulan] ?? 0);
+
+            $inThisMonth = (int) ($masukBulanIni[$bulan] ?? 0);
+            $outThisMonth = (int) ($keluarBulanIni[$bulan] ?? 0);
+            $cumulativeStock += ($inThisMonth - $outThisMonth);
+            $permintaan[] = max(0, $cumulativeStock);
         }
 
         return response()->json([
@@ -234,17 +257,20 @@ class DashboardController extends Controller
             ->groupBy('hari')
             ->pluck('total', 'hari');
 
-        $permintaanPerHari = $this->basePermintaanQuery()
-            ->whereYear('created_at', $year)->whereMonth('created_at', $month)
-            ->selectRaw("{$hariExprCreated} as hari, COUNT(*) as total")
-            ->groupBy('hari')
-            ->pluck('total', 'hari');
+        $startDate = sprintf('%04d-%02d-01', $year, $month);
+        $initialMasuk = StockIn::where('tanggal', '<', $startDate)->sum('quantity');
+        $initialKeluar = StockOut::where('tanggal', '<', $startDate)->sum('quantity');
+        $cumulativeStock = (int) ($initialMasuk - $initialKeluar);
+
+        $masukHariIni = StockIn::whereYear('tanggal', $year)->whereMonth('tanggal', $month)
+             ->selectRaw("{$hariExpr} as hari, SUM(quantity) as total")
+             ->groupBy('hari')->pluck('total', 'hari');
+        $keluarHariIni = StockOut::whereYear('tanggal', $year)->whereMonth('tanggal', $month)
+             ->selectRaw("{$hariExpr} as hari, SUM(quantity) as total")
+             ->groupBy('hari')->pluck('total', 'hari');
 
         $jumlahHari = Carbon::createFromDate($year, $month, 1)->daysInMonth;
 
-        // Selalu dibagi TEPAT 4 minggu (bukan 5) — Minggu 4 menampung semua
-        // sisa hari di akhir bulan (termasuk tanggal 29/30/31 kalau ada),
-        // supaya bulan dengan 29-31 hari tidak memunculkan "Minggu 5".
         $batasMinggu = [
             1 => [1, 7],
             2 => [8, 14],
@@ -257,16 +283,19 @@ class DashboardController extends Controller
         foreach ($batasMinggu as $minggu => [$awalHari, $akhirHari]) {
             $labels[] = 'Minggu ' . $minggu;
 
-            $totalMasuk = $totalKeluar = $totalPermintaan = 0;
+            $totalMasuk = $totalKeluar = 0;
             for ($hari = $awalHari; $hari <= $akhirHari; $hari++) {
                 $totalMasuk      += (int) ($masukPerHari[$hari] ?? 0);
                 $totalKeluar     += (int) ($keluarPerHari[$hari] ?? 0);
-                $totalPermintaan += (int) ($permintaanPerHari[$hari] ?? 0);
+                
+                $inThisDay = (int) ($masukHariIni[$hari] ?? 0);
+                $outThisDay = (int) ($keluarHariIni[$hari] ?? 0);
+                $cumulativeStock += ($inThisDay - $outThisDay);
             }
 
             $masuk[]      = $totalMasuk;
             $keluar[]     = $totalKeluar;
-            $permintaan[] = $totalPermintaan;
+            $permintaan[] = max(0, $cumulativeStock);
         }
 
         return response()->json([
@@ -299,19 +328,27 @@ class DashboardController extends Controller
             ->groupBy('jam')
             ->pluck('total', 'jam');
 
-        $permintaanPerJam = $this->basePermintaanQuery()
-            ->whereDate('created_at', $date)
-            ->selectRaw("{$jamExpr} as jam, COUNT(*) as total")
-            ->groupBy('jam')
-            ->pluck('total', 'jam');
+        $masukToday = StockIn::whereDate('tanggal', $date)->get();
+        $keluarToday = StockOut::whereDate('tanggal', $date)->get();
+
+        // Saldo awal sebelum tanggal ini
+        $initialMasuk = StockIn::where('tanggal', '<', $date)->sum('quantity');
+        $initialKeluar = StockOut::where('tanggal', '<', $date)->sum('quantity');
+        $cumulativeStock = (int) ($initialMasuk - $initialKeluar);
 
         $masuk = $keluar = $permintaan = $labels = [];
 
         for ($jam = 0; $jam <= 23; $jam++) {
-            $labels[]     = sprintf('%02d:00', $jam);
-            $masuk[]      = (int) ($masukPerJam[$jam] ?? 0);
-            $keluar[]     = (int) ($keluarPerJam[$jam] ?? 0);
-            $permintaan[] = (int) ($permintaanPerJam[$jam] ?? 0);
+            $labels[] = sprintf('%02d:00', $jam);
+            $masuk[]  = (int) ($masukPerJam[$jam] ?? 0);
+            $keluar[] = (int) ($keluarPerJam[$jam] ?? 0);
+
+            // Hitung net stock masuk/keluar pada jam ini (untuk SEMUA divisi, bukan cuma base query admin)
+            $inThisHour = $masukToday->filter(fn($q) => $q->created_at->format('H') == $jam)->sum('quantity');
+            $outThisHour = $keluarToday->filter(fn($q) => $q->created_at->format('H') == $jam)->sum('quantity');
+            
+            $cumulativeStock += ($inThisHour - $outThisHour);
+            $permintaan[] = max(0, $cumulativeStock); // label variabel tetap 'permintaan' agar frontend tidak rusak
         }
 
         return response()->json([
@@ -347,11 +384,17 @@ class DashboardController extends Controller
             ->groupBy('tahun')
             ->pluck('total', 'tahun');
 
-        $permintaanPerTahun = $this->basePermintaanQuery()
-            ->whereBetween(DB::raw($tahunExprCreated), [$startYear, $currentYear])
-            ->selectRaw("{$tahunExprCreated} as tahun, COUNT(*) as total")
-            ->groupBy('tahun')
-            ->pluck('total', 'tahun');
+        $initialMasuk = StockIn::where(DB::raw($tahunExpr), '<', $startYear)->sum('quantity');
+        $initialKeluar = StockOut::where(DB::raw($tahunExpr), '<', $startYear)->sum('quantity');
+        $cumulativeStock = (int) ($initialMasuk - $initialKeluar);
+
+        // Net masuk/keluar tahunan untuk semua devisi
+        $masukTahunIni = StockIn::whereBetween(DB::raw($tahunExpr), [$startYear, $currentYear])
+             ->selectRaw("{$tahunExpr} as tahun, SUM(quantity) as total")
+             ->groupBy('tahun')->pluck('total', 'tahun');
+        $keluarTahunIni = StockOut::whereBetween(DB::raw($tahunExpr), [$startYear, $currentYear])
+             ->selectRaw("{$tahunExpr} as tahun, SUM(quantity) as total")
+             ->groupBy('tahun')->pluck('total', 'tahun');
 
         $masuk = $keluar = $permintaan = $labels = [];
 
@@ -359,7 +402,12 @@ class DashboardController extends Controller
             $labels[]     = (string) $tahun;
             $masuk[]      = (int) ($masukPerTahun[$tahun] ?? 0);
             $keluar[]     = (int) ($keluarPerTahun[$tahun] ?? 0);
-            $permintaan[] = (int) ($permintaanPerTahun[$tahun] ?? 0);
+
+            $inThisYear = (int) ($masukTahunIni[$tahun] ?? 0);
+            $outThisYear = (int) ($keluarTahunIni[$tahun] ?? 0);
+            
+            $cumulativeStock += ($inThisYear - $outThisYear);
+            $permintaan[] = max(0, $cumulativeStock);
         }
 
         return response()->json([

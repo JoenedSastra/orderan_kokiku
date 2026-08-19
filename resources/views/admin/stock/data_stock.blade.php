@@ -11,7 +11,7 @@
         <!-- Gudang Utama -->
         <div class="col-md-6">
             <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #22c55e;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
                     Tabel Gudang Utama
                 </div>
                 <div class="card-body p-0">
@@ -29,7 +29,7 @@
                                 <tr>
                                     <td class="text-center align-middle">{{ $index + 1 }}</td>
                                     <td class="align-middle fw-bold">{{ $item->name }}</td>
-                                    <td class="text-center align-middle fw-bold" style="color:#0284c7;">{{ $item->stokByLocation($item->master_location) }}</td>
+                                    <td class="text-center align-middle fw-bold" style="color:#0284c7 !important;">{{ $item->stock }}</td>
                                 </tr>
                                 @endforeach
                                 @if($gudangUtama->isEmpty())
@@ -47,7 +47,7 @@
         <!-- Gudang Resto -->
         <div class="col-md-6">
             <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #22c55e;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
                     Tabel Gudang Resto
                 </div>
                 <div class="card-body p-0">
@@ -65,7 +65,7 @@
                                 <tr>
                                     <td class="text-center align-middle">{{ $index + 1 }}</td>
                                     <td class="align-middle fw-bold">{{ $item->name }}</td>
-                                    <td class="text-center align-middle fw-bold" style="color:#0284c7;">{{ $item->stokByLocation($item->master_location) }}</td>
+                                    <td class="text-center align-middle fw-bold" style="color:#0284c7 !important;">{{ $item->stock }}</td>
                                 </tr>
                                 @endforeach
                                 @if($gudangResto->isEmpty())
@@ -83,7 +83,7 @@
         <!-- Kasir -->
         <div class="col-md-6">
             <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #22c55e;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
                     Tabel Kasir
                 </div>
                 <div class="card-body p-0">
@@ -101,7 +101,7 @@
                                 <tr>
                                     <td class="text-center align-middle">{{ $index + 1 }}</td>
                                     <td class="align-middle fw-bold">{{ $item->name }}</td>
-                                    <td class="text-center align-middle fw-bold" style="color:#0284c7;">{{ $item->stokByLocation($item->master_location) }}</td>
+                                    <td class="text-center align-middle fw-bold" style="color:#0284c7 !important;">{{ $item->stock }}</td>
                                 </tr>
                                 @endforeach
                                 @if($kasir->isEmpty())
@@ -119,7 +119,7 @@
         <!-- Kitchen -->
         <div class="col-md-6">
             <div class="card kk-card">
-                <div class="card-header text-white text-center fw-bold" style="background-color: #22c55e;">
+                <div class="card-header text-white text-center fw-bold" style="background-color: #1e3a8a;">
                     Tabel Kitchen
                 </div>
                 <div class="card-body p-0">
@@ -137,7 +137,7 @@
                                 <tr>
                                     <td class="text-center align-middle">{{ $index + 1 }}</td>
                                     <td class="align-middle fw-bold">{{ $item->name }}</td>
-                                    <td class="text-center align-middle fw-bold" style="color:#0284c7;">{{ $item->stokByLocation($item->master_location) }}</td>
+                                    <td class="text-center align-middle fw-bold" style="color:#0284c7 !important;">{{ $item->stock }}</td>
                                 </tr>
                                 @endforeach
                                 @if($kitchen->isEmpty())

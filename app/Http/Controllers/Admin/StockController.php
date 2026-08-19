@@ -101,10 +101,26 @@ class StockController extends Controller
      */
     public function dataStock(): View
     {
-        $gudangUtama = Item::where('master_location', Item::MASTER_GUDANG_UTAMA)->orderBy('name')->get();
-        $gudangResto = Item::where('master_location', Item::MASTER_GUDANG_RESTO)->orderBy('name')->get();
-        $kasir       = Item::where('master_location', Item::MASTER_KASIR)->orderBy('name')->get();
-        $kitchen     = Item::where('master_location', Item::MASTER_KITCHEN)->orderBy('name')->get();
+        $groupItems = function($masterLocation) {
+            return Item::where('master_location', $masterLocation)
+                ->orderBy('name')
+                ->get()
+                ->groupBy(fn($item) => strtolower(trim($item->name)))
+                ->map(function($items) {
+                    $first = $items->first();
+                    $totalStock = $items->sum(fn($item) => $item->stokByLocation($item->master_location));
+                    return (object)[
+                        'name' => $first->name, // Keep original case of the first item
+                        'stock' => $totalStock
+                    ];
+                })
+                ->values();
+        };
+
+        $gudangUtama = $groupItems(Item::MASTER_GUDANG_UTAMA);
+        $gudangResto = $groupItems(Item::MASTER_GUDANG_RESTO);
+        $kasir       = $groupItems(Item::MASTER_KASIR);
+        $kitchen     = $groupItems(Item::MASTER_KITCHEN);
 
         return view('admin.stock.data_stock', compact('gudangUtama', 'gudangResto', 'kasir', 'kitchen'));
     }

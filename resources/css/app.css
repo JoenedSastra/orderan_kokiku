@@ -103,7 +103,7 @@ html[data-bs-theme="dark"] body,
 .table-light,
 .table-light td,
 .table td,
-.table input,
+.table input:not([type="checkbox"]):not([type="radio"]),
 .table select {
     background-color: #ffffff !important;
     border-color: #000000 !important;
@@ -112,8 +112,6 @@ html[data-bs-theme="dark"] body,
     --bs-border-color: #000000;
 }
 
-.table tr,
-.table tbody,
 .table td,
 .table th {
     border: 1px solid #000000 !important;
@@ -124,7 +122,7 @@ html[data-bs-theme="dark"] body,
 [data-bs-theme="dark"] .table-light,
 [data-bs-theme="dark"] .table-light td,
 [data-bs-theme="dark"] .table td,
-[data-bs-theme="dark"] .table input,
+[data-bs-theme="dark"] .table input:not([type="checkbox"]):not([type="radio"]),
 [data-bs-theme="dark"] .table select {
     background-color: #ffffff !important;
     border-color: #000000 !important;
@@ -133,17 +131,18 @@ html[data-bs-theme="dark"] body,
     --bs-border-color: #000000;
 }
 
-[data-bs-theme="dark"] .table tr,
-[data-bs-theme="dark"] .table tbody,
 [data-bs-theme="dark"] .table td,
 [data-bs-theme="dark"] .table th {
     border: 1px solid #000000 !important;
 }
 
 /* Biarkan warna khusus untuk angka Stok, Masuk, Keluar tetap menyala di tabel putih */
-.table td.text-success, [data-bs-theme="dark"] .table td.text-success { color: #059669 !important; }
-.table td.text-danger, [data-bs-theme="dark"] .table td.text-danger { color: #dc2626 !important; }
-.table td.text-primary, [data-bs-theme="dark"] .table td.text-primary { color: #0284c7 !important; }
+.table .text-success, .table input.text-success, .table th.text-success, [data-bs-theme="dark"] .table .text-success { color: #059669 !important; }
+.table .text-danger, .table input.text-danger, .table th.text-danger, [data-bs-theme="dark"] .table .text-danger { color: #dc2626 !important; }
+.table .text-primary, .table input.text-primary, .table th.text-primary, [data-bs-theme="dark"] .table .text-primary { color: #0284c7 !important; }
+.table th.text-success { color: #059669 !important; }
+.table th.text-danger { color: #dc2626 !important; }
+.table th.text-primary { color: #0284c7 !important; }
 
 body.theme-kasir {
     --kk-orange:        #3b82f6;
@@ -599,6 +598,13 @@ input[type="month"].form-control:focus {
 .kk-stat-card:hover {
     box-shadow: var(--kk-shadow);
     transform: translateY(-1px);
+}
+
+/* Fix untuk tabel yang menempel ke pinggir card (p-0) agar bordernya tidak menabrak radius card */
+.kk-stat-card.p-0 {
+    overflow: hidden;
+    border: none;
+    border-radius: 0 !important;
 }
 
 .kk-stat-card .kk-stat-value {
@@ -1217,7 +1223,7 @@ input[type="month"].form-control:focus {
 /* ==========================================================================
    Notification Dropdown
    ========================================================================== */
-.kk-notif-dropdown .btn {
+.kk-notif-dropdown > .btn {
     position: relative;
     width: 38px;
     height: 38px;
@@ -1233,15 +1239,15 @@ input[type="month"].form-control:focus {
     transition: all var(--kk-transition);
 }
 
-.kk-notif-dropdown .btn:hover {
-    background: var(--kk-orange-soft);
-    border-color: var(--kk-orange);
-    color: var(--kk-orange);
+.kk-notif-dropdown > .btn:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: #ef4444;
+    color: #ef4444;
 }
 
-.kk-notif-dropdown .btn:focus,
-.kk-notif-dropdown .btn.show,
-.kk-notif-dropdown .btn:active {
+.kk-notif-dropdown > .btn:focus,
+.kk-notif-dropdown > .btn.show,
+.kk-notif-dropdown > .btn:active {
     outline: none !important;
     box-shadow: none !important;
 }
@@ -1261,7 +1267,6 @@ input[type="month"].form-control:focus {
 
 .kk-notif-header {
     padding: 1rem 1.125rem 0.75rem;
-    border-bottom: 1px solid var(--kk-border);
     background-color: var(--kk-surface-2);
     border-radius: var(--kk-radius) var(--kk-radius) 0 0;
 }
@@ -1275,15 +1280,15 @@ input[type="month"].form-control:focus {
 .kk-notif-count {
     font-size: 0.72rem;
     font-weight: 600;
-    background: var(--kk-orange);
+    background: #ef4444;
     color: #fff;
     padding: 0.1rem 0.5rem;
     border-radius: 999px;
 }
 
 .kk-notif-unread {
-    background: linear-gradient(90deg, rgba(255,107,53,0.06) 0%, transparent 100%);
-    border-left: 3px solid var(--kk-orange) !important;
+    background: linear-gradient(90deg, rgba(239,68,68,0.06) 0%, transparent 100%);
+    border-left: 3px solid #ef4444 !important;
 }
 
 .kk-notif-dropdown form { margin: 0; }
@@ -1294,7 +1299,6 @@ input[type="month"].form-control:focus {
     white-space: normal;
     border: none;
     background: none;
-    border-bottom: 1px solid var(--kk-border);
     padding: 0.75rem 1rem;
     transition: background var(--kk-transition);
 }

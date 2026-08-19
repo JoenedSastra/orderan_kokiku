@@ -44,13 +44,13 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 
     {{-- Kalender --}}
     <form method="GET" id="filterForm" class="d-flex align-items-center gap-2">
-        <div class="input-group shadow-sm" style="max-width:220px; border-radius:8px; overflow:hidden;">
-            <span class="input-group-text" style="background:#fff3e8; border-color:#fdd9b5; border-right:none;">
+        <div class="input-group shadow-sm" style="max-width:220px; border-radius:8px; overflow:hidden; border: 1px solid #fdd9b5;">
+            <span class="input-group-text" style="background:#fff3e8; border-color:#fdd9b5 !important; border-right:none !important; border-top-right-radius: 0; border-bottom-right-radius: 0; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
                 <i class="bi bi-calendar2-event-fill" style="color:var(--kk-orange); font-size:1rem;"></i>
             </span>
             <input type="date" name="tanggal" id="inputTanggal" value="{{ $tanggal->toDateString() }}"
                    class="form-control"
-                   style="border-color:#fdd9b5; border-left:none; font-size:.875rem;">
+                   style="border-color:#fdd9b5 !important; border-left:none !important; font-size:.875rem; border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
         </div>
         {{-- Pertahankan lokasi saat ganti tanggal --}}
         @if(request('lokasi'))

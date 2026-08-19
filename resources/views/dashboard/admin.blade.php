@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         pointHoverRadius: type === 'line' ? 6 : 0,
                     },
                     {
-                        label: 'Permintaan',
+                        label: 'Stock',
                         data: json.permintaan,
                         backgroundColor: type === 'line' ? '#ff6b3533' : '#ff6b35',
                         borderColor: '#ff6b35',

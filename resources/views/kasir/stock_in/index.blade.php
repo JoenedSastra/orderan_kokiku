@@ -97,8 +97,20 @@
                         </small>
                     </div>
                     
-                    <div class="table-responsive border rounded-3" style="max-height: 400px; overflow-y: auto;">
-                        <table class="table table-hover align-middle mb-0">
+                    <style>
+                        .table-rounded-inner th, 
+                        .table-rounded-inner td {
+                            border: 1px solid #000 !important;
+                        }
+                        .table-rounded-inner tr:first-child th { border-top: none !important; }
+                        .table-rounded-inner tr:last-child td { border-bottom: none !important; }
+                        .table-rounded-inner tr th:first-child, 
+                        .table-rounded-inner tr td:first-child { border-left: none !important; }
+                        .table-rounded-inner tr th:last-child, 
+                        .table-rounded-inner tr td:last-child { border-right: none !important; }
+                    </style>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; border: 1px solid #000;">
+                        <table class="table table-hover align-middle mb-0 table-rounded-inner" style="border-collapse: collapse;">
                             <thead class="table-light sticky-top" style="z-index: 1;">
                                 <tr>
                                     <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
@@ -121,17 +133,18 @@
                                     <td class="text-center fw-bold align-middle" style="font-size:.875rem;">{{ $item->name }}</td>
                                     <td class="align-middle">
                                         <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 120px;">
-                                            <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control text-center new-masuk-input" min="0" value="{{ $currentMasuk }}" style="border-radius:6px; min-width: 60px; color:#059669; font-weight:600;" data-item-id="{{ $item->id }}">
+                                            <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control text-center new-masuk-input" min="0" value="{{ $currentMasuk }}" style="border-radius:6px; min-width: 60px; color:#059669 !important; font-weight:600;" data-item-id="{{ $item->id }}">
                                         </div>
                                     </td>
                                     <td class="align-middle">
                                         <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 120px;">
-                                            <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control text-center new-keluar-input" min="0" value="{{ $currentKeluar }}" style="border-radius:6px; min-width: 60px; color:#dc2626; font-weight:600;" data-item-id="{{ $item->id }}">
+                                            <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control text-center new-keluar-input" min="0" value="{{ $currentKeluar }}" style="border-radius:6px; min-width: 60px; color:#dc2626 !important; font-weight:600;" data-item-id="{{ $item->id }}">
                                         </div>
                                     </td>
                                     <td class="text-center align-middle">
-                                        <span class="badge bg-light text-dark border px-3 py-2 fw-bold sisa-badge-{{ $item->id }}" style="font-size:.9rem; color:#0284c7 !important;">
-                                            {{ $currentSisa }} {{ $item->unit }}
+                                        <span class="badge bg-light border px-3 py-2 fw-bold" style="font-size:.9rem;">
+                                            <span class="sisa-badge-val-{{ $item->id }}" style="color:#0284c7 !important;">{{ $currentSisa }}</span>
+                                            <span style="color:#000000 !important; margin-left:3px;">{{ $item->unit }}</span>
                                         </span>
                                     </td>
                                 </tr>
@@ -166,18 +179,14 @@
         function updateSisa(itemId) {
             const masukInput = document.querySelector(`.new-masuk-input[data-item-id="${itemId}"]`);
             const keluarInput = document.querySelector(`.new-keluar-input[data-item-id="${itemId}"]`);
-            const sisaBadge = document.querySelector(`.sisa-badge-${itemId}`);
+            const sisaBadgeVal = document.querySelector(`.sisa-badge-val-${itemId}`);
             
-            if (masukInput && keluarInput && sisaBadge) {
+            if (masukInput && keluarInput && sisaBadgeVal) {
                 const masukVal = parseInt(masukInput.value) || 0;
                 const keluarVal = parseInt(keluarInput.value) || 0;
                 const sisa = Math.max(0, masukVal - keluarVal);
                 
-                // Get the unit from the existing text
-                const unitMatch = sisaBadge.textContent.match(/[a-zA-Z]+/);
-                const unit = unitMatch ? unitMatch[0] : '';
-                
-                sisaBadge.textContent = `${sisa} ${unit}`;
+                sisaBadgeVal.textContent = sisa;
             }
         }
 

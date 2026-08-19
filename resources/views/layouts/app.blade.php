@@ -31,8 +31,8 @@
         {{-- Brand --}}
         <div class="kk-sidebar-brand">
             <div class="kk-sidebar-logo">
-                <div class="kk-sidebar-logo-icon">
-                    <i class="bi bi-fire"></i>
+                <div class="kk-sidebar-logo-icon" style="background: none; box-shadow: none;">
+                    <img src="{{ asset('images/logo.jpg') }}" alt="Kokiku" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                 </div>
                 <div class="kk-sidebar-brand-text">
                     <div class="kk-sidebar-brand-name">Kokiku</div>
@@ -93,9 +93,17 @@
 
                     {{-- User Info --}}
                     <div class="d-flex align-items-center gap-2">
-                        <div class="kk-user-avatar">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                        </div>
+                        <form id="avatarForm" action="{{ route('profile.avatar') }}" method="POST" enctype="multipart/form-data" class="d-none">
+                            @csrf
+                            <input type="file" name="avatar" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();">
+                        </form>
+                        <label for="avatarInput" class="kk-user-avatar" style="cursor: pointer; overflow: hidden; padding: 0;" title="Ubah Foto Profil">
+                            @if(auth()->user()->avatar)
+                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                            @else
+                                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                            @endif
+                        </label>
                         <div class="kk-user-info d-none d-sm-block">
                             <div class="kk-user-name-text">{{ auth()->user()->name }}</div>
                             <div class="kk-user-role-text">{{ auth()->user()->role?->name }}</div>

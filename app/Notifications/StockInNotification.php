@@ -21,7 +21,7 @@ class StockInNotification extends Notification
         $item = $this->stockIn->item;
 
         return [
-            'title'   => 'Barang Masuk — ' . $item->masterLocationLabel(),
+            'title'   => 'Barang Masuk ' . $item->masterLocationLabel(),
             'message' => $item->name . ' ' . $this->stockIn->quantity . ' ' . $item->unit
                 . ' baru saja masuk ke Master Barang ' . $item->masterLocationLabel() . '.',
             'url'     => $this->notificationUrl($notifiable),
