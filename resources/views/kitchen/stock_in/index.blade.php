@@ -42,7 +42,7 @@
                     <td class="text-center">{{ $s->created_at->translatedFormat('l, H:i, d-m-Y') }}</td>
                     <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
-                    <td class="text-center">{{ $s->item->kitchen_unit ?? $s->item->unit }}</td>
+                    <td class="text-center">{{ $s->item->unit }}</td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
                     <td class="text-center">
                         @php $roleName = $s->user->role?->name ?? '?'; @endphp
@@ -145,7 +145,7 @@
                                                    style="color:#dc2626;max-width:50px;">
                                             <input type="text" name="new_keluar_unit[{{ $item->id }}]"
                                                    class="form-control text-center"
-                                                   value="{{ $item->kitchen_unit ?? $item->unit }}" maxlength="30" placeholder="Sat."
+                                                   value="{{ $item->kitchen_keluar_unit ?? $item->kitchen_unit ?? $item->unit }}" maxlength="30" placeholder="Sat."
                                                    style="color:#9f1239;border-left:1.5px solid #fecaca;background:#fff1f2;">
                                         </div>
                                     </td>

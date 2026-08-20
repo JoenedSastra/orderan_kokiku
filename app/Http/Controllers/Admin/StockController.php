@@ -107,12 +107,21 @@ class StockController extends Controller
                 ->orderBy('name')
                 ->get()
                 ->groupBy(fn($item) => strtolower(trim($item->name)))
-                ->map(function($items) {
+                ->map(function($items) use ($masterLocation) {
                     $first = $items->first();
                     $totalStock = $items->sum(fn($item) => $item->stokByLocation($item->master_location));
+                    
+                    $unit = $first->unit;
+                    if ($masterLocation === \App\Models\Item::MASTER_KASIR) {
+                        $unit = $first->kasir_unit ?? $first->unit;
+                    } elseif ($masterLocation === \App\Models\Item::MASTER_KITCHEN) {
+                        $unit = $first->kitchen_unit ?? $first->unit;
+                    }
+                    
                     return (object)[
-                        'name' => $first->name, // Keep original case of the first item
-                        'stock' => $totalStock
+                        'name' => $first->name,
+                        'stock' => $totalStock,
+                        'unit' => $unit
                     ];
                 })
                 ->values();
@@ -230,9 +239,9 @@ class StockController extends Controller
     {
         $request->validate([
             'new_masuk' => 'required|array',
-            'new_masuk.*' => 'nullable|integer|min:0',
+            'new_masuk.*' => 'nullable|numeric|min:0',
             'new_keluar' => 'required|array',
-            'new_keluar.*' => 'nullable|integer|min:0',
+            'new_keluar.*' => 'nullable|numeric|min:0',
         ]);
 
         $userId = \Illuminate\Support\Facades\Auth::id();
@@ -242,8 +251,8 @@ class StockController extends Controller
             $item = Item::find($itemId);
             if (!$item) continue;
             
-            $newMasukInt = (int) $newMasuk;
-            $newKeluarInt = (int) ($request->new_keluar[$itemId] ?? 0);
+            $newMasukInt = (float) $newMasuk;
+            $newKeluarInt = (float) ($request->new_keluar[$itemId] ?? 0);
             
             $currentMasuk = $item->masukByLocation($item->master_location);
             $currentKeluar = $item->keluarByLocation($item->master_location);
@@ -351,13 +360,16 @@ class StockController extends Controller
         foreach ($itemIds as $id) {
             $item = Item::find($id);
             if ($item) {
-                // Hanya hapus item yang dipilih (tidak menghapus item dengan nama sama di divisi lain)
-                $item->delete(); // Automatically cascades to stock_ins, stock_outs, and orders
+                // Sesuai permintaan: hapus dari halaman Data Stock HANYA akan mengosongkan riwayat
+                // (sehingga hilang dari Data Stock karena stok/riwayat = 0),
+                // tetapi TIDAK menghapus nama barang dari master list (Catatan Barang Masuk).
+                $item->stockIns()->delete();
+                $item->stockOuts()->delete();
                 $deletedCount++;
             }
         }
 
-        return back()->with('success', $deletedCount . ' barang berhasil dihapus permanen beserta seluruh riwayatnya di semua divisi.');
+        return back()->with('success', $deletedCount . ' riwayat stok barang berhasil di-reset. Barang tidak tampil lagi di Data Stock, namun namanya tetap aman di form pencatatan.');
     }
 
     /**

@@ -79,7 +79,7 @@ class StockInController extends Controller
             ->select('stock_ins.*')
             ->join('items', 'stock_ins.item_id', '=', 'items.id')
             ->whereDate('stock_ins.tanggal', $tanggal->toDateString())
-            ->orderBy('items.name', 'asc');
+            ->orderBy('stock_ins.created_at', 'desc');
 
         if ($lokasiFilter) {
             $query->where('items.master_location', $lokasiFilter);
@@ -94,8 +94,9 @@ class StockInController extends Controller
     {
         $lokasiLabel = self::LOKASI_LABELS[$lokasi];
         $jumlahBaris = self::JUMLAH_BARIS;
+        $existingItems = \App\Models\Item::where('master_location', $lokasi)->orderBy('name')->get();
 
-        return view('admin.stock_in.create', compact('lokasi', 'lokasiLabel', 'jumlahBaris'));
+        return view('admin.stock_in.create', compact('lokasi', 'lokasiLabel', 'jumlahBaris', 'existingItems'));
     }
 
     public function store(Request $request, string $lokasi): RedirectResponse
@@ -110,17 +111,18 @@ class StockInController extends Controller
             'rows.*.keterangan'   => 'nullable|string|max:255',
         ]);
 
-        $rowsToSave = collect($request->input('rows', []))
+        $rowsWithNames = collect($request->input('rows', []))
             ->filter(fn ($row) => filled($row['item_name'] ?? null));
 
-        if ($rowsToSave->isEmpty()) {
-            return back()->withErrors(['rows' => 'Isi minimal 1 baris sebelum kirim.'])->withInput();
+        if ($rowsWithNames->isEmpty()) {
+            return back()->withErrors(['rows' => 'Isi minimal nama barang untuk menyimpannya ke master list.'])->withInput();
         }
 
-        foreach ($rowsToSave as $index => $row) {
-            if (blank($row['quantity'] ?? null) || blank($row['unit'] ?? null)) {
+        foreach ($rowsWithNames as $index => $row) {
+            // Jika quantity diisi, maka unit wajib diisi
+            if (filled($row['quantity'] ?? null) && blank($row['unit'] ?? null)) {
                 return back()
-                    ->withErrors(['rows' => 'Baris ' . ((int) $index + 1) . ' ("' . $row['item_name'] . '") — Jumlah dan Satuan wajib diisi.'])
+                    ->withErrors(['rows' => 'Baris "' . $row['item_name'] . '" — Satuan wajib diisi karena jumlah barang dimasukkan.'])
                     ->withInput();
             }
         }
@@ -129,42 +131,52 @@ class StockInController extends Controller
         $savedCount  = 0;
         $notifyBatch = collect();
 
-        DB::transaction(function () use ($rowsToSave, $lokasi, $userId, &$savedCount, &$notifyBatch) {
-            foreach ($rowsToSave as $row) {
+        DB::transaction(function () use ($rowsWithNames, $lokasi, $userId, &$savedCount, &$notifyBatch) {
+            foreach ($rowsWithNames as $row) {
+                // Cari item berdasarkan nama dan lokasi (jangan masukkan unit ke kriteria pencarian)
                 $item = Item::firstOrCreate(
                     [
                         'name'            => trim($row['item_name']),
                         'master_location' => $lokasi,
-                        'unit'            => trim($row['unit']),
                     ],
-                    ['min_stock' => 0]
+                    [
+                        'unit'      => trim($row['unit'] ?? ''),
+                        'min_stock' => 0
+                    ]
                 );
 
-                $ledgerLocation = match ($item->master_location) {
-                    Item::MASTER_KASIR   => StockIn::LOCATION_KASIR,
-                    Item::MASTER_KITCHEN => StockIn::LOCATION_KITCHEN,
-                    default              => StockIn::LOCATION_GUDANG_UTAMA,
-                };
+                // Jika admin mengisi satuan baru yang berbeda dengan master list, perbarui satuannya
+                if (filled($row['unit'] ?? null) && $item->unit !== trim($row['unit'])) {
+                    $item->update(['unit' => trim($row['unit'])]);
+                }
 
-                $keteranganFinal = filled($row['keterangan'] ?? null)
-                    ? trim($row['keterangan'])
-                    : 'Diterima';
+                // Hanya buat riwayat barang masuk jika jumlahnya diisi & > 0
+                if (filled($row['quantity'] ?? null) && (float)str_replace(',', '.', $row['quantity']) > 0) {
 
-                $quantityFinal = (float) str_replace(',', '.', $row['quantity']);
+                    $ledgerLocation = match ($item->master_location) {
+                        Item::MASTER_KASIR   => StockIn::LOCATION_KASIR,
+                        Item::MASTER_KITCHEN => StockIn::LOCATION_KITCHEN,
+                        default              => StockIn::LOCATION_GUDANG_UTAMA,
+                    };
 
-                $stockIn = StockIn::create([
-                    'item_id'      => $item->id,
-                    'supplier_id'  => null,
-                    'user_id'      => $userId,
-                    'quantity'     => $quantityFinal,
-                    'location'     => $ledgerLocation,
-                    'keterangan'   => $keteranganFinal,
-                    'tanggal'      => today(),
-                    'is_completed' => true,
-                ]);
+                    $keteranganFinal = filled($row['keterangan'] ?? null)
+                        ? trim($row['keterangan'])
+                        : 'Diterima';
 
-                $savedCount++;
-                $notifyBatch->push([$item, $stockIn]);
+                    $quantityFinal = (float) str_replace(',', '.', $row['quantity']);
+
+                    $stockIn = StockIn::create([
+                        'item_id'      => $item->id,
+                        'user_id'      => $userId,
+                        'tanggal'      => today(),
+                        'quantity'     => $quantityFinal,
+                        'keterangan'   => $keteranganFinal,
+                        'location'     => $ledgerLocation,
+                    ]);
+                    
+                    $savedCount++;
+                    $notifyBatch->push([$item, $stockIn]);
+                }
             }
         });
 
@@ -197,19 +209,6 @@ class StockInController extends Controller
             $deleted++;
         }
 
-        // Barang yang riwayat masuknya baru saja dihapus, kalau ternyata
-        // sekarang sudah tidak punya riwayat masuk sama sekali (karena dihapus oleh admin),
-        // maka hapus item ini secara keseluruhan.
-        // Karena ada cascadeOnDelete di database, semua riwayat barang keluar (StockOut) 
-        // di Kasir/Kitchen yang terkait dengan item ini akan otomatis ikut terhapus.
-        foreach (array_unique($itemIdsKena) as $itemId) {
-            $item = Item::find($itemId);
-            if (!$item) continue;
-
-            if (!$item->stockIns()->exists()) {
-                $item->delete();
-            }
-        }
 
         return back()->with('success', $deleted . ' data berhasil dihapus.');
     }
@@ -239,5 +238,18 @@ class StockInController extends Controller
                 Notification::send($recipients, new StockInNotification($stockIn));
             }
         }
+    }
+
+    public function destroyItem($id): \Illuminate\Http\JsonResponse
+    {
+        $item = Item::find($id);
+        if ($item) {
+            // Hapus semua riwayat barang masuk/keluar untuk item ini jika diperlukan 
+            // agar bisa terhapus total sesuai permintaan user.
+            \App\Models\StockIn::where('item_id', $item->id)->delete();
+            $item->delete();
+            return response()->json(['success' => true]);
+        }
+        return response()->json(['success' => false], 404);
     }
 }

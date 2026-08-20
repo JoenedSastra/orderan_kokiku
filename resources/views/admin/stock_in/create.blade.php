@@ -56,6 +56,16 @@
             </div>
         </div>
     </div>
+    
+    <div class="ms-auto d-flex align-items-center gap-2">
+        <a href="{{ route('admin.stock_in.riwayat') }}?lokasi={{ $lokasi }}" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1" title="Riwayat Barang Masuk">
+            <i class="bi bi-clock-history"></i> Riwayat Barang Masuk
+        </a>
+        <div class="kk-search-box" style="width:250px;">
+            <i class="bi bi-search"></i>
+            <input type="text" id="inputCariBarang" class="form-control form-control-sm" placeholder="Cari nama barang di sini...">
+        </div>
+    </div>
 </div>
 
 @if($errors->has('rows'))
@@ -74,54 +84,73 @@
         #tabelBarangMasuk th:first-child, #tabelBarangMasuk td:first-child { border-left: none !important; }
         #tabelBarangMasuk th:last-child, #tabelBarangMasuk td:last-child { border-right: none !important; }
         #tabelBarangMasuk tbody tr:last-child td { border-bottom: none !important; }
+        .row-number::before {
+            counter-increment: rowNumber;
+            content: counter(rowNumber);
+        }
     </style>
     <div class="kk-stat-card mb-4 rounded-0" style="background-color: #dc2626; padding: 2px; border: none;">
         <div class="table-responsive" style="max-height:70vh; background-color: var(--kk-surface);">
             <table class="table table-bordered table-sm mb-0 align-middle" id="tabelBarangMasuk">
                 <thead class="table-light" style="position:sticky; top:0; z-index:1;">
-                    <tr>
                         <th class="text-center" style="width:40px;">No</th>
                         <th class="text-center" style="width:220px;">Nama Barang</th>
                         <th class="text-center" style="width:90px;">Jumlah</th>
                         <th class="text-center" style="width:110px;">Satuan</th>
                         <th class="text-center" style="width:200px;">Keterangan</th>
                         <th class="text-center" style="width:130px;">Devisi</th>
+                        <th class="text-center" style="width:60px;">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @for($i = 0; $i < $jumlahBaris; $i++)
-                    <tr>
-                        <td class="text-center text-muted fw-bold">{{ $i + 1 }}</td>
+                <tbody id="tabelBarangMasukBody" style="counter-reset: rowNumber;">
+                    @php $maxIndex = -1; @endphp
+                    @forelse($existingItems as $index => $item)
+                    @php $maxIndex = $index; @endphp
+                    <tr data-item-id="{{ $item->id }}">
+                        <td class="text-center text-muted fw-bold row-number"></td>
                         <td>
-                            <input type="text" name="rows[{{ $i }}][item_name]"
-                                   autocomplete="off"
-                                   class="form-control form-control-sm kk-baris-nama">
+                            <input type="text" name="rows[{{ $index }}][item_name]"
+                                   value="{{ $item->name }}" readonly autocomplete="off"
+                                   class="form-control form-control-sm kk-baris-nama fw-bold" style="background-color: #f9fafb;">
                         </td>
                         <td>
-                            <input type="number" step="any" name="rows[{{ $i }}][quantity]" min="0"
+                            <input type="number" step="any" name="rows[{{ $index }}][quantity]" min="0"
                                    class="form-control form-control-sm text-center">
                         </td>
                         <td>
-                            <input type="text" name="rows[{{ $i }}][unit]"
-                                   autocomplete="off"
+                            <input type="text" name="rows[{{ $index }}][unit]"
+                                   value=""
                                    class="form-control form-control-sm text-center">
                         </td>
                         <td>
-                            <input type="text" name="rows[{{ $i }}][keterangan]" autocomplete="off"
+                            <input type="text" name="rows[{{ $index }}][keterangan]" autocomplete="off"
                                    class="form-control form-control-sm">
                         </td>
                         <td class="text-center">
                             <span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $lokasiLabel }}</span>
                         </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris" style="border:none;" title="Hapus baris ini">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
                     </tr>
-                    @endfor
+                    @empty
+                    <!-- Kosong, menunggu ditambah baris -->
+                    @endforelse
                 </tbody>
             </table>
+            
+            <div class="p-2 border-top text-center" style="background: var(--kk-surface);">
+                <button type="button" id="btnTambahBaris" class="btn btn-sm btn-outline-primary fw-semibold" style="border-radius: 8px;">
+                    <i class="bi bi-plus-lg"></i> Tambah Baris Baru
+                </button>
+            </div>
         </div>
     </div>
 
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
-        <span class="small text-muted"><span id="kkBarisTerisi">0</span> dari {{ $jumlahBaris }} baris terisi</span>
+        <span class="small text-muted"><span id="kkBarisTerisi">0</span> baris terisi</span>
         <div class="d-flex gap-2">
             <button type="button" id="btnKosongkan" class="btn btn-danger btn-sm">
                 <i class="bi bi-eraser"></i> Kosongkan Semua
@@ -144,64 +173,185 @@
     // Ingat lokasi ini sebagai yang terakhir dibuka, supaya halaman "pilih divisi"
     // bisa langsung lompat ke sini di kunjungan berikutnya.
     localStorage.setItem('kk_last_lokasi', '{{ $lokasi }}');
-
-    // Key unik per lokasi, supaya draft Gudang Utama & Gudang Resto tidak tercampur.
-    const draftKey = 'kk_stock_draft_{{ $lokasi }}';
-    const fieldKeys = ['item_name', 'quantity', 'unit', 'keterangan'];
-
-    function saveDraft() {
-        const rows = tabel.querySelectorAll('tbody tr');
-        const data = [];
-        rows.forEach(function (row) {
-            const rowData = {};
-            fieldKeys.forEach(function (key) {
-                const input = row.querySelector('[name$="[' + key + ']"]');
-                rowData[key] = input ? input.value : '';
-            });
-            data.push(rowData);
-        });
-        localStorage.setItem(draftKey, JSON.stringify(data));
-    }
-
-    function loadDraft() {
-        const saved = localStorage.getItem(draftKey);
-        if (!saved) return;
-        try {
-            const data = JSON.parse(saved);
-            const rows = tabel.querySelectorAll('tbody tr');
-            rows.forEach(function (row, i) {
-                if (!data[i]) return;
-                fieldKeys.forEach(function (key) {
-                    const input = row.querySelector('[name$="[' + key + ']"]');
-                    if (input && data[i][key]) input.value = data[i][key];
-                });
-            });
-        } catch (e) {
-            localStorage.removeItem(draftKey);
-        }
-    }
-
-    function clearDraft() {
-        localStorage.removeItem(draftKey);
-    }
+    const draftKey = 'draft_rows_{{ $lokasi }}';
+    const lokasiLabel = '{{ $lokasiLabel }}';
 
     function updateHitung() {
-        const namaInputs = tabel.querySelectorAll('.kk-baris-nama');
+        const qtyInputs = tabel.querySelectorAll('input[type="number"]');
         let terisi = 0;
-        namaInputs.forEach(function (input) {
+        qtyInputs.forEach(function (input) {
             if (input.value.trim() !== '') terisi++;
         });
         hitung.textContent = terisi;
     }
 
-    // Pulihkan draft yang belum terkirim (kalau ada) saat halaman dibuka.
-    loadDraft();
-    updateHitung();
+    function saveDraft() {
+        const rowsData = [];
+        tabel.querySelectorAll('tbody tr').forEach(function(tr) {
+            const inputNama = tr.querySelector('.kk-baris-nama');
+            const inputQty = tr.querySelector('input[type="number"]');
+            const inputUnit = tr.querySelector('input[name*="[unit]"]');
+            const inputKet = tr.querySelector('input[name*="[keterangan]"]');
+            
+            if (inputNama) {
+                rowsData.push({
+                    item_id: tr.dataset.itemId || null,
+                    item_name: inputNama.value,
+                    quantity: inputQty ? inputQty.value : '',
+                    unit: inputUnit ? inputUnit.value : '',
+                    keterangan: inputKet ? inputKet.value : '',
+                    is_readonly: inputNama.hasAttribute('readonly')
+                });
+            }
+        });
+        localStorage.setItem(draftKey, JSON.stringify(rowsData));
+    }
+
+    const tbody = document.getElementById('tabelBarangMasukBody');
+
+    function loadDraft() {
+        const draftStr = localStorage.getItem(draftKey);
+        if (draftStr) {
+            try {
+                const rowsData = JSON.parse(draftStr);
+                tbody.innerHTML = ''; // Kosongkan bawaan database, gunakan draft
+                rowsData.forEach(row => {
+                    tambahBaris(row.item_name, row.quantity, row.unit, row.keterangan, row.is_readonly, row.item_id);
+                });
+                updateHitung();
+            } catch(e) {
+                console.error("Gagal memuat draft", e);
+            }
+        }
+    }
 
     tabel.addEventListener('input', function (e) {
         updateHitung();
         saveDraft();
     });
+
+    btnKosongkan.addEventListener('click', function () {
+        if (!confirm('Yakin ingin mengosongkan semua isian jumlah?')) return;
+        tabel.querySelectorAll('input:not([readonly])').forEach(function (input) {
+            input.value = '';
+        });
+        updateHitung();
+        saveDraft();
+    });
+
+    // --- Filter Pencarian Lokal ---
+    const inputCari = document.getElementById('inputCariBarang');
+    if (inputCari) {
+        inputCari.addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const inputNama = row.querySelector('.kk-baris-nama');
+                if (inputNama) {
+                    const text = inputNama.value.toLowerCase();
+                    if (text.indexOf(filter) > -1) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
+
+    tabel.addEventListener('click', function(e) {
+        const btnHapus = e.target.closest('.btn-hapus-baris');
+        if (btnHapus) {
+            const tr = btnHapus.closest('tr');
+            const itemId = tr.dataset.itemId;
+
+            if (itemId && itemId !== 'null' && itemId !== 'undefined') {
+                if (!confirm('Yakin ingin menghapus barang ini secara permanen dari daftar master dan menghapus riwayat stoknya di divisi ini?')) return;
+                
+                fetch(`{{ url('/admin/stock-masuk/item') }}/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                }).then(res => res.json()).then(data => {
+                    if (data.success) {
+                        tr.remove();
+                        updateHitung();
+                        saveDraft();
+                    } else {
+                        alert('Gagal menghapus barang dari sistem.');
+                    }
+                }).catch(err => alert('Terjadi kesalahan koneksi.'));
+            } else {
+                tr.remove();
+                updateHitung();
+                saveDraft();
+            }
+        }
+    });
+
+    form.addEventListener('submit', function() {
+        // Hapus draft jika form disubmit
+        localStorage.removeItem(draftKey);
+    });
+
+    const btnTambahBaris = document.getElementById('btnTambahBaris');
+
+    function tambahBaris(nama = '', qty = '', unit = '', ket = '', isReadonly = false, itemId = null) {
+        const tr = document.createElement('tr');
+        const uniqueId = Date.now() + Math.floor(Math.random() * 1000);
+        
+        const readonlyAttr = isReadonly ? 'readonly' : '';
+        const bgStyle = isReadonly ? 'style="background-color: #f9fafb;"' : '';
+
+        if (itemId) {
+            tr.dataset.itemId = itemId;
+        }
+
+        tr.innerHTML = `
+            <td class="text-center text-muted fw-bold row-number"></td>
+            <td>
+                <input type="text" name="rows[${uniqueId}][item_name]" value="${nama}"
+                       class="form-control form-control-sm kk-baris-nama fw-bold" autocomplete="off" ${readonlyAttr} ${bgStyle}>
+            </td>
+            <td>
+                <input type="number" step="any" name="rows[${uniqueId}][quantity]" value="${qty}" min="0"
+                       class="form-control form-control-sm text-center">
+            </td>
+            <td>
+                <input type="text" name="rows[${uniqueId}][unit]" value="${unit}"
+                       autocomplete="off"
+                       class="form-control form-control-sm text-center">
+            </td>
+            <td>
+                <input type="text" name="rows[${uniqueId}][keterangan]" value="${ket}" autocomplete="off"
+                       class="form-control form-control-sm">
+            </td>
+            <td class="text-center">
+                <span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">${lokasiLabel}</span>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-hapus-baris" style="border:none;" title="Hapus baris ini">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+        return tr;
+    }
+
+    btnTambahBaris.addEventListener('click', function () {
+        const tr = tambahBaris();
+        tr.querySelector('.kk-baris-nama').focus();
+        saveDraft();
+    });
+
+    // Jalankan loadDraft saat awal
+    loadDraft();
+    updateHitung();
+
+
 
     // ── Navigasi Excel-like ────────────────────────────────────────────────
     // Bangun grid dua dimensi: rows × cols (hanya <input> yang bisa difokus).

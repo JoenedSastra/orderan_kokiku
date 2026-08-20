@@ -88,7 +88,13 @@ class StockInController extends Controller
             
             $newMasukInt    = (float) str_replace(',', '.', $newMasuk);
             $newKeluarInt   = (float) str_replace(',', '.', $request->new_keluar[$itemId] ?? 0);
-            $newKeluarUnit  = trim($request->input("new_keluar_unit.{$itemId}", '')) ?: ($item->kitchen_unit ?? $item->unit);
+            
+            $newKeluarUnitInput = trim($request->input("new_keluar_unit.{$itemId}", ''));
+            if ($newKeluarUnitInput && $newKeluarUnitInput !== ($item->kitchen_keluar_unit ?? $item->kitchen_unit ?? $item->unit)) {
+                $item->kitchen_keluar_unit = $newKeluarUnitInput;
+                $item->save();
+            }
+            $newKeluarUnit  = $newKeluarUnitInput ?: ($item->kitchen_keluar_unit ?? $item->kitchen_unit ?? $item->unit);
             
             $currentMasuk  = $item->masukByLocation(Item::MASTER_KITCHEN);
             $currentKeluar = $item->keluarByLocation(Item::MASTER_KITCHEN);

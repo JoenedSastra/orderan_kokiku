@@ -38,7 +38,12 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
 
     {{-- Tombol Kembali --}}
-    <a href="{{ route('admin.stock_in.index') }}?dari=kembali" class="btn btn-danger btn-sm">
+    @php
+        $backRoute = request('lokasi') 
+            ? route('admin.stock_in.create', ['lokasi' => request('lokasi')])
+            : route('admin.stock_in.index') . '?dari=kembali';
+    @endphp
+    <a href="{{ $backRoute }}" class="btn btn-danger btn-sm">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
 
@@ -60,50 +65,13 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 
     {{-- Spacer --}}
     <div class="ms-auto d-flex align-items-center gap-2 flex-wrap">
-        {{-- Filter Divisi — inline button group selalu tampil --}}
-        @php
-        $filterBtns = [
-            ''             => ['label' => 'Semua Devisi', 'icon' => 'bi-grid-3x3-gap', 'active' => 'btn-secondary',  'inactive' => 'btn-outline-secondary', 'style' => ''],
-            'gudang_utama' => ['label' => 'Gudang Utama', 'icon' => 'bi-building',      'active' => '',               'inactive' => '',                      'style' => 'biru'],
-            'gudang_resto' => ['label' => 'Gudang Resto', 'icon' => 'bi-shop',          'active' => 'btn-success',    'inactive' => 'btn-outline-success',   'style' => ''],
-            'kasir'        => ['label' => 'Kasir',        'icon' => 'bi-cash-coin',     'active' => '',               'inactive' => '',                      'style' => 'kasir'],
-            'kitchen'      => ['label' => 'Kitchen',      'icon' => 'bi-egg-fried',     'active' => 'btn-danger',     'inactive' => 'btn-outline-danger',    'style' => ''],
-        ];
-        $currentLokasi = request('lokasi', '');
-        @endphp
-        <div class="d-flex flex-wrap gap-1">
-            @foreach($filterBtns as $val => $cfg)
-            @php
-                $isActive = ($currentLokasi === $val);
-                if ($cfg['style'] === 'biru') {
-                    $btnClass    = 'btn-sm';
-                    $inlineStyle = $isActive
-                        ? 'font-size:.78rem;white-space:nowrap;background:#2563eb;border-color:#2563eb;color:#fff;'
-                        : 'font-size:.78rem;white-space:nowrap;background:transparent;border-color:#2563eb;color:#2563eb;';
-                } elseif ($cfg['style'] === 'kasir') {
-                    $btnClass    = 'btn-sm';
-                    $inlineStyle = $isActive
-                        ? 'font-size:.78rem;white-space:nowrap;background:#f97316;border-color:#f97316;color:#fff;'
-                        : 'font-size:.78rem;white-space:nowrap;background:transparent;border-color:#f97316;color:#f97316;';
-                } else {
-                    $btnClass    = 'btn-sm ' . ($isActive ? $cfg['active'] : $cfg['inactive']);
-                    $inlineStyle = 'font-size:.78rem;white-space:nowrap;';
-                }
-                $href = route('admin.stock_in.riwayat', array_filter(['tanggal' => $tanggal->toDateString(), 'lokasi' => $val]));
-            @endphp
-            <a href="{{ $href }}"
-               class="btn {{ $btnClass }} d-flex align-items-center gap-1"
-               style="{{ $inlineStyle }}">
-                <i class="bi {{ $cfg['icon'] }}"></i>
-                <span>{{ $cfg['label'] }}</span>
-            </a>
-            @endforeach
-        </div>
 
-        {{-- Ikon Hapus (toggle mode seleksi) --}}
+
+        {{-- Ikon Hapus (toggle mode seleksi) 
         <button type="button" class="btn btn-sm btn-outline-danger" id="btnToggleDelete" title="Mode Hapus">
             <i class="bi bi-trash3"></i>
         </button>
+        --}}
     </div>
 </div>
 

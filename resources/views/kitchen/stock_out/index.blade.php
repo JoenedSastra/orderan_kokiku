@@ -32,16 +32,20 @@
                     <td class="text-center">{{ $s->created_at->translatedFormat('l, H:i, d-m-Y') }}</td>
                     <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
-                    <td class="text-center">{{ $s->unit ?? $s->item->unit }}</td>
+                    <td class="text-center">{{ $s->item->kitchen_keluar_unit ?? $s->item->kitchen_unit ?? $s->item->unit }}</td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
                     <td class="text-center">
-                        @php $roleName = $s->user->role?->name ?? '?'; @endphp
-                        @if($roleName === 'Admin')
-                            <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $roleName }}</span>
-                        @elseif(in_array($roleName, ['Kasir', 'Kitchen']))
-                            <span class="badge" style="background:#bae6fd;color:#0369a1;font-weight:600;">{{ $roleName }}</span>
+                        @php
+                            $rn = $s->user->role?->name ?? '?';
+                            if ($rn === 'Kitchen') $rn = 'Staff Dapur';
+                            if ($rn === 'Kasir') $rn = 'Staff Kasir';
+                        @endphp
+                        @if($rn === 'Admin')
+                            <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $rn }}</span>
+                        @elseif(in_array($rn, ['Staff Kasir', 'Staff Dapur']))
+                            <span class="badge" style="background:#bae6fd;color:#0369a1;font-weight:600;">{{ $rn }}</span>
                         @else
-                            <span class="badge bg-secondary">{{ $roleName }}</span>
+                            <span class="badge bg-secondary">{{ $rn }}</span>
                         @endif
                     </td>
                 </tr>

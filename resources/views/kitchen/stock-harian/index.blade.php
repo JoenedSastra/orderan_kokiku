@@ -21,13 +21,11 @@
                     <th class="text-center align-middle" style="width: 4%;">No</th>
                     <th class="text-center align-middle" style="width: 16%;">Hari, Jam, &amp; Tanggal</th>
                     <th class="text-center align-middle" style="width: 14%;">Nama Barang</th>
-                    <th class="text-center align-middle" style="color:#059669; width: 6%;">Masuk</th>
-                    <th class="text-center align-middle" style="color:#dc2626; width: 6%;">Keluar</th>
-                    <th class="text-center align-middle" style="color:#0284c7; width: 6%;">Stock</th>
-                    <th class="text-center align-middle" style="width: 8%;">Satuan</th>
+                    <th class="text-center align-middle" style="color:#059669; width: 8%;">Masuk</th>
+                    <th class="text-center align-middle" style="color:#dc2626; width: 8%;">Keluar</th>
+                    <th class="text-center align-middle" style="color:#0284c7; width: 8%;">Stock</th>
                     <th class="text-center align-middle" style="width: 12%;">Devisi</th>
-                    <th class="text-center align-middle" style="width: 18%;">Keterangan</th>
-                    <th class="text-center align-middle" style="width: 10%;">Dicatat Oleh</th>
+                    <th class="text-center align-middle" style="width: 18%;">Dicatat Oleh</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,18 +35,16 @@
                     <td class="text-center align-middle"><strong>{{ $loop->iteration }}</strong></td>
                     <td class="text-center align-middle">{{ $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-' }}</td>
                     <td class="text-center fw-bold align-middle" data-search="nama-barang">{{ $item->name }}</td>
-                    <td class="text-center text-success fw-semibold align-middle">{{ $item->masukByLocation($item->master_location) }}</td>
-                    <td class="text-center text-danger fw-semibold align-middle">{{ $item->keluarByLocation($item->master_location) }}</td>
-                    <td class="text-center text-primary fw-bold align-middle">{{ $item->stokByLocation($item->master_location) }}</td>
-                    <td class="text-center align-middle">{{ $item->unit }}</td>
+                    <td class="text-center text-success fw-semibold align-middle">{{ $item->masukByLocation($item->master_location) }} {{ $item->unit }}</td>
+                    <td class="text-center text-danger fw-semibold align-middle">{{ $item->keluarByLocation($item->master_location) }} {{ $item->kitchen_keluar_unit ?? $item->kitchen_unit ?? $item->unit }}</td>
+                    <td class="text-center text-primary fw-bold align-middle">{{ $item->stokByLocation($item->master_location) }} {{ $item->kitchen_unit ?? $item->unit }}</td>
                     <td class="text-center align-middle"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $item->masterLocationLabel() }}</span></td>
-                    <td class="text-center align-middle">{{ $aktivitas?->keterangan ?? '-' }}</td>
                     <td class="text-center align-middle">
-                        <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $aktivitas?->user?->role?->name ?? '-' }}</span>
+                        <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">Staff Dapur</span>
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="10" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
+                <tr><td colspan="8" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
                 @endforelse
             </tbody>
         </table>

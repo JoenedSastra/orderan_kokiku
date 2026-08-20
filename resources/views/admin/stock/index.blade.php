@@ -43,10 +43,9 @@
                     <th class="text-center align-middle" style="width: 4%;">No</th>
                     <th class="text-center align-middle" style="width: 16%;">Hari, Jam, &amp; Tanggal</th>
                     <th class="text-center align-middle" style="width: 14%;">Nama Barang</th>
-                    <th class="text-center align-middle" style="color:#059669; width: 6%;">Masuk</th>
-                    <th class="text-center align-middle" style="color:#dc2626; width: 6%;">Keluar</th>
-                    <th class="text-center align-middle" style="color:#0284c7; width: 6%;">Stock</th>
-                    <th class="text-center align-middle" style="width: 8%;">Satuan</th>
+                    <th class="text-center align-middle" style="color:#059669; width: 8%;">Masuk</th>
+                    <th class="text-center align-middle" style="color:#dc2626; width: 8%;">Keluar</th>
+                    <th class="text-center align-middle" style="color:#0284c7; width: 8%;">Stock</th>
                     <th class="text-center align-middle" style="width: 12%;">Devisi</th>
                     <th class="text-center align-middle" style="width: 14%;">Keterangan</th>
                     <th class="text-center align-middle" style="width: 10%;">Dicatat Oleh</th>
@@ -60,14 +59,29 @@
                     <td class="text-center align-middle"><strong>{{ $loop->iteration }}</strong></td>
                     <td class="text-center align-middle">{{ $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-' }}</td>
                     <td class="text-center fw-bold align-middle" data-search="nama-barang">{{ $item->name }}</td>
-                    <td class="text-center text-success fw-semibold align-middle">{{ $item->masukByLocation($item->master_location) }}</td>
-                    <td class="text-center text-danger fw-semibold align-middle">{{ $item->keluarByLocation($item->master_location) }}</td>
-                    <td class="text-center text-primary fw-bold align-middle">{{ $item->stokByLocation($item->master_location) }}</td>
-                    <td class="text-center align-middle">{{ $item->unit }}</td>
+                    @php
+                        $keluarUnit = $item->unit;
+                        $stockUnit = $item->unit;
+                        if ($item->master_location === \App\Models\Item::MASTER_KASIR) {
+                            $keluarUnit = $item->kasir_keluar_unit ?? $item->kasir_unit ?? $item->unit;
+                            $stockUnit = $item->kasir_unit ?? $item->unit;
+                        } elseif ($item->master_location === \App\Models\Item::MASTER_KITCHEN) {
+                            $keluarUnit = $item->kitchen_keluar_unit ?? $item->kitchen_unit ?? $item->unit;
+                            $stockUnit = $item->kitchen_unit ?? $item->unit;
+                        }
+                    @endphp
+                    <td class="text-center text-success fw-semibold align-middle">{{ $item->masukByLocation($item->master_location) }} {{ $item->unit }}</td>
+                    <td class="text-center text-danger fw-semibold align-middle">{{ $item->keluarByLocation($item->master_location) }} {{ $keluarUnit }}</td>
+                    <td class="text-center text-primary fw-bold align-middle">{{ $item->stokByLocation($item->master_location) }} {{ $stockUnit }}</td>
                     <td class="text-center align-middle"><span class="badge" style="background:#bfdbfe;color:#1d4ed8;font-weight:600;">{{ $item->masterLocationLabel() }}</span></td>
                     <td class="text-center align-middle">{{ $aktivitas?->keterangan ?? '-' }}</td>
                     <td class="text-center align-middle">
-                        <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $aktivitas?->user?->role?->name ?? '-' }}</span>
+                        @php
+                            $rn = $aktivitas?->user?->role?->name ?? '-';
+                            if ($rn === 'Kitchen') $rn = 'Staff Dapur';
+                            if ($rn === 'Kasir') $rn = 'Staff Kasir';
+                        @endphp
+                        <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $rn }}</span>
                     </td>
                     <td class="text-center align-middle">
                         <form action="{{ route('admin.stock.delete_items') }}" method="POST" class="m-0 p-0 d-inline-block">
@@ -81,7 +95,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="11" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
+                <tr><td colspan="10" class="text-center text-muted py-3 align-middle">Belum ada data.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -275,16 +289,22 @@
                                     <td class="text-center fw-bold" style="font-size:.875rem;">{{ $loop->iteration }}</td>
                                     <td class="text-center fw-bold" style="font-size:.875rem;">{{ $item->name }}</td>
                                     <td class="align-middle">
-                                        <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control form-control-sm text-center input-masuk text-success fw-bold mx-auto" min="0" value="{{ $item->masukByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#10b981;color:#059669 !important;">
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width:125px;box-shadow:0 0 0 1.5px #bbf7d0;border-radius:6px;overflow:hidden;">
+                                            <input type="number" step="any" name="new_masuk[{{ $item->id }}]" class="form-control form-control-sm text-center input-masuk text-success fw-bold mx-auto" min="0" value="{{ $item->masukByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="border:none;color:#059669 !important;background-color:#f0fdf4;">
+                                            <span class="d-flex align-items-center px-2" style="background:#f0fdf4;border-left:1.5px solid #bbf7d0;font-size:0.75rem;color:#059669;font-weight:600;">{{ $item->unit }}</span>
+                                        </div>
                                     </td>
                                     <td class="align-middle">
-                                        <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control form-control-sm text-center input-keluar text-danger fw-bold mx-auto" min="0" value="{{ $item->keluarByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="max-width:80px;border-color:#ef4444;color:#dc2626 !important;">
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width:125px;box-shadow:0 0 0 1.5px #fecaca;border-radius:6px;overflow:hidden;">
+                                            <input type="number" step="any" name="new_keluar[{{ $item->id }}]" class="form-control form-control-sm text-center input-keluar text-danger fw-bold mx-auto" min="0" value="{{ $item->keluarByLocation($item->master_location) }}" data-id="{{ $item->id }}" style="border:none;color:#dc2626 !important;background-color:#fff1f2;">
+                                            <span class="d-flex align-items-center px-2" style="background:#fff1f2;border-left:1.5px solid #fecaca;font-size:0.75rem;color:#dc2626;font-weight:600;">{{ $item->unit }}</span>
+                                        </div>
                                     </td>
                                     <td class="text-center align-middle">
-                                        <span class="badge bg-light border px-3 py-2 fw-bold" style="font-size:.85rem;">
-                                            <span id="sisa-val-{{ $item->id }}" style="color:#0284c7 !important;">{{ $item->stokByLocation($item->master_location) }}</span>
-                                            <span style="color:#000000 !important; margin-left:3px;">{{ $item->unit }}</span>
-                                        </span>
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width:125px;box-shadow:0 0 0 1.5px #bae6fd;border-radius:6px;overflow:hidden;">
+                                            <span class="form-control form-control-sm text-center fw-bold d-flex align-items-center justify-content-center" id="sisa-val-{{ $item->id }}" style="border:none;background:#f0f9ff;color:#0284c7 !important;">{{ $item->stokByLocation($item->master_location) }}</span>
+                                            <span class="d-flex align-items-center px-2" style="background:#f0f9ff;border-left:1.5px solid #bae6fd;font-size:0.75rem;color:#0284c7;font-weight:600;">{{ $item->unit }}</span>
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
@@ -312,9 +332,12 @@
         document.querySelectorAll('.input-masuk, .input-keluar').forEach(input => {
             input.addEventListener('input', function() {
                 const id = this.dataset.id;
-                const masuk = parseInt(document.querySelector(`.input-masuk[data-id="${id}"]`).value) || 0;
-                const keluar = parseInt(document.querySelector(`.input-keluar[data-id="${id}"]`).value) || 0;
-                const sisa = Math.max(0, masuk - keluar);
+                const masuk = parseFloat(document.querySelector(`.input-masuk[data-id="${id}"]`).value) || 0;
+                const keluar = parseFloat(document.querySelector(`.input-keluar[data-id="${id}"]`).value) || 0;
+                let sisa = Math.max(0, masuk - keluar);
+                
+                // Remove unnecessary decimals if it's a whole number
+                sisa = Number.isInteger(sisa) ? sisa : parseFloat(sisa.toFixed(2));
                 
                 const sisaValEl = document.getElementById(`sisa-val-${id}`);
                 if (sisaValEl) {

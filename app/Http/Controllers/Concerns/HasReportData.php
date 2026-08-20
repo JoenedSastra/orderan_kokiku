@@ -98,16 +98,22 @@ trait HasReportData
                 ->get()
                 ->map(function ($item) use ($startDate, $endDate) {
                     $aktivitas = $item->latestActivity();
+                    $keluarUnit = $item->unit;
+                    $stockUnit = $item->unit;
+                    
+                    $roleNameAdmin = $aktivitas?->user?->role?->name ?? '-';
+                    if ($roleNameAdmin === 'Kitchen') $roleNameAdmin = 'Staff Dapur';
+                    if ($roleNameAdmin === 'Kasir') $roleNameAdmin = 'Staff Kasir';
+                    
                     return [
                         'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
                         'barang'       => $item->name,
-                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
-                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
-                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
-                        'satuan'       => $item->unit,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate) . ' ' . $item->unit,
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate) . ' ' . $keluarUnit,
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate) . ' ' . $stockUnit,
                         'master'       => $item->masterLocationLabel(),
                         'keterangan'   => $aktivitas?->keterangan ?? '-',
-                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                        'dicatat_oleh' => $roleNameAdmin,
                     ];
                 }),
 
@@ -124,16 +130,22 @@ trait HasReportData
                 ->get()
                 ->map(function ($item) use ($startDate, $endDate) {
                     $aktivitas = $item->latestActivity();
+                    $keluarUnit = $item->unit;
+                    $stockUnit = $item->unit;
+                    
+                    $roleNameAdmin = $aktivitas?->user?->role?->name ?? '-';
+                    if ($roleNameAdmin === 'Kitchen') $roleNameAdmin = 'Staff Dapur';
+                    if ($roleNameAdmin === 'Kasir') $roleNameAdmin = 'Staff Kasir';
+                    
                     return [
                         'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
                         'barang'       => $item->name,
-                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
-                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
-                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
-                        'satuan'       => $item->unit,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate) . ' ' . $item->unit,
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate) . ' ' . $keluarUnit,
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate) . ' ' . $stockUnit,
                         'master'       => $item->masterLocationLabel(),
                         'keterangan'   => $aktivitas?->keterangan ?? '-',
-                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                        'dicatat_oleh' => $roleNameAdmin,
                     ];
                 }),
 
@@ -150,16 +162,22 @@ trait HasReportData
                 ->get()
                 ->map(function ($item) use ($startDate, $endDate) {
                     $aktivitas = $item->latestActivity();
+                    $keluarUnit = $item->kasir_keluar_unit ?? $item->kasir_unit ?? $item->unit;
+                    $stockUnit = $item->kasir_unit ?? $item->unit;
+                    
+                    $roleNameAdmin = $aktivitas?->user?->role?->name ?? '-';
+                    if ($roleNameAdmin === 'Kitchen') $roleNameAdmin = 'Staff Dapur';
+                    if ($roleNameAdmin === 'Kasir') $roleNameAdmin = 'Staff Kasir';
+                    
                     return [
                         'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
                         'barang'       => $item->name,
-                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
-                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
-                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
-                        'satuan'       => $item->unit,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate) . ' ' . $item->unit,
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate) . ' ' . $keluarUnit,
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate) . ' ' . $stockUnit,
                         'master'       => $item->masterLocationLabel(),
                         'keterangan'   => $aktivitas?->keterangan ?? '-',
-                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                        'dicatat_oleh' => $roleNameAdmin,
                     ];
                 }),
 
@@ -176,16 +194,22 @@ trait HasReportData
                 ->get()
                 ->map(function ($item) use ($startDate, $endDate) {
                     $aktivitas = $item->latestActivity();
+                    $keluarUnit = $item->kitchen_keluar_unit ?? $item->kitchen_unit ?? $item->unit;
+                    $stockUnit = $item->kitchen_unit ?? $item->unit;
+                    
+                    $roleNameAdmin = $aktivitas?->user?->role?->name ?? '-';
+                    if ($roleNameAdmin === 'Kitchen') $roleNameAdmin = 'Staff Dapur';
+                    if ($roleNameAdmin === 'Kasir') $roleNameAdmin = 'Staff Kasir';
+                    
                     return [
                         'tanggal'      => $aktivitas?->created_at?->translatedFormat('l, d M Y H:i') ?? '-',
                         'barang'       => $item->name,
-                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate),
-                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate),
-                        'sisa'         => $item->stokByLocation($item->master_location, $endDate),
-                        'satuan'       => $item->unit,
+                        'masuk'        => $item->masukByLocation($item->master_location, $startDate, $endDate) . ' ' . $item->unit,
+                        'keluar'       => $item->keluarByLocation($item->master_location, $startDate, $endDate) . ' ' . $keluarUnit,
+                        'sisa'         => $item->stokByLocation($item->master_location, $endDate) . ' ' . $stockUnit,
                         'master'       => $item->masterLocationLabel(),
                         'keterangan'   => $aktivitas?->keterangan ?? '-',
-                        'dicatat_oleh' => $aktivitas?->user?->role?->name ?? '-',
+                        'dicatat_oleh' => $roleNameAdmin,
                     ];
                 }),
 
@@ -220,10 +244,10 @@ trait HasReportData
 
             'barang_keluar_kitchen' => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
             'barang_keluar_kasir'   => ['Hari, Jam & Tanggal', 'Nama Barang', 'Jumlah', 'Satuan', 'Keterangan', 'Dicatat Oleh'],
-            'stock_gudang_utama'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
-            'stock_gudang_resto'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
-            'stock_kasir'           => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
-            'stock_kitchen'         => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Satuan', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_gudang_utama'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_gudang_resto'    => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_kasir'           => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
+            'stock_kitchen'         => ['Hari, Jam & Tanggal', 'Nama Barang', 'Masuk', 'Keluar', 'Stock', 'Devisi', 'Keterangan', 'Dicatat Oleh'],
             default         => [],
         };
     }

@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
             ->whereIn('lokasi', ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen']);
         Route::post('/stock-masuk/{lokasi}',        [AdminStockInController::class, 'store'])->name('stock_in.store')
             ->whereIn('lokasi', ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen']);
+        Route::delete('/stock-masuk/item/{id}',     [AdminStockInController::class, 'destroyItem'])->name('stock_in.destroy_item');
         Route::delete('/stock-masuk/hapus-massal',  [AdminStockInController::class, 'destroyBulk'])->name('stock_in.destroy_bulk');
 
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
