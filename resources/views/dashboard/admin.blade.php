@@ -144,7 +144,7 @@
                 <div class="row g-3">
                     @foreach($divisions as $key => $label)
                         @php
-                            $divItems = \App\Models\Item::get()->filter(fn($i) => $i->master_location === $key && $i->stokByLocation($key) <= 10);
+                            $divItems = \App\Models\Item::whereHas('stockIns')->get()->filter(fn($i) => $i->master_location === $key && $i->stokByLocation($key) <= 10);
                         @endphp
                         <div class="col-md-6">
                             <div class="card h-100 kk-card border" style="border-radius: 10px;">

@@ -16,7 +16,7 @@ class Item extends Model
     public const MASTER_KASIR        = 'kasir';
     public const MASTER_KITCHEN      = 'kitchen';
 
-    protected $fillable = ['name', 'category_id', 'master_location', 'unit', 'min_stock', 'description'];
+    protected $fillable = ['name', 'category_id', 'master_location', 'unit', 'kasir_unit', 'kitchen_unit', 'min_stock', 'description'];
 
     protected $casts = [
         'min_stock' => 'integer',
@@ -53,7 +53,7 @@ class Item extends Model
         return max(0, $masukQuery->sum('quantity') - $keluarQuery->sum('quantity'));
     }
 
-    public function stokKasir(?string $endDate = null): int
+    public function stokKasir(?string $endDate = null): float
     {
         $masukQuery  = $this->stockIns()->where('location', StockIn::LOCATION_KASIR);
         $keluarQuery = $this->stockOuts()->where('location', StockOut::LOCATION_KASIR);
@@ -61,10 +61,16 @@ class Item extends Model
             $masukQuery->where('tanggal', '<=', $endDate);
             $keluarQuery->where('tanggal', '<=', $endDate);
         }
-        return max(0, $masukQuery->sum('quantity') - $keluarQuery->sum('quantity'));
+        $masuk = (float) $masukQuery->sum('quantity');
+        
+        if (!$endDate && $this->kasir_stock !== null) {
+            return $this->kasir_stock + max(0, $masuk - (float)$this->kasir_last_masuk);
+        }
+        
+        return max(0, $masuk - (float) $keluarQuery->sum('quantity'));
     }
 
-    public function stokKitchen(?string $endDate = null): int
+    public function stokKitchen(?string $endDate = null): float
     {
         $masukQuery  = $this->stockIns()->where('location', StockIn::LOCATION_KITCHEN);
         $keluarQuery = $this->stockOuts()->where('location', StockOut::LOCATION_KITCHEN);
@@ -72,10 +78,16 @@ class Item extends Model
             $masukQuery->where('tanggal', '<=', $endDate);
             $keluarQuery->where('tanggal', '<=', $endDate);
         }
-        return max(0, $masukQuery->sum('quantity') - $keluarQuery->sum('quantity'));
+        $masuk = (float) $masukQuery->sum('quantity');
+        
+        if (!$endDate && $this->kitchen_stock !== null) {
+            return $this->kitchen_stock + max(0, $masuk - (float)$this->kitchen_last_masuk);
+        }
+        
+        return max(0, $masuk - (float) $keluarQuery->sum('quantity'));
     }
 
-    public function stokByLocation(string $locationKey, ?string $endDate = null): int
+    public function stokByLocation(string $locationKey, ?string $endDate = null): float
     {
         return match ($locationKey) {
             'gudang_utama', 'gudang_resto', 'gudang'  => $this->stokGudangUtama($endDate),
@@ -85,7 +97,7 @@ class Item extends Model
         };
     }
 
-    public function masukByLocation(string $locationKey, ?string $startDate = null, ?string $endDate = null): int
+    public function masukByLocation(string $locationKey, ?string $startDate = null, ?string $endDate = null): float
     {
         $location = match ($locationKey) {
             'gudang_utama', 'gudang_resto', 'gudang' => StockIn::LOCATION_GUDANG_UTAMA,
@@ -100,11 +112,16 @@ class Item extends Model
             $query->whereBetween('tanggal', [$startDate, $endDate]);
         }
         
-        return (int) $query->sum('quantity');
+        return (float) $query->sum('quantity');
     }
 
-    public function keluarByLocation(string $locationKey, ?string $startDate = null, ?string $endDate = null): int
+    public function keluarByLocation(string $locationKey, ?string $startDate = null, ?string $endDate = null): float
     {
+        if (!$startDate && !$endDate) {
+            if ($locationKey === 'kitchen' && $this->kitchen_keluar !== null) return $this->kitchen_keluar;
+            if ($locationKey === 'kasir' && $this->kasir_keluar !== null) return $this->kasir_keluar;
+        }
+
         $location = match ($locationKey) {
             'gudang_utama', 'gudang_resto', 'gudang' => StockOut::LOCATION_GUDANG_UTAMA,
             'kasir'   => StockOut::LOCATION_KASIR,
@@ -118,7 +135,7 @@ class Item extends Model
             $query->whereBetween('tanggal', [$startDate, $endDate]);
         }
         
-        return (int) $query->sum('quantity');
+        return (float) $query->sum('quantity');
     }
 
     public function totalStock(): int

@@ -42,7 +42,7 @@
                     <td class="text-center">{{ $s->created_at->translatedFormat('l, H:i, d-m-Y') }}</td>
                     <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
-                    <td class="text-center">{{ $s->item->unit }}</td>
+                    <td class="text-center">{{ $s->item->kasir_unit ?? $s->item->unit }}</td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
                     <td class="text-center">
                         @php $roleName = $s->user->role?->name ?? '?'; @endphp
@@ -78,89 +78,105 @@
 
 {{-- Modal Atur Jumlah Stok (Kasir) --}}
 <div class="modal fade" id="modalAturStok" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 720px;">
-        <div class="modal-content border-0 shadow-lg" style="border-radius:16px;overflow:hidden;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:650px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius:14px;overflow:hidden;">
             <form action="{{ route('kasir.stock.adjust') }}" method="POST">
                 @csrf
                 <input type="hidden" name="tanggal" value="{{ request('tanggal', now()->toDateString()) }}">
-                <div class="modal-header border-0 pb-0" style="background:linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%);padding:1.4rem 1.5rem 2.5rem;">
+                <div class="modal-header border-0 pb-3" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);padding:1rem 1.25rem;">
                     <div>
-                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:1.05rem;">Atur Jumlah Stock</h5>
-                        <small style="color:rgba(255,255,255,.75);font-size:.78rem;">Penyesuaian stok manual secara massal untuk Kasir</small>
+                        <h5 class="modal-title mb-0 fw-bold text-white" style="font-size:.95rem;">Atur Jumlah Stock</h5>
                     </div>
                 </div>
-                <div class="modal-body px-4" style="margin-top:-1.2rem;padding-top:0;">
-                    <div class="d-flex align-items-center gap-2 p-3 mb-3 rounded-3" style="background:#e0f2fe;border:1px solid #bae6fd;">
-                        <i class="bi bi-info-circle-fill" style="color:#0284c7;font-size:1rem;flex-shrink:0;"></i>
-                        <small style="color:#0369a1;line-height:1.4;">
-                            Masukkan jumlah stok yang sebenarnya. Sistem akan otomatis menyesuaikan jumlahnya.
-                        </small>
-                    </div>
-                    
+                <div class="modal-body px-3 pt-3">
                     <style>
-                        .table-rounded-inner th, 
-                        .table-rounded-inner td {
-                            border: 1px solid #000 !important;
-                        }
-                        .table-rounded-inner tr:first-child th { border-top: none !important; }
-                        .table-rounded-inner tr:last-child td { border-bottom: none !important; }
-                        .table-rounded-inner tr th:first-child, 
-                        .table-rounded-inner tr td:first-child { border-left: none !important; }
-                        .table-rounded-inner tr th:last-child, 
-                        .table-rounded-inner tr td:last-child { border-right: none !important; }
+                        .kk-unit-ro { display:flex;align-items:center;padding:0 6px;font-weight:700;font-size:.75rem;white-space:nowrap;color:#374151; }
+                        .modal-adj th, .modal-adj td { border:1px solid #d1d5db !important; padding:4px 6px !important; }
+                        .modal-adj tr:first-child th { border-top:none !important; }
+                        .modal-adj tr:last-child  td { border-bottom:none !important; }
+                        .modal-adj tr th:first-child, .modal-adj tr td:first-child { border-left:none !important; }
+                        .modal-adj tr th:last-child,  .modal-adj tr td:last-child  { border-right:none !important; }
+                        .modal-adj input[type=number] { font-weight:700;font-size:.82rem;border:none;box-shadow:none;padding:2px 4px; }
+                        .modal-adj input[type=text]   { font-weight:600;font-size:.75rem;border:none;box-shadow:none;padding:2px 4px; }
+                        .kk-ig { border-radius:6px;overflow:hidden; }
                     </style>
-                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; border: 1px solid #000;">
-                        <table class="table table-hover align-middle mb-0 table-rounded-inner" style="border-collapse: collapse;">
-                            <thead class="table-light sticky-top" style="z-index: 1;">
+                    <div class="table-responsive" style="max-height:360px;overflow-y:auto;border:1px solid #d1d5db;border-radius:8px;margin-top:.75rem;">
+                        <table class="table table-hover align-middle mb-0 modal-adj" style="border-collapse:collapse;font-size:.82rem;">
+                            <thead class="table-light sticky-top" style="z-index:1;">
                                 <tr>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:50px;">No</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;width:35%;white-space:nowrap;">Nama Barang</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Masuk</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:100px;">Keluar</th>
-                                    <th class="text-center" style="font-size:.85rem;color:#374151;white-space:nowrap;min-width:120px;">Stock</th>
+                                    <th class="text-center" style="width:32px;">No</th>
+                                    <th class="text-center" style="width:24%;">Nama Barang</th>
+                                    <th class="text-center" style="min-width:110px;">Masuk</th>
+                                    <th class="text-center" style="min-width:125px;">Keluar</th>
+                                    <th class="text-center" style="min-width:125px;">Stock</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if(isset($allItemsForAdjust))
                                 @forelse($allItemsForAdjust as $item)
                                 @php
-                                    $currentMasuk = $item->masukByLocation($item->master_location);
+                                    $currentMasuk  = $item->masukByLocation($item->master_location);
                                     $currentKeluar = $item->keluarByLocation($item->master_location);
-                                    $currentSisa = $item->stokByLocation($item->master_location);
+                                    $currentSisa   = $item->stokByLocation($item->master_location);
                                 @endphp
                                 <tr>
-                                    <td class="text-center fw-bold align-middle" style="font-size:.875rem;">{{ $loop->iteration }}</td>
-                                    <td class="text-center fw-bold align-middle" style="font-size:.875rem;">{{ $item->name }}</td>
-                                    <td class="align-middle">
-                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 120px;">
-                                            <input type="number" name="new_masuk[{{ $item->id }}]" class="form-control text-center new-masuk-input" min="0" value="{{ $currentMasuk }}" style="border-radius:6px; min-width: 60px; color:#059669 !important; font-weight:600;" data-item-id="{{ $item->id }}">
+                                    <td class="text-center fw-bold">{{ $loop->iteration }}</td>
+                                    <td class="text-center fw-semibold">{{ $item->name }}</td>
+
+                                    {{-- Masuk --}}
+                                    <td>
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap kk-ig" style="max-width:108px;box-shadow:0 0 0 1.5px #bbf7d0;">
+                                            <input type="number" step="any" name="new_masuk[{{ $item->id }}]"
+                                                   class="form-control text-center new-masuk-input"
+                                                   min="0" value="{{ $currentMasuk }}"
+                                                   data-item-id="{{ $item->id }}"
+                                                   style="color:#059669;background-color:#f0fdf4;" readonly>
+                                            <span class="kk-unit-ro" style="background:#f0fdf4;border-left:1.5px solid #bbf7d0;">{{ $item->unit }}</span>
                                         </div>
                                     </td>
-                                    <td class="align-middle">
-                                        <div class="input-group input-group-sm mx-auto flex-nowrap" style="max-width: 120px;">
-                                            <input type="number" name="new_keluar[{{ $item->id }}]" class="form-control text-center new-keluar-input" min="0" value="{{ $currentKeluar }}" style="border-radius:6px; min-width: 60px; color:#dc2626 !important; font-weight:600;" data-item-id="{{ $item->id }}">
+
+                                    {{-- Keluar --}}
+                                    <td>
+                                        <div class="input-group input-group-sm mx-auto flex-nowrap kk-ig" style="max-width:125px;box-shadow:0 0 0 1.5px #fecaca;">
+                                            <input type="number" step="any" name="new_keluar[{{ $item->id }}]"
+                                                   class="form-control text-center new-keluar-input"
+                                                   min="0" value="{{ $currentKeluar }}"
+                                                   data-item-id="{{ $item->id }}"
+                                                   style="color:#dc2626;max-width:50px;">
+                                            <input type="text" name="new_keluar_unit[{{ $item->id }}]"
+                                                   class="form-control text-center"
+                                                   value="{{ $item->kasir_unit ?? $item->unit }}" maxlength="30" placeholder="Sat."
+                                                   style="color:#9f1239;border-left:1.5px solid #fecaca;background:#fff1f2;">
                                         </div>
                                     </td>
-                                    <td class="text-center align-middle">
-                                        <span class="badge bg-light border px-3 py-2 fw-bold" style="font-size:.9rem;">
-                                            <span class="sisa-badge-val-{{ $item->id }}" style="color:#0284c7 !important;">{{ $currentSisa }}</span>
-                                            <span style="color:#000000 !important; margin-left:3px;">{{ $item->unit }}</span>
-                                        </span>
+
+                                    {{-- Stock & Satuan --}}
+                                    <td>
+                                        <div class="input-group input-group-sm mx-auto kk-ig" style="max-width:125px;box-shadow:0 0 0 1.5px #bae6fd;">
+                                            <input type="number" step="any" name="new_stock[{{ $item->id }}]"
+                                                    class="form-control text-center new-stock-input"
+                                                    min="0" value="{{ $currentSisa }}"
+                                                    data-item-id="{{ $item->id }}"
+                                                    style="color:#0284c7;max-width:50px;">
+                                            <input type="text" name="new_unit[{{ $item->id }}]"
+                                                    class="form-control text-center new-unit-input"
+                                                    value="{{ $item->kasir_unit ?? $item->unit }}" maxlength="30" placeholder="Sat."
+                                                    data-item-id="{{ $item->id }}"
+                                                    style="color:#065f46;border-left:1.5px solid #bae6fd;">
+                                        </div>
                                     </td>
                                 </tr>
                                 @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">Belum ada barang untuk disesuaikan.</td>
-                                </tr>
+                                <tr><td colspan="5" class="text-center text-muted py-3">Belum ada barang.</td></tr>
                                 @endforelse
                                 @endif
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="modal-footer border-0 px-4 pb-4 pt-3 gap-2">
-                    <button type="button" class="btn btn-light fw-semibold px-4" data-bs-dismiss="modal" style="border-radius:10px;font-size:.875rem;border:1px solid #e5e7eb;">Batal</button>
-                    <button type="submit" class="btn text-white fw-semibold px-4 flex-grow-1" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:10px;font-size:.875rem;">Simpan Perubahan</button>
+                <div class="modal-footer border-0 px-3 pb-3 pt-2 gap-2">
+                    <button type="button" class="btn btn-sm btn-light fw-semibold px-3" data-bs-dismiss="modal" style="border-radius:8px;border:1px solid #e5e7eb;">Batal</button>
+                    <button type="submit" class="btn btn-sm text-white fw-semibold px-3 flex-grow-1" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);border:none;border-radius:8px;">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
@@ -173,34 +189,11 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const masukInputs = document.querySelectorAll('.new-masuk-input');
-        const keluarInputs = document.querySelectorAll('.new-keluar-input');
+        var masukInputs  = document.querySelectorAll('.new-masuk-input');
+        var keluarInputs = document.querySelectorAll('.new-keluar-input');
+        var stockInputs  = document.querySelectorAll('.new-stock-input');
 
-        function updateSisa(itemId) {
-            const masukInput = document.querySelector(`.new-masuk-input[data-item-id="${itemId}"]`);
-            const keluarInput = document.querySelector(`.new-keluar-input[data-item-id="${itemId}"]`);
-            const sisaBadgeVal = document.querySelector(`.sisa-badge-val-${itemId}`);
-            
-            if (masukInput && keluarInput && sisaBadgeVal) {
-                const masukVal = parseInt(masukInput.value) || 0;
-                const keluarVal = parseInt(keluarInput.value) || 0;
-                const sisa = Math.max(0, masukVal - keluarVal);
-                
-                sisaBadgeVal.textContent = sisa;
-            }
-        }
-
-        masukInputs.forEach(input => {
-            input.addEventListener('input', function() {
-                updateSisa(this.getAttribute('data-item-id'));
-            });
-        });
-
-        keluarInputs.forEach(input => {
-            input.addEventListener('input', function() {
-                updateSisa(this.getAttribute('data-item-id'));
-            });
-        });
+        // Sinkronisasi otomatis dihapus atas permintaan agar bisa diisi sendiri-sendiri
     });
 </script>
 @endpush

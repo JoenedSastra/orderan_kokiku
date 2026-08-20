@@ -32,7 +32,7 @@
                     <td class="text-center">{{ $s->created_at->translatedFormat('l, H:i, d-m-Y') }}</td>
                     <td class="text-center fw-bold" data-search="nama-barang">{{ $s->item->name }}</td>
                     <td class="text-center">{{ $s->quantity }}</td>
-                    <td class="text-center">{{ $s->item->unit }}</td>
+                    <td class="text-center">{{ $s->unit ?? $s->item->unit }}</td>
                     <td class="text-center">{{ $s->keterangan ?? '-' }}</td>
                     <td class="text-center">
                         @php $roleName = $s->user->role?->name ?? '?'; @endphp

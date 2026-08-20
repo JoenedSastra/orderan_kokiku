@@ -27,7 +27,7 @@ class OrderController extends Controller
 
     public function create(): View
     {
-        $items = Item::orderBy('name')->get();
+        $items = Item::whereHas('stockIns')->orderBy('name')->get();
         return view('kitchen.orders.create', compact('items'));
     }
 

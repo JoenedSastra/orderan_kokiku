@@ -103,6 +103,7 @@ class StockController extends Controller
     {
         $groupItems = function($masterLocation) {
             return Item::where('master_location', $masterLocation)
+                ->whereHas('stockIns')
                 ->orderBy('name')
                 ->get()
                 ->groupBy(fn($item) => strtolower(trim($item->name)))

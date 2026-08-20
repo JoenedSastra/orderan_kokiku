@@ -28,7 +28,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
 
 {{-- Page header: search --}}
 <div class="d-flex justify-content-between align-items-center mb-3 kk-page-header flex-wrap gap-2">
-    <div class="kk-search-box">
+    <div class="kk-search-box" style="max-width: 280px; flex: 1 1 auto;">
         <i class="bi bi-search"></i>
         <input type="text" name="kk_search" class="form-control form-control-sm kk-search-nama-barang" placeholder="Cari nama barang..." autocomplete="off">
     </div>
@@ -128,6 +128,7 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
                         <th class="text-center">Satuan</th>
                         <th class="text-center align-middle">Devisi</th>
                         <th class="text-center">Keterangan</th>
+                        <th class="text-center">Jam Masuk</th>
                         <th class="text-center">Dicatat Oleh</th>
                     </tr>
                 </thead>
@@ -156,12 +157,17 @@ $adminDeletable = ['gudang_utama', 'gudang_resto', 'kasir', 'kitchen'];
                             @endif
                         </td>
                         <td class="text-center">
+                            <span class="badge" style="background:#fef3c7;color:#92400e;font-weight:600;font-size:.78rem;">
+                                <i class="bi bi-clock me-1"></i>{{ $s->created_at->format('H:i') }}
+                            </span>
+                        </td>
+                        <td class="text-center">
                             <span class="badge" style="background:#bbf7d0;color:#15803d;font-weight:600;">{{ $s->user->role?->name ?? '?' }}</span>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-3">Belum ada barang masuk pada tanggal ini.</td>
+                        <td colspan="10" class="text-center text-muted py-3">Belum ada barang masuk pada tanggal ini.</td>
                     </tr>
                     @endforelse
                 </tbody>

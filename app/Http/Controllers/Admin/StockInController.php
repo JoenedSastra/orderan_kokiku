@@ -105,7 +105,7 @@ class StockInController extends Controller
         $request->validate([
             'rows'                => 'required|array',
             'rows.*.item_name'    => 'nullable|string|max:150',
-            'rows.*.quantity'     => 'nullable|integer|min:1',
+            'rows.*.quantity'     => 'nullable|numeric|min:0.01',
             'rows.*.unit'         => 'nullable|string|max:30',
             'rows.*.keterangan'   => 'nullable|string|max:255',
         ]);
@@ -150,11 +150,13 @@ class StockInController extends Controller
                     ? trim($row['keterangan'])
                     : 'Diterima';
 
+                $quantityFinal = (float) str_replace(',', '.', $row['quantity']);
+
                 $stockIn = StockIn::create([
                     'item_id'      => $item->id,
                     'supplier_id'  => null,
                     'user_id'      => $userId,
-                    'quantity'     => $row['quantity'],
+                    'quantity'     => $quantityFinal,
                     'location'     => $ledgerLocation,
                     'keterangan'   => $keteranganFinal,
                     'tanggal'      => today(),

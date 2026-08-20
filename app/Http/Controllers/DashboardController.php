@@ -122,7 +122,7 @@ class DashboardController extends Controller
         $keluarHariIni = (int) $this->baseKeluarQuery()->whereDate('tanggal', today())->sum('quantity');
 
         // Barang stok rendah = saldo divisi <= 10 untuk ke 4 divisi
-        $stokRendah = Item::get()
+        $stokRendah = Item::whereHas('stockIns')->get()
             ->filter(fn ($item) => $item->stokByLocation($item->master_location) <= 10)
             ->count();
 
@@ -426,7 +426,7 @@ class DashboardController extends Controller
     {
         $division = $request->query('division', 'gudang_utama');
 
-        $items = Item::where('master_location', $division)->get();
+        $items = Item::where('master_location', $division)->whereHas('stockIns')->get();
 
         $labels    = [];
         $stockData = [];
@@ -455,6 +455,7 @@ class DashboardController extends Controller
 
         // Barang stok rendah di Kasir (berdasarkan master_location)
         $stokRendah = Item::where('master_location', Item::MASTER_KASIR)
+            ->whereHas('stockIns')
             ->get()
             ->filter(fn ($item) => $item->stokKasir() <= 10)
             ->count();
@@ -481,6 +482,7 @@ class DashboardController extends Controller
 
         // Barang stok rendah di Kitchen (berdasarkan master_location)
         $stokRendah = Item::where('master_location', Item::MASTER_KITCHEN)
+            ->whereHas('stockIns')
             ->get()
             ->filter(fn ($item) => $item->stokKitchen() <= 10)
             ->count();

@@ -16,7 +16,7 @@ class StockOut extends Model
 
     protected $fillable = [
         'item_id', 'user_id',
-        'quantity', 'keterangan', 'tanggal', 'location',
+        'quantity', 'unit', 'keterangan', 'tanggal', 'location',
     ];
 
     protected $casts = [

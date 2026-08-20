@@ -2,11 +2,60 @@
 @section('title', 'Catatan Barang Masuk Di ' . $lokasiLabel)
 @section('content')
 
-<div class="mb-3 kk-page-header">
-    <a href="{{ route('admin.stock_in.index') }}?dari=kembali" class="btn btn-sm text-white d-inline-flex align-items-center gap-1"
+<div class="mb-3 kk-page-header d-flex align-items-center gap-3 flex-wrap">
+    <a href="{{ route('admin.stock_in.index') }}?dari=kembali" class="btn btn-sm text-white d-inline-flex align-items-center gap-1 flex-shrink-0"
        style="background:var(--kk-danger);">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
+
+    @php
+        $divisiInfo = [
+            'gudang_utama' => [
+                'icon'  => 'bi-building',
+                'color' => '#2563eb',
+                'bg'    => 'rgba(37,99,235,0.10)',
+                'label' => 'Gudang Utama',
+                'desc'  => 'Pencatatan barang masuk untuk stok utama gudang pusat',
+            ],
+            'gudang_resto' => [
+                'icon'  => 'bi-shop',
+                'color' => '#16a34a',
+                'bg'    => 'rgba(22,163,74,0.10)',
+                'label' => 'Gudang Resto',
+                'desc'  => 'Pencatatan barang masuk untuk kebutuhan restoran',
+            ],
+            'kasir' => [
+                'icon'  => 'bi-cash-coin',
+                'color' => '#dc2626',
+                'bg'    => 'rgba(220,38,38,0.10)',
+                'label' => 'Kasir',
+                'desc'  => 'Pencatatan barang masuk untuk kebutuhan operasional kasir',
+            ],
+            'kitchen' => [
+                'icon'  => 'bi-fire',
+                'color' => '#d97706',
+                'bg'    => 'rgba(217,119,6,0.10)',
+                'label' => 'Kitchen',
+                'desc'  => 'Pencatatan barang masuk untuk kebutuhan dapur & memasak',
+            ],
+        ];
+        $info = $divisiInfo[$lokasi] ?? ['icon' => 'bi-box', 'color' => '#6b7280', 'bg' => 'rgba(107,114,128,0.10)', 'label' => $lokasiLabel, 'desc' => 'Pencatatan barang masuk'];
+    @endphp
+
+    <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+             style="width:36px; height:36px; background:{{ $info['bg'] }};">
+            <i class="bi {{ $info['icon'] }}" style="color:{{ $info['color'] }}; font-size:1rem;"></i>
+        </div>
+        <div style="line-height:1.25;">
+            <div class="fw-bold" style="font-size:0.9rem; color:var(--kk-text);">
+                Catatan Barang Masuk {{ $info['label'] }}
+            </div>
+            <div style="font-size:0.75rem; color:var(--kk-text-muted);">
+                {{ $info['desc'] }}
+            </div>
+        </div>
+    </div>
 </div>
 
 @if($errors->has('rows'))
@@ -49,7 +98,7 @@
                                    class="form-control form-control-sm kk-baris-nama">
                         </td>
                         <td>
-                            <input type="number" name="rows[{{ $i }}][quantity]" min="1"
+                            <input type="number" step="any" name="rows[{{ $i }}][quantity]" min="0"
                                    class="form-control form-control-sm text-center">
                         </td>
                         <td>
